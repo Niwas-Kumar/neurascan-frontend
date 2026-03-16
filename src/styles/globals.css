@@ -1,0 +1,229 @@
+/* ================================================================
+   NeuraScan — Clean Design System
+   Theme: Google Store-Inspired Light & Minimal
+   Palette: White + Google Blue + Teal Accents
+   ================================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Google+Sans:wght@400;500;700&display=swap');
+
+:root {
+  /* ── Core surfaces (Clean Light) ── */
+  --bg-base:        #ffffff;
+  --bg-surface:     #ffffff;
+  --bg-card:        #ffffff;
+  --bg-card-hover:  #f8f9fa;
+  --bg-elevated:    #f1f3f4;
+  --bg-input:       #ffffff;
+  --bg-overlay:     rgba(0, 0, 0, 0.4);
+  --bg-page:        #f8f9fa;
+
+  /* ── Borders (Subtle) ── */
+  --border:         #e0e0e0;
+  --border-strong:  #dadce0;
+  --border-focus:   #1a73e8;
+
+  /* ── Brand Blue (Google-style) ── */
+  --primary:        #1a73e8;
+  --primary-light:  #4285f4;
+  --primary-soft:   #8ab4f8;
+  --primary-dim:    rgba(26, 115, 232, 0.08);
+  --primary-glow:   rgba(26, 115, 232, 0.2);
+
+  /* ── Legacy aliases (so existing code doesn't break) ── */
+  --violet:         #1a73e8;
+  --violet-light:   #4285f4;
+  --violet-soft:    #1a73e8;
+  --violet-dim:     rgba(26, 115, 232, 0.08);
+  --violet-glow:    rgba(26, 115, 232, 0.15);
+
+  /* ── Teal/Cyan accent ── */
+  --cyan:           #1e8e3e;
+  --cyan-light:     #34a853;
+  --cyan-dim:       rgba(30, 142, 62, 0.08);
+  --cyan-glow:      rgba(30, 142, 62, 0.15);
+
+  /* ── Text ── */
+  --text-primary:   #202124;
+  --text-secondary: #5f6368;
+  --text-muted:     #80868b;
+  --text-placeholder: #bdc1c6;
+
+  /* ── Semantic ── */
+  --success:        #1e8e3e;
+  --success-dim:    rgba(30, 142, 62, 0.08);
+  --success-glow:   rgba(30, 142, 62, 0.15);
+  --warning:        #f9ab00;
+  --warning-dim:    rgba(249, 171, 0, 0.08);
+  --warning-glow:   rgba(249, 171, 0, 0.15);
+  --danger:         #d93025;
+  --danger-dim:     rgba(217, 48, 37, 0.06);
+  --danger-glow:    rgba(217, 48, 37, 0.15);
+
+  /* ── Risk ── */
+  --risk-high:      var(--danger);
+  --risk-medium:    var(--warning);
+  --risk-low:       var(--success);
+
+  /* ── Typography ── */
+  --font-display: 'Inter', 'Google Sans', system-ui, -apple-system, sans-serif;
+  --font-body:    'Inter', system-ui, -apple-system, sans-serif;
+
+  /* ── Layout ── */
+  --sidebar-width:      280px;
+  --sidebar-collapsed:  72px;
+  --topbar-height:      64px;
+  --content-max:        1440px;
+
+  /* ── Radius (Rounded, clean) ── */
+  --radius-xs:   4px;
+  --radius-sm:   8px;
+  --radius:      12px;
+  --radius-md:   16px;
+  --radius-lg:   20px;
+  --radius-xl:   28px;
+  --radius-2xl:  32px;
+  --radius-full: 9999px;
+
+  /* ── Shadows (Material-like, subtle) ── */
+  --shadow-sm:    0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow:       0 2px 6px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
+  --shadow-lg:    0 4px 12px rgba(0,0,0,0.1), 0 8px 24px rgba(0,0,0,0.06);
+  --shadow-glow:  0 0 0 transparent;
+  --shadow-inner: none;
+
+  /* ── Transitions ── */
+  --ease:         cubic-bezier(0.2, 0, 0, 1);
+  --ease-spring:  cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-out:     cubic-bezier(0, 0, 0.2, 1);
+  --duration-fast: 150ms;
+  --duration:      200ms;
+  --duration-slow: 350ms;
+}
+
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; font-size: 16px; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg-page);
+  color: var(--text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #dadce0; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #bdc1c6; }
+
+/* ── Selection ── */
+::selection { background: rgba(26, 115, 232, 0.2); color: #202124; }
+
+/* ── Focus ── */
+*:focus-visible { outline: 2px solid var(--border-focus); outline-offset: 2px; border-radius: inherit; }
+
+/* ── Ambient Background System (kept as noop for backwards compat) ── */
+.bg-mesh, .bg-noise, .bg-grid {
+  display: none;
+}
+
+/* ── Animations ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes shimmer {
+  from { background-position: -600px 0; }
+  to   { background-position: 600px 0; }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-6px); }
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.97); }
+}
+
+/* ── Utility classes ── */
+.fade-up        { animation: fadeUp var(--duration-slow) var(--ease) both; }
+.fade-in        { animation: fadeIn var(--duration-slow) var(--ease) both; }
+.scale-in       { animation: scaleIn var(--duration-slow) var(--ease-spring) both; }
+
+.stagger-1 { animation-delay: 50ms; }
+.stagger-2 { animation-delay: 100ms; }
+.stagger-3 { animation-delay: 150ms; }
+.stagger-4 { animation-delay: 200ms; }
+.stagger-5 { animation-delay: 250ms; }
+
+.gradient-text {
+  color: var(--primary);
+  display: inline-block;
+}
+
+.gradient-border {
+  border: 1px solid var(--border);
+  position: relative;
+}
+
+.glass-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  border-radius: var(--radius-lg);
+}
+
+.card-lift {
+  transition: transform var(--duration) var(--ease), box-shadow var(--duration) var(--ease), border-color var(--duration) var(--ease);
+}
+.card-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--border-strong);
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #f1f3f4 25%, #e8eaed 50%, #f1f3f4 75%);
+  background-size: 600px 100%;
+  animation: shimmer 2s infinite linear;
+  border-radius: var(--radius-sm);
+}
+
+/* ── Typography Utilities ── */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+/* ── Responsive breakpoints ── */
+@media (max-width: 1280px) {
+  /* lg */
+}
+@media (max-width: 1024px) {
+  /* md */
+  .hide-tablet { display: none !important; }
+}
+@media (max-width: 768px) {
+  /* sm */
+  .hide-mobile { display: none !important; }
+  .show-mobile { display: flex !important; }
+}

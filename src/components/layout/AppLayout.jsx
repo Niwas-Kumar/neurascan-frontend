@@ -1,0 +1,387 @@
+import { useState } from 'react'
+import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
+import {
+  LayoutDashboard, Users, Upload, FileText, TrendingUp,
+  LogOut, Brain, Bell, Settings, Menu, X, ChevronLeft,
+  ChevronRight, Search,
+  AlertTriangle, Info, CheckCircle
+} from 'lucide-react'
+import { useAuth } from '../../context/AuthContext'
+import { useIsMobile, useClickOutside } from '../../hooks'
+import { Badge, Tooltip } from '../shared/UI'
+import toast from 'react-hot-toast'
+
+const teacherNav = [
+  { to: '/teacher/dashboard', icon: LayoutDashboard, label: 'Dashboard',    badge: null },
+  { to: '/teacher/students',  icon: Users,           label: 'Students',     badge: null },
+  { to: '/teacher/upload',    icon: Upload,          label: 'Upload Paper', badge: 'new' },
+  { to: '/teacher/reports',   icon: FileText,        label: 'Reports',      badge: null },
+  { to: '/teacher/analytics', icon: TrendingUp,      label: 'Analytics',    badge: null },
+  { to: '/teacher/settings',  icon: Settings,        label: 'Settings',     badge: null },
+]
+
+const parentNav = [
+  { to: '/parent/dashboard', icon: LayoutDashboard, label: 'My Child',    badge: null },
+  { to: '/parent/progress',  icon: TrendingUp,      label: 'Progress',    badge: null },
+  { to: '/parent/settings',  icon: Settings,        label: 'Settings',    badge: null },
+]
+
+function NotificationPanel({ notifications, markAllRead, onClose }) {
+  const ref = useClickOutside(onClose)
+  const icons = { info: Info, success: CheckCircle, warning: AlertTriangle, danger: AlertTriangle }
+  const colors = { info: '#1a73e8', success: '#1e8e3e', warning: '#e37400', danger: '#d93025' }
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: -8, scale: 0.97 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -8, scale: 0.97 }}
+      transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+      style={{
+        position: 'absolute', right: 0, top: 'calc(100% + 10px)',
+        width: 340, zIndex: 200,
+        background: '#fff', border: '1px solid #e0e0e0',
+        borderRadius: 16, overflow: 'hidden',
+        boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+      }}
+    >
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 18px', borderBottom: '1px solid #e8eaed' }}>
+        <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 15, color: '#202124' }}>Notifications</span>
+        <button onClick={markAllRead} style={{ fontSize: 12, color: '#1a73e8', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>
+          Mark all read
+        </button>
+      </div>
+      <div style={{ maxHeight: 340, overflowY: 'auto' }}>
+        {notifications.length === 0 ? (
+          <div style={{ padding: '32px 18px', textAlign: 'center', color: '#80868b', fontSize: 13 }}>
+            All caught up! No notifications.
+          </div>
+        ) : notifications.map(n => {
+          const Icon = icons[n.type] || Info
+          return (
+            <div key={n.id} style={{
+              padding: '12px 18px', borderBottom: '1px solid #f1f3f4',
+              background: n.read ? 'transparent' : '#e8f0fe',
+              display: 'flex', gap: 12, alignItems: 'flex-start',
+            }}>
+              <div style={{ width: 30, height: 30, borderRadius: 8, background: '#f1f3f4', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Icon size={14} color={colors[n.type]} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 2, color: '#202124' }}>{n.title}</div>
+                <div style={{ fontSize: 12, color: '#5f6368', lineHeight: 1.5 }}>{n.body}</div>
+              </div>
+              {!n.read && (
+                <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#1a73e8', flexShrink: 0, marginTop: 4 }} />
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </motion.div>
+  )
+}
+
+function UserAvatar({ name, picture, size = 36 }) {
+  const initials = name?.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?'
+  const hue = (name?.charCodeAt(0) || 0) * 137 % 360
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: '50%',
+      background: picture ? 'transparent' : `hsl(${hue}, 55%, 92%)`,
+      border: `1.5px solid hsl(${hue}, 55%, 82%)`,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: size * 0.36,
+      color: `hsl(${hue}, 60%, 40%)`,
+      flexShrink: 0,
+      overflow: 'hidden'
+    }}>
+      {picture ? (
+        <img src={picture} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+      ) : (
+        initials
+      )}
+    </div>
+  )
+}
+
+export default function AppLayout() {
+  const { user, logout, isTeacher, notifications, unreadCount, markAllRead } = useAuth()
+  const navigate   = useNavigate()
+  const location   = useLocation()
+  const isMobile   = useIsMobile()
+  const [collapsed, setCollapsed]   = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const [showNotifs, setShowNotifs] = useState(false)
+  const navItems = isTeacher ? teacherNav : parentNav
+
+  const sidebarWidth = collapsed ? 72 : 260
+
+  const handleLogout = () => {
+    logout()
+    toast.success('Signed out successfully')
+    navigate('/login')
+  }
+
+  const SidebarContent = () => (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      {/* Logo */}
+      <div style={{
+        height: 60, display: 'flex', alignItems: 'center',
+        padding: collapsed ? '0 16px' : '0 18px',
+        borderBottom: '1px solid #e8eaed',
+        gap: 10, overflow: 'hidden',
+      }}>
+        <div style={{
+          width: 34, height: 34, borderRadius: 10, flexShrink: 0,
+          background: '#1a73e8',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <Brain size={18} color="#fff" strokeWidth={2.5} />
+        </div>
+        <AnimatePresence>
+          {!collapsed && (
+            <motion.div
+              initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -6 }}
+              transition={{ duration: 0.15 }}
+              style={{ overflow: 'hidden' }}
+            >
+              <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, color: '#202124', whiteSpace: 'nowrap' }}>
+                NeuraScan
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
+      {/* Nav */}
+      <nav style={{ flex: 1, padding: '10px 8px', display: 'flex', flexDirection: 'column', gap: 2, overflowY: 'auto', overflowX: 'hidden' }}>
+        {!collapsed && (
+          <div style={{ fontSize: 10, fontWeight: 700, color: '#80868b', letterSpacing: '0.1em', textTransform: 'uppercase', padding: '8px 10px 10px' }}>
+            {isTeacher ? 'Teacher' : 'Parent'} Portal
+          </div>
+        )}
+        {navItems.map(({ to, icon: Icon, label, badge }) => {
+          const active = location.pathname === to || location.pathname.startsWith(to + '/')
+          return (
+            <Tooltip key={to} content={collapsed ? label : null} placement="right">
+              <NavLink to={to} onClick={() => setMobileOpen(false)} style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                padding: collapsed ? '10px 16px' : '9px 12px',
+                borderRadius: 8,
+                textDecoration: 'none',
+                color: active ? '#1a73e8' : '#5f6368',
+                background: active ? '#e8f0fe' : 'transparent',
+                fontFamily: 'var(--font-body)', fontSize: 13.5, fontWeight: active ? 600 : 400,
+                transition: 'all 0.2s ease',
+                justifyContent: collapsed ? 'center' : 'flex-start',
+                position: 'relative',
+              }}>
+                <Icon size={18} strokeWidth={active ? 2 : 1.75} style={{ flexShrink: 0, color: active ? '#1a73e8' : '#80868b' }} />
+                {!collapsed && (
+                  <span style={{ flex: 1, whiteSpace: 'nowrap' }}>{label}</span>
+                )}
+                {!collapsed && badge === 'new' && (
+                  <span style={{ fontSize: 9, fontWeight: 800, background: '#1a73e8', color: '#fff', padding: '2px 6px', borderRadius: 100, letterSpacing: '0.05em' }}>
+                    NEW
+                  </span>
+                )}
+              </NavLink>
+            </Tooltip>
+          )
+        })}
+      </nav>
+
+      {/* Bottom */}
+      <div style={{ padding: '8px', borderTop: '1px solid #e8eaed' }}>
+        {!collapsed && (
+          <motion.div
+            initial={false}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 10,
+              padding: '9px 12px', borderRadius: 8,
+              background: '#f8f9fa', border: '1px solid #e8eaed',
+              marginBottom: 8, cursor: 'pointer',
+              transition: 'all 0.2s ease',
+            }}
+            whileHover={{ background: '#f1f3f4' }}
+            onClick={() => navigate(isTeacher ? '/teacher/settings' : '/parent/settings')}
+          >
+            <UserAvatar name={user?.name} picture={user?.picture} size={30} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: '#202124' }}>{user?.name}</div>
+              <div style={{ fontSize: 11, color: '#80868b' }}>{isTeacher ? 'Teacher' : 'Parent'}</div>
+            </div>
+            <Settings size={13} color="#80868b" />
+          </motion.div>
+        )}
+
+        <div style={{ display: 'flex', gap: 4 }}>
+          <Tooltip content="Sign out" placement="top">
+            <button onClick={handleLogout} style={{
+              flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+              padding: '8px', borderRadius: 8, border: '1px solid transparent',
+              background: 'transparent', color: '#5f6368', cursor: 'pointer',
+              fontFamily: 'var(--font-body)', fontSize: 13, transition: 'all 0.2s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.color = '#d93025'; e.currentTarget.style.background = '#fce8e6' }}
+            onMouseLeave={e => { e.currentTarget.style.color = '#5f6368'; e.currentTarget.style.background = 'transparent' }}
+            >
+              <LogOut size={16} />
+              {!collapsed && 'Sign out'}
+            </button>
+          </Tooltip>
+          {!isMobile && (
+            <Tooltip content={collapsed ? 'Expand' : 'Collapse'} placement="top">
+              <button onClick={() => setCollapsed(c => !c)} style={{
+                width: 34, height: 34, borderRadius: 8, border: '1px solid #e0e0e0',
+                background: '#fff', color: '#5f6368', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                {collapsed ? <ChevronRight size={15} /> : <ChevronLeft size={15} />}
+              </button>
+            </Tooltip>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+
+  return (
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#f8f9fa' }}>
+
+      {/* Desktop Sidebar */}
+      {!isMobile && (
+        <motion.aside
+          animate={{ width: sidebarWidth }}
+          transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+          style={{
+            background: '#fff',
+            borderRight: '1px solid #e8eaed',
+            height: '100vh',
+            position: 'sticky', top: 0,
+            overflow: 'hidden',
+            flexShrink: 0,
+            zIndex: 20,
+          }}
+        >
+          <SidebarContent />
+        </motion.aside>
+      )}
+
+      {/* Mobile Drawer */}
+      {isMobile && (
+        <AnimatePresence>
+          {mobileOpen && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                onClick={() => setMobileOpen(false)}
+                style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(2px)', zIndex: 40 }}
+              />
+              <motion.aside
+                initial={{ x: -260 }} animate={{ x: 0 }} exit={{ x: -260 }}
+                transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+                style={{
+                  position: 'fixed', left: 0, top: 0, bottom: 0, width: 260,
+                  background: '#fff', borderRight: '1px solid #e8eaed',
+                  zIndex: 50, overflow: 'hidden',
+                }}
+              >
+                <SidebarContent />
+              </motion.aside>
+            </>
+          )}
+        </AnimatePresence>
+      )}
+
+      {/* Main */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+
+        {/* Topbar */}
+        <header style={{
+          height: 60, display: 'flex', alignItems: 'center',
+          padding: '0 20px 0 24px',
+          borderBottom: '1px solid #e8eaed',
+          background: '#fff',
+          position: 'sticky', top: 0, zIndex: 10,
+          gap: 12,
+        }}>
+          {isMobile && (
+            <button onClick={() => setMobileOpen(true)} style={{ background: 'none', border: 'none', color: '#5f6368', cursor: 'pointer' }}>
+              <Menu size={22} />
+            </button>
+          )}
+
+          {/* Breadcrumb */}
+          <div style={{ flex: 1, fontSize: 14, color: '#80868b' }}>
+            <span style={{ color: '#5f6368' }}>NeuraScan</span>
+            <span style={{ margin: '0 6px' }}>/</span>
+            <span style={{ color: '#202124', fontWeight: 500 }}>
+              {navItems.find(n => location.pathname.startsWith(n.to))?.label || 'Dashboard'}
+            </span>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+
+            {/* Notifications */}
+            <div style={{ position: 'relative' }}>
+              <button
+                onClick={() => setShowNotifs(v => !v)}
+                style={{
+                  width: 36, height: 36, borderRadius: 8, border: '1px solid #e0e0e0',
+                  background: '#fff', color: '#5f6368', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative',
+                }}
+              >
+                <Bell size={16} />
+                {unreadCount > 0 && (
+                  <motion.div
+                    initial={{ scale: 0 }} animate={{ scale: 1 }}
+                    style={{
+                      position: 'absolute', top: 6, right: 6, width: 8, height: 8,
+                      borderRadius: '50%', background: '#d93025',
+                      border: '1.5px solid #fff',
+                    }}
+                  />
+                )}
+              </button>
+              <AnimatePresence>
+                {showNotifs && (
+                  <NotificationPanel
+                    notifications={notifications}
+                    markAllRead={() => { markAllRead(); setShowNotifs(false) }}
+                    onClose={() => setShowNotifs(false)}
+                  />
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Avatar */}
+            <div style={{ cursor: 'pointer' }} onClick={() => navigate(isTeacher ? '/teacher/settings' : '/parent/settings')}>
+              <UserAvatar name={user?.name} picture={user?.picture} size={34} />
+            </div>
+          </div>
+        </header>
+
+        {/* Content */}
+        <main style={{ flex: 1, padding: isMobile ? '20px 16px' : '24px 28px', overflowX: 'hidden' }}>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={location.pathname}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
+              style={{ maxWidth: 1200, margin: '0 auto' }}
+            >
+              <Outlet />
+            </motion.div>
+          </AnimatePresence>
+        </main>
+      </div>
+    </div>
+  )
+}
