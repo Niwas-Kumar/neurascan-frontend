@@ -98,7 +98,7 @@ export default function RegisterPage() {
       
       toast.success('Account created successfully!')
       
-      if (res.data?.data?.token) {
+      if (res.data?.data?.jwtToken) {
         login(res.data.data)
         navigate(role === 'teacher' ? '/teacher/dashboard' : '/parent/dashboard')
       } else {

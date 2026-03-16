@@ -62,16 +62,19 @@ export default function LoginPage() {
     const id = toast.loading('Signing in with Google...')
     try {
         const result = await signInWithPopup(auth, googleProvider)
-            const credential = GoogleAuthProvider.credentialFromResult(result)
-            const idToken = credential.idToken
-            if (!idToken) {
-                throw new Error('Could not retrieve Google ID Token from Firebase.')
-            }
-            const picture = result.user?.photoURL || null
-            const res = await authAPI.firebaseLogin(idToken, tab, picture)
-            login(res.data.data)
-            toast.success(`Welcome back, ${res.data.data.userName}!`, { id })
-            navigate(res.data.data.userRole === 'ROLE_TEACHER' ? '/teacher/dashboard' : '/parent/dashboard')
+        // result.user.getIdToken() returns the Firebase ID token (audience: neurascan-8ada2)
+        // credential.idToken returns the Google ID token (audience: client-id)
+        const idToken = await result.user.getIdToken()
+        
+        if (!idToken) {
+            throw new Error('Could not retrieve ID Token from Firebase.')
+        }
+        
+        const picture = result.user?.photoURL || null
+        const res = await authAPI.firebaseLogin(idToken, tab, picture)
+        login(res.data.data)
+        toast.success(`Welcome back, ${res.data.data.userName}!`, { id })
+        navigate(res.data.data.userRole === 'ROLE_TEACHER' ? '/teacher/dashboard' : '/parent/dashboard')
     } catch (err) {
         console.error('Login Error:', err)
         let msg = 'Google login failed'
