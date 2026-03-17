@@ -17,10 +17,12 @@ import StudentsPage     from './pages/teacher/StudentsPage'
 import UploadPage       from './pages/teacher/UploadPage'
 import { ReportsPage }  from './pages/teacher/ReportsPage'
 import AnalyticsPage    from './pages/teacher/AnalyticsPage'
+import QuizPage         from './pages/teacher/QuizPage'
 
 // Parent pages
 import ParentDashboard  from './pages/parent/ParentDashboard'
 import ProgressPage     from './pages/parent/ProgressPage'
+import QuizProgressPage from './pages/parent/QuizProgressPage'
 
 // Shared
 import SettingsPage from './pages/SettingsPage'
@@ -71,6 +73,7 @@ function AppRoutes() {
         <Route path="upload"    element={<UploadPage />} />
         <Route path="reports"   element={<ReportsPage />} />
         <Route path="analytics" element={<AnalyticsPage />} />
+        <Route path="quizzes"   element={<QuizPage />} />
         <Route path="settings"  element={<SettingsPage />} />
       </Route>
 
@@ -80,9 +83,10 @@ function AppRoutes() {
           <AppLayout />
         </ProtectedRoute>
       }>
-        <Route index           element={<Navigate to="dashboard" replace />} />
+        <Route index          element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<ParentDashboard />} />
         <Route path="progress"  element={<ProgressPage />} />
+        <Route path="quiz-progress" element={<QuizProgressPage />} />
         <Route path="settings"  element={<SettingsPage />} />
       </Route>
 

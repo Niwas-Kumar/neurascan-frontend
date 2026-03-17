@@ -82,4 +82,13 @@ export const analysisAPI = {
   getProgress:      (studentId) => api.get(`/analysis/progress/${studentId}`),
 }
 
+export const quizAPI = {
+  createQuiz: (data) => api.post('/quizzes', data),
+  getMyQuizzes: () => api.get('/quizzes'),
+  getQuizById: (id) => api.get(`/quizzes/${id}`),
+  submitQuiz: (quizId, data) => api.post(`/quizzes/${quizId}/submit`, data),
+  getQuizResponses: (quizId) => api.get(`/quizzes/${quizId}/responses`),
+  getStudentResponses: (studentId) => api.get(`/quizzes/student/${studentId}/responses`),
+}
+
 export default api

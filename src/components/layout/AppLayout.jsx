@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   LayoutDashboard, Users, Upload, FileText, TrendingUp,
   LogOut, Brain, Bell, Settings, Menu, X, ChevronLeft,
-  ChevronRight, Search,
+  ChevronRight, Search, BookOpen,
   AlertTriangle, Info, CheckCircle
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
@@ -16,14 +16,16 @@ const teacherNav = [
   { to: '/teacher/dashboard', icon: LayoutDashboard, label: 'Dashboard',    badge: null },
   { to: '/teacher/students',  icon: Users,           label: 'Students',     badge: null },
   { to: '/teacher/upload',    icon: Upload,          label: 'Upload Paper', badge: 'new' },
-  { to: '/teacher/reports',   icon: FileText,        label: 'Reports',      badge: null },
   { to: '/teacher/analytics', icon: TrendingUp,      label: 'Analytics',    badge: null },
+  { to: '/teacher/reports',   icon: FileText,        label: 'Reports',      badge: null },
+  { to: '/teacher/quizzes',   icon: FileText,        label: 'Quizzes',      badge: 'new' },
   { to: '/teacher/settings',  icon: Settings,        label: 'Settings',     badge: null },
 ]
 
 const parentNav = [
   { to: '/parent/dashboard', icon: LayoutDashboard, label: 'My Child',    badge: null },
   { to: '/parent/progress',  icon: TrendingUp,      label: 'Progress',    badge: null },
+  { to: '/parent/quiz-progress', icon: BookOpen,   label: 'Quiz Progress', badge: null },
   { to: '/parent/settings',  icon: Settings,        label: 'Settings',    badge: null },
 ]
 
