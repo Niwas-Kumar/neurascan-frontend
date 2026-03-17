@@ -3,10 +3,12 @@ import axios from 'axios'
 const BASE_URL = import.meta.env.VITE_API_URL || '/api'
 
 // ── Axios instance ────────────────────────────────────────────
+// Increased timeout from 15s to 45s to handle slow first requests
+// Some endpoints (dashboard, reports) may take 20-30s on cold start
 export const api = axios.create({
   baseURL: BASE_URL,
   headers: { 'Content-Type': 'application/json' },
-  timeout: 15000,
+  timeout: 45000, // 45 seconds - allows for slow initial requests
 })
 
 // Attach JWT on every request

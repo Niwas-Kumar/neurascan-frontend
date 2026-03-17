@@ -1,24 +1,40 @@
 import { api, studentAPI, analysisAPI, authAPI } from './api'
 import { requestCache } from '../utils/requestCache'
 
-// Exponential backoff retry logic
-async function retryWithBackoff(fn, maxRetries = 3, initialDelayMs = 1000) {
+// Exponential backoff retry logic with longer delays for timeout resilience
+// Heavy endpoints (dashboard, reports) may take 20-30s, so we retry aggressively
+async function retryWithBackoff(fn, maxRetries = 5, initialDelayMs = 2000) {
   let lastError
   for (let i = 0; i < maxRetries; i++) {
     try {
       return await fn()
     } catch (error) {
       lastError = error
-      // Only retry on network errors or 5xx errors, not 4xx
-      if (error.response && error.response.status < 500) {
+      // Retry on:
+      // - Network timeouts (ECONNABORTED, timeout exceeded)
+      // - Server errors (5xx)
+      // Skip retries on client errors (4xx) except 408, 429, 504
+      const isRetryableError = 
+        !error.response || // Network error
+        error.response.status >= 500 || // 5xx
+        error.response.status === 408 || // Request Timeout
+        error.response.status === 429 || // Too Many Requests
+        error.response.status === 504 || // Gateway Timeout
+        error.code === 'ECONNABORTED' // Timeout
+      
+      if (!isRetryableError) {
         throw error
       }
+      
       if (i < maxRetries - 1) {
+        // Exponential backoff: 2s, 4s, 8s, 16s, 32s
         const delay = initialDelayMs * Math.pow(2, i)
+        console.warn(`Retry attempt ${i + 1}/${maxRetries} after ${delay}ms for:`, error.message)
         await new Promise(resolve => setTimeout(resolve, delay))
       }
     }
   }
+  console.error('Max retries exceeded for:', lastError.message)
   throw lastError
 }
 
@@ -100,14 +116,18 @@ export const optimizedAnalysisAPI = {
     const pending = requestCache.getPendingRequest(cacheKey)
     if (pending) return pending
 
-    const request = retryWithBackoff(() => analysisAPI.getReports())
+    // Reports is heavy operation - longer timeout, aggressive retry
+    const request = retryWithBackoff(() => analysisAPI.getReports(), 5)
       .then(res => {
-        requestCache.set(cacheKey, res.data.data, 8 * 60 * 1000) // Cache for 8 mins
+        requestCache.set(cacheKey, res.data.data, 10 * 60 * 1000) // Cache for 10 mins (increased from 8)
         return res
       })
       .catch(err => {
         const staleCache = requestCache.cache.get(cacheKey)
-        if (staleCache) return { data: { data: staleCache.data } }
+        if (staleCache && staleCache.data) {
+          console.warn('Falling back to stale reports cache due to:', err.message)
+          return { data: { data: staleCache.data, isStale: true } }
+        }
         throw err
       })
 
@@ -123,14 +143,19 @@ export const optimizedAnalysisAPI = {
     const pending = requestCache.getPendingRequest(cacheKey)
     if (pending) return pending
 
-    const request = retryWithBackoff(() => analysisAPI.getDashboard())
+    // Dashboard is heavy operation - longer timeout, aggressive retry
+    const request = retryWithBackoff(() => analysisAPI.getDashboard(), 5)
       .then(res => {
-        requestCache.set(cacheKey, res.data.data, 6 * 60 * 1000) // Cache for 6 mins
+        requestCache.set(cacheKey, res.data.data, 10 * 60 * 1000) // Cache for 10 mins (increased from 6)
         return res
       })
       .catch(err => {
+        // On timeout/error, try to return stale cache with warning
         const staleCache = requestCache.cache.get(cacheKey)
-        if (staleCache) return { data: { data: staleCache.data } }
+        if (staleCache && staleCache.data) {
+          console.warn('Falling back to stale dashboard cache due to:', err.message)
+          return { data: { data: staleCache.data, isStale: true } }
+        }
         throw err
       })
 
