@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
   Users, FileText, AlertTriangle, TrendingUp, Upload,
@@ -118,9 +118,11 @@ export default function TeacherDashboard() {
         title={<>{greeting}, <span className="gradient-text">{user?.name?.split(' ')[0]}</span> 👋</>}
         subtitle={`Here's what's happening with your students today — ${format(new Date(), 'EEEE, MMMM d')}`}
         action={
-          <Button icon={<Upload size={15} />} onClick={() => navigate('/teacher/upload')}>
-            Upload Paper
-          </Button>
+          <Link to="/teacher/upload" style={{ textDecoration: 'none' }}>
+            <Button icon={<Upload size={15} />}>
+              Upload Paper
+            </Button>
+          </Link>
         }
       />
 
