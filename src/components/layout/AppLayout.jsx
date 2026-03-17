@@ -113,11 +113,11 @@ function Sidebar({ collapsed, isTeacher, navItems, location, setCollapsed, setMo
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Logo */}
-      <div style={{
+      <div onClick={() => navigate('/')} style={{
         height: 60, display: 'flex', alignItems: 'center',
         padding: collapsed ? '0 16px' : '0 18px',
         borderBottom: '1px solid #e8eaed',
-        gap: 10, overflow: 'hidden',
+        gap: 10, overflow: 'hidden', cursor: 'pointer',
       }}>
         <div style={{
           width: 34, height: 34, borderRadius: 10, flexShrink: 0,

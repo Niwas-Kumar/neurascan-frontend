@@ -23,6 +23,7 @@ import QuizPage         from './pages/teacher/QuizPage'
 import ParentDashboard  from './pages/parent/ParentDashboard'
 import ProgressPage     from './pages/parent/ProgressPage'
 import QuizProgressPage from './pages/parent/QuizProgressPage'
+import HomeDashboard    from './pages/HomeDashboard'
 
 // Shared
 import SettingsPage from './pages/SettingsPage'
@@ -53,7 +54,9 @@ function RootRedirect() {
 function AppRoutes() {
   return (
     <Routes>
-      <Route path="/"               element={<RootRedirect />} />
+      <Route path="/"               element={<HomeDashboard />} />
+      <Route path="/home"           element={<HomeDashboard />} />
+      <Route path="/dashboard"      element={<RootRedirect />} />
       <Route path="/login"          element={<LoginPage />} />
       <Route path="/register"       element={<RegisterPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />

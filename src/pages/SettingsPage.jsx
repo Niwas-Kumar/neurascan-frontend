@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { User, Lock, Bell, Palette, Shield, Save, Check, Moon, Sun, Monitor } from 'lucide-react'
+import { User, Lock, Bell, Shield, Save, Check } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { authAPI } from '../services/api'
 import { PageHeader, Button, Input, Alert, Badge, Tabs } from '../components/shared/UI'
@@ -179,49 +179,11 @@ function NotificationsSection() {
   )
 }
 
-function AppearanceSection() {
-  const { theme, toggleTheme } = useAuth()
-  const options = [
-    { id: 'dark',   icon: Moon,    label: 'Dark',   desc: 'Easy on the eyes' },
-    { id: 'light',  icon: Sun,     label: 'Light',  desc: 'Bright and clean' },
-    { id: 'system', icon: Monitor, label: 'System', desc: 'Follows OS setting' },
-  ]
-  return (
-    <div>
-      <div style={{ marginBottom: 24 }}>
-        <h3 style={{ fontSize: 14, fontWeight: 600, marginBottom: 4 }}>Color theme</h3>
-        <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>Choose how NeuraScan looks to you.</p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
-          {options.map(({ id, icon: Icon, label, desc }) => (
-            <motion.div key={id} whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }}
-              onClick={() => id === 'dark' || id === 'light' ? (theme !== id && toggleTheme()) : null}
-              style={{
-                padding: '20px 16px', textAlign: 'center', cursor: 'pointer',
-                background: theme === id ? 'var(--violet-dim)' : 'var(--bg-card)',
-                border: `2px solid ${theme === id ? 'var(--violet)' : 'var(--border)'}`,
-                borderRadius: 'var(--radius-lg)', transition: 'all var(--duration)',
-                boxShadow: theme === id ? '0 4px 16px var(--violet-glow)' : 'none',
-              }}
-            >
-              <Icon size={22} color={theme === id ? 'var(--violet-soft)' : 'var(--text-muted)'} style={{ marginBottom: 10 }} />
-              <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 3 }}>{label}</div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{desc}</div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-      <Alert type="info">
-        Light mode coming soon. The current design is optimized for dark mode.
-      </Alert>
-    </div>
-  )
-}
 
 const TABS = [
   { id: 'profile',      label: 'Profile',       icon: User },
   { id: 'password',     label: 'Password',      icon: Lock },
   { id: 'notifications', label: 'Notifications', icon: Bell },
-  { id: 'appearance',   label: 'Appearance',    icon: Palette },
 ]
 
 export default function SettingsPage() {
@@ -262,7 +224,6 @@ export default function SettingsPage() {
           {tab === 'profile'       && <ProfileSection user={user} isTeacher={isTeacher} />}
           {tab === 'password'      && <PasswordSection />}
           {tab === 'notifications' && <NotificationsSection />}
-          {tab === 'appearance'    && <AppearanceSection />}
         </motion.div>
       </div>
     </div>
