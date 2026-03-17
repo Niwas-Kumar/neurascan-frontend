@@ -9,7 +9,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useIsMobile, useClickOutside } from '../../hooks'
-import { Badge, Tooltip } from '../shared/UI'
+import { Badge, Tooltip, Card, NavItem } from '../shared/UI'
 import toast from 'react-hot-toast'
 
 const teacherNav = [
@@ -152,27 +152,15 @@ function Sidebar({ collapsed, isTeacher, navItems, location, setCollapsed, setMo
           const active = location.pathname === to || location.pathname.startsWith(to + '/')
           return (
             <Tooltip key={to} content={collapsed ? label : null} placement="right">
-              <NavLink to={to} onClick={() => setMobileOpen(false)} style={{
-                display: 'flex', alignItems: 'center', gap: 10,
-                padding: collapsed ? '10px 16px' : '9px 12px',
-                borderRadius: 8,
-                textDecoration: 'none',
-                color: active ? '#1a73e8' : '#5f6368',
-                background: active ? '#e8f0fe' : 'transparent',
-                fontFamily: 'var(--font-body)', fontSize: 13.5, fontWeight: active ? 600 : 400,
-                transition: 'all 0.2s ease',
-                justifyContent: collapsed ? 'center' : 'flex-start',
-                position: 'relative',
-              }}>
-                <Icon size={18} strokeWidth={active ? 2 : 1.75} style={{ flexShrink: 0, color: active ? '#1a73e8' : '#80868b' }} />
-                {!collapsed && (
-                  <span style={{ flex: 1, whiteSpace: 'nowrap' }}>{label}</span>
-                )}
-                {!collapsed && badge === 'new' && (
-                  <span style={{ fontSize: 9, fontWeight: 800, background: '#1a73e8', color: '#fff', padding: '2px 6px', borderRadius: 100, letterSpacing: '0.05em' }}>
-                    NEW
-                  </span>
-                )}
+              <NavLink to={to} onClick={() => setMobileOpen(false)} style={{ textDecoration: 'none' }}>
+                <NavItem
+                  icon={Icon}
+                  label={label}
+                  active={active}
+                  collapsed={collapsed}
+                  badge={badge}
+                  onClick={() => setMobileOpen(false)}
+                />
               </NavLink>
             </Tooltip>
           )
@@ -180,27 +168,18 @@ function Sidebar({ collapsed, isTeacher, navItems, location, setCollapsed, setMo
       </nav>
 
       {/* Bottom */}
-      <div style={{ padding: '8px', borderTop: '1px solid #e8eaed' }}>
+      <div style={{ padding: '8px', borderTop: '1px solid var(--color-border)' }}>
         {!collapsed && (
-          <motion.div
-            initial={false}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 10,
-              padding: '9px 12px', borderRadius: 8,
-              background: '#f8f9fa', border: '1px solid #e8eaed',
-              marginBottom: 8, cursor: 'pointer',
-              transition: 'all 0.2s ease',
-            }}
-            whileHover={{ background: '#f1f3f4' }}
-            onClick={() => navigate(isTeacher ? '/teacher/settings' : '/parent/settings')}
-          >
-            <UserAvatar name={user?.name} picture={user?.picture} size={30} />
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 13, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: '#202124' }}>{user?.name}</div>
-              <div style={{ fontSize: 11, color: '#80868b' }}>{isTeacher ? 'Teacher' : 'Parent'}</div>
+          <Card style={{ padding: 12, cursor: 'pointer', transition: 'all 0.2s ease' }} onClick={() => navigate(isTeacher ? '/teacher/settings' : '/parent/settings')}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <UserAvatar name={user?.name} picture={user?.picture} size={30} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--color-text)' }}>{user?.name}</div>
+                <div style={{ fontSize: 11, color: 'var(--color-text-muted)' }}>{isTeacher ? 'Teacher' : 'Parent'}</div>
+              </div>
+              <Settings size={13} color="var(--color-text-muted)" />
             </div>
-            <Settings size={13} color="#80868b" />
-          </motion.div>
+          </Card>
         )}
 
         <div style={{ display: 'flex', gap: 4 }}>
@@ -256,7 +235,7 @@ export default function AppLayout() {
   const currentNav = navItems.find(n => location.pathname.startsWith(n.to))
   
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: '#f8f9fa' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-page)' }}>
 
       {/* Desktop Sidebar */}
       {!isMobile && (
@@ -264,8 +243,8 @@ export default function AppLayout() {
           animate={{ width: sidebarWidth }}
           transition={{ type: 'spring', damping: 30, stiffness: 300 }}
           style={{
-            background: '#fff',
-            borderRight: '1px solid #e8eaed',
+            background: 'linear-gradient(180deg, #eff5ff 0%, #ffffff 100%)',
+            borderRight: '1px solid var(--border)',
             height: '100vh',
             position: 'sticky', top: 0,
             overflow: 'hidden',
@@ -332,10 +311,12 @@ export default function AppLayout() {
         <header style={{
           height: 60, display: 'flex', alignItems: 'center',
           padding: '0 20px 0 24px',
-          borderBottom: '1px solid #e8eaed',
-          background: '#fff',
+          borderBottom: '1px solid var(--border)',
+          background: 'linear-gradient(90deg, #4f46e5, #3b82f6)',
           position: 'sticky', top: 0, zIndex: 10,
           gap: 12,
+          color: '#fff',
+          boxShadow: '0 8px 18px rgba(31, 41, 55, 0.15)',
         }}>
           {isMobile && (
             <button onClick={() => setMobileOpen(true)} style={{ background: 'none', border: 'none', color: '#5f6368', cursor: 'pointer' }}>
@@ -344,10 +325,10 @@ export default function AppLayout() {
           )}
 
           {/* Breadcrumb */}
-          <div style={{ flex: 1, fontSize: 14, color: '#80868b' }}>
-            <span style={{ color: '#5f6368' }}>NeuraScan</span>
+          <div style={{ flex: 1, fontSize: 14, color: 'rgba(255,255,255,0.85)', fontWeight: 500 }}>
+            <span style={{ color: 'rgba(255,255,255,0.9)' }}>NeuraScan</span>
             <span style={{ margin: '0 6px' }}>/</span>
-            <span style={{ color: '#202124', fontWeight: 500 }}>
+            <span style={{ color: '#ffffff', fontWeight: 600 }}>
               {currentNav?.label || 'Dashboard'}
             </span>
           </div>

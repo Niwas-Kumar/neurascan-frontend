@@ -99,6 +99,65 @@ export function Button({
   )
 }
 
+export function Card({ children, title, subtitle, style, className, ...props }) {
+  return (
+    <div
+      {...props}
+      className={className}
+      style={{
+        background: 'var(--color-surface)',
+        border: '1px solid var(--color-border)',
+        borderRadius: 'var(--radius-lg)',
+        boxShadow: 'var(--shadow-sm)',
+        padding: 'var(--space-lg)',
+        color: 'var(--color-text)',
+        ...style,
+      }}
+    >
+      {title && (
+        <div style={{ marginBottom: '8px' }}>
+          <h3 style={{ margin: 0, fontFamily: 'var(--font-display)', fontSize: 18, color: 'var(--color-text)' }}>{title}</h3>
+          {subtitle && <p style={{ margin: '4px 0 0', color: 'var(--color-text-muted)', fontSize: 13 }}>{subtitle}</p>}
+        </div>
+      )}
+      {children}
+    </div>
+  )
+}
+
+export function NavItem({ to, icon: Icon, label, active, onClick, collapsed, badge }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        display: 'flex', alignItems: 'center', gap: collapsed ? 0 : 10,
+        width: '100%',
+        padding: collapsed ? '10px 12px' : '10px 14px',
+        borderRadius: 'var(--radius)',
+        border: '1px solid transparent',
+        background: active ? 'linear-gradient(90deg, rgba(59,130,246,0.2), rgba(16,185,129,0.12))' : 'transparent',
+        color: active ? 'var(--color-primary)' : 'var(--color-text-secondary)',
+        fontFamily: 'var(--font-body)',
+        fontSize: 14,
+        fontWeight: active ? 700 : 500,
+        cursor: 'pointer',
+        transition: 'all 0.25s ease',
+        textAlign: 'left',
+        justifyContent: collapsed ? 'center' : 'flex-start',
+        position: 'relative',
+      }}
+    >
+      {Icon && <Icon size={18} color={active ? 'var(--color-primary)' : 'var(--color-text-muted)'} />}
+      {!collapsed && <span style={{ flex: 1 }}>{label}</span>}
+      {!collapsed && badge === 'new' && (
+        <span style={{ fontSize: 9, fontWeight: 800, background: 'var(--color-primary)', color: '#fff', padding: '2px 6px', borderRadius: 100, letterSpacing: '0.05em' }}>
+          NEW
+        </span>
+      )}
+    </button>
+  )
+}
+
 function ButtonSpinner() {
   return (
     <div style={{ width: 14, height: 14, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.6s linear infinite' }} />

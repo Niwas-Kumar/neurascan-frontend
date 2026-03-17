@@ -4,6 +4,7 @@
    Palette: White + Google Blue + Teal Accents
    ================================================================ */
 
+@import './tokens.css';
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Google+Sans:wght@400;500;700&display=swap');
 
 :root {
@@ -11,11 +12,11 @@
   --bg-base:        #ffffff;
   --bg-surface:     #ffffff;
   --bg-card:        #ffffff;
-  --bg-card-hover:  #f8f9fa;
+  --bg-card-hover:  #eef2ff;
   --bg-elevated:    #f1f3f4;
   --bg-input:       #ffffff;
-  --bg-overlay:     rgba(0, 0, 0, 0.4);
-  --bg-page:        #f8f9fa;
+  --bg-overlay:     rgba(0, 0, 0, 0.45);
+  --bg-page:        #ecf2ff;
 
   /* ── Borders (Subtle) ── */
   --border:         #e0e0e0;
@@ -43,10 +44,10 @@
   --cyan-glow:      rgba(30, 142, 62, 0.15);
 
   /* ── Text ── */
-  --text-primary:   #202124;
-  --text-secondary: #5f6368;
-  --text-muted:     #80868b;
-  --text-placeholder: #bdc1c6;
+  --text-primary:   #111827;
+  --text-secondary: #374151;
+  --text-muted:     #6b7280;
+  --text-placeholder: #9ca3af;
 
   /* ── Semantic ── */
   --success:        #1e8e3e;
@@ -108,11 +109,16 @@ body {
   font-family: var(--font-body);
   background: var(--bg-page);
   color: var(--text-primary);
-  line-height: 1.6;
+  line-height: 1.72;
+  font-size: 16.5px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
   overflow-x: hidden;
+}
+
+a, button, input, textarea, select {
+  font-family: var(--font-body);
 }
 
 /* ── Scrollbar ── */
@@ -212,6 +218,18 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--text-primary);
+}
+
+h1 {
+  font-size: clamp(1.9rem, 2.8vw, 2.8rem);
+}
+
+h2 {
+  font-size: clamp(1.6rem, 2.2vw, 2.2rem);
+}
+
+h3 {
+  font-size: clamp(1.3rem, 2vw, 1.8rem);
 }
 
 /* ── Responsive breakpoints ── */

@@ -1,0 +1,41 @@
+/*
+  Design tokens for NeuraScan:
+  - Systematic color, typography, spacing, border radius, shadows
+  - Shared tokens for consistent UI style across components
+*/
+
+:root {
+  --color-bg: #ecf2ff;
+  --color-surface: #ffffff;
+  --color-surface-soft: #f4f7ff;
+  --color-border: #dbe0ec;
+  --color-border-focus: #2563eb;
+
+  --color-primary: #3b82f6;
+  --color-primary-dark: #1d4ed8;
+  --color-primary-soft: #dbeafe;
+
+  --color-success: #16a34a;
+  --color-warning: #f59e0b;
+  --color-danger: #dc2626;
+
+  --color-text: #111827;
+  --color-text-muted: #4b5563;
+  --color-text-secondary: #475569;
+
+  --radius: 12px;
+  --radius-lg: 18px;
+
+  --shadow-sm: 0 1.5px 4px rgba(15, 23, 42, 0.08);
+  --shadow-md: 0 4px 16px rgba(15, 23, 42, 0.12);
+  --shadow-lg: 0 10px 30px rgba(15, 23, 42, 0.16);
+
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+
+  --font-display: 'Inter', 'Google Sans', system-ui, -apple-system, sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+}
