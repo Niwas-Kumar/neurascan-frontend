@@ -38,7 +38,7 @@ export function AuthProvider({ children }) {
     const savedTheme= localStorage.getItem(STORAGE_KEYS.theme) || 'dark'
 
     if (token && role) {
-      setUser({ token, role, userId: Number(userId), name, email, studentId: studentId ? Number(studentId) : null, school, picture })
+      setUser({ token, role, userId, name, email, studentId, school, picture })
     }
     setThemeState(savedTheme)
     setLoading(false)
@@ -62,7 +62,7 @@ export function AuthProvider({ children }) {
       localStorage.removeItem(STORAGE_KEYS.picture)
     }
 
-    setUser({ token: jwtToken, role: userRole, userId: Number(userId), name: userName, email, studentId: studentId ? Number(studentId) : null, school, picture: (picture && picture !== 'null') ? picture : null })
+    setUser({ token: jwtToken, role: userRole, userId, name: userName, email, studentId, school, picture: (picture && picture !== 'null') ? picture : null })
 
     // Welcome notification
     setNotifications(n => [{
@@ -118,7 +118,7 @@ export function AuthProvider({ children }) {
       ...prev,
       token: finalToken || prev.token,
       name: name || prev.name,
-      studentId: studentId !== undefined ? (studentId ? Number(studentId) : null) : prev.studentId,
+      studentId: studentId !== undefined ? (studentId || null) : prev.studentId,
       school: school || prev.school,
       picture: picture !== undefined ? (picture === 'null' ? null : picture) : prev.picture
     }))
