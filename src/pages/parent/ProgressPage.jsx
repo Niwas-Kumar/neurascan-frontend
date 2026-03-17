@@ -28,7 +28,7 @@ export default function ProgressPage() {
         else toast.error('Failed to load progress data')
       })
       .finally(() => setLoading(false))
-  }, [])
+  }, [user?.userId, user?.studentId])
 
   if (loading) return (
     <div>

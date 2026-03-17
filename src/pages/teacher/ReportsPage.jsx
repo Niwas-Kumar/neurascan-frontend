@@ -8,6 +8,7 @@ import { analysisAPI } from '../../services/api'
 import { PageHeader, RiskBadge, ScoreBar, EmptyState, SkeletonCard, Badge, Tooltip } from '../../components/shared/UI'
 import toast from 'react-hot-toast'
 import { format } from 'date-fns'
+import { useAuth } from '../../context/AuthContext'
 import { useDebounce } from '../../hooks'
 
 function downloadCSV(data, filename) {
@@ -22,6 +23,7 @@ function downloadCSV(data, filename) {
 }
 
 export function ReportsPage() {
+  const { user } = useAuth()
   const [reports, setReports]   = useState([])
   const [loading, setLoading]   = useState(true)
   const [search, setSearch]     = useState('')

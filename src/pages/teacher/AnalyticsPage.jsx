@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { TrendingUp, Brain, Users, BarChart3, AlertTriangle, FileText } from 'lucide-react'
 import { analysisAPI, studentAPI } from '../../services/api'
+import { useAuth } from '../../context/AuthContext'
 import { PageHeader, StatCard, SkeletonCard, Badge, RiskBadge } from '../../components/shared/UI'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -29,6 +30,7 @@ const CustomTooltip = ({ active, payload, label }) => {
 }
 
 export default function AnalyticsPage() {
+  const { user } = useAuth()
   const [reports, setReports]   = useState([])
   const [students, setStudents] = useState([])
   const [dash, setDash]         = useState(null)

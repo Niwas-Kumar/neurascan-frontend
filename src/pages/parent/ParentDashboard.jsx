@@ -26,7 +26,7 @@ export default function ParentDashboard() {
         else toast.error('Failed to load report')
       })
       .finally(() => setLoading(false))
-  }, [])
+  }, [user?.userId, user?.studentId])
 
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
