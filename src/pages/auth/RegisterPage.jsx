@@ -9,28 +9,28 @@ import toast from 'react-hot-toast'
 
 export default function RegisterPage() {
   const { login } = useAuth()
-  const navigate  = useNavigate()
-  
-  const [role, setRole]       = useState('teacher')
-  const [step, setStep]       = useState(0)
+  const navigate = useNavigate()
+
+  const [role, setRole] = useState('teacher')
+  const [step, setStep] = useState(0)
   const [loading, setLoading] = useState(false)
-  const [errors, setErrors]   = useState({})
-  
-  const [form, setForm] = useState({ 
-    email: '', 
-    otp: '', 
-    name: '', 
-    password: '', 
-    confirmPw: '', 
-    school: '', 
-    studentId: '' 
+  const [errors, setErrors] = useState({})
+
+  const [form, setForm] = useState({
+    email: '',
+    otp: '',
+    name: '',
+    password: '',
+    confirmPw: '',
+    school: '',
+    studentId: ''
   })
 
   const STEPS = ['Account setup', 'Verify email', 'Complete profile']
-  
-  const change = (k) => (e) => { 
+
+  const change = (k) => (e) => {
     setForm(f => ({ ...f, [k]: e.target.value }))
-    setErrors(err => ({ ...err, [k]: '' })) 
+    setErrors(err => ({ ...err, [k]: '' }))
   }
 
   const handleSendOtp = async () => {
@@ -77,11 +77,11 @@ export default function RegisterPage() {
 
   const handleRegister = async () => {
     const e = {}
-    if (!form.name)     e.name     = 'Full name is required'
+    if (!form.name) e.name = 'Full name is required'
     if (!form.password) e.password = 'Password is required'
     else if (form.password.length < 6) e.password = 'Password must be at least 6 characters'
     if (form.password !== form.confirmPw) e.confirmPw = 'Passwords do not match'
-    
+
     if (Object.keys(e).length > 0) {
       setErrors(e)
       return
@@ -93,11 +93,11 @@ export default function RegisterPage() {
         ? { name: form.name, email: form.email, password: form.password, otp: form.otp, school: form.school || 'My School' }
         : { name: form.name, email: form.email, password: form.password, otp: form.otp, studentId: form.studentId ? Number(form.studentId) : null }
 
-      const fn  = role === 'teacher' ? authAPI.teacherRegister : authAPI.parentRegister
+      const fn = role === 'teacher' ? authAPI.teacherRegister : authAPI.parentRegister
       const res = await fn(payload)
-      
+
       toast.success('Account created successfully!')
-      
+
       if (res.data?.data?.jwtToken) {
         login(res.data.data)
         navigate(role === 'teacher' ? '/teacher/dashboard' : '/parent/dashboard')
@@ -116,13 +116,13 @@ export default function RegisterPage() {
   const slideVariants = {
     enter: (dir) => ({ x: dir > 0 ? 24 : -24, opacity: 0 }),
     center: { x: 0, opacity: 1 },
-    exit:  (dir) => ({ x: dir > 0 ? -24 : 24, opacity: 0 }),
+    exit: (dir) => ({ x: dir > 0 ? -24 : 24, opacity: 0 }),
   }
   const [dir, setDir] = useState(1)
-  
-  const goBack = () => { 
+
+  const goBack = () => {
     setDir(-1)
-    setStep(s => Math.max(0, s - 1)) 
+    setStep(s => Math.max(0, s - 1))
   }
 
   const otpInputRef = useRef(null)
@@ -136,9 +136,9 @@ export default function RegisterPage() {
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8f9fa', padding: 20 }}>
 
       {/* ── Return Home Link ── */}
-      <Link to="/login" style={{ 
-          position: 'absolute', top: 28, left: 36, display: 'flex', alignItems: 'center', gap: 8, 
-          color: '#5f6368', textDecoration: 'none', fontSize: 13, fontWeight: 500, zIndex: 10 
+      <Link to="/login" style={{
+        position: 'absolute', top: 28, left: 36, display: 'flex', alignItems: 'center', gap: 8,
+        color: '#5f6368', textDecoration: 'none', fontSize: 13, fontWeight: 500, zIndex: 10
       }} className="hide-mobile">
         <ArrowLeft size={16} /> Back to Sign in
       </Link>
@@ -146,7 +146,7 @@ export default function RegisterPage() {
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, ease: [0.2,0,0,1] }}
+        transition={{ duration: 0.4, ease: [0.2, 0, 0, 1] }}
         style={{
           width: '100%', maxWidth: 500,
           background: '#fff',
@@ -181,7 +181,7 @@ export default function RegisterPage() {
               initial="enter"
               animate="center"
               exit="exit"
-              transition={{ duration: 0.25, ease: [0.2,0,0,1] }}
+              transition={{ duration: 0.25, ease: [0.2, 0, 0, 1] }}
             >
               {/* ── Step 0: Base Info & Send OTP ── */}
               {step === 0 && (
@@ -190,13 +190,13 @@ export default function RegisterPage() {
                   <p style={{ color: '#5f6368', fontSize: 14, marginBottom: 24 }}>
                     Select your role and provide your email to begin.
                   </p>
-                  
+
                   <div style={{ marginBottom: 20 }}>
                     <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#5f6368', marginBottom: 8 }}>I am a...</label>
                     <div style={{ display: 'flex', gap: 12 }}>
                       {[
                         { id: 'teacher', icon: GraduationCap, title: 'Teacher' },
-                        { id: 'parent',  icon: Users,         title: 'Parent' },
+                        { id: 'parent', icon: Users, title: 'Parent' },
                       ].map(r => (
                         <div
                           key={r.id}
@@ -218,12 +218,12 @@ export default function RegisterPage() {
                     </div>
                   </div>
 
-                  <Input 
-                    label="Email address" type="email" value={form.email} onChange={change('email')} 
-                    placeholder="you@school.edu" required error={errors.email} 
+                  <Input
+                    label="Email address" type="email" value={form.email} onChange={change('email')}
+                    placeholder="you@school.edu" required error={errors.email}
                     hint="We will send a 6-digit verification code to this address."
                   />
-                  
+
                   <Button fullWidth size="lg" loading={loading} onClick={() => { setDir(1); handleSendOtp() }} iconRight={<ArrowRight size={16} />} style={{ marginTop: 8 }}>
                     Send Verification Code
                   </Button>
@@ -247,23 +247,23 @@ export default function RegisterPage() {
 
                   <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700, marginBottom: 8, color: '#202124' }}>Verify your email</h2>
                   <p style={{ color: '#5f6368', fontSize: 14, marginBottom: 28 }}>
-                    We sent a 6-digit code to <strong style={{color: '#202124'}}>{form.email}</strong>.
+                    We sent a 6-digit code to <strong style={{ color: '#202124' }}>{form.email}</strong>.
                   </p>
 
-                  <Input 
+                  <Input
                     ref={otpInputRef}
-                    type="text" 
-                    value={form.otp} 
+                    type="text"
+                    value={form.otp}
                     onChange={(e) => {
                       const val = e.target.value.replace(/[^0-9]/g, '').slice(0, 6);
                       setForm(f => ({ ...f, otp: val }));
                       setErrors(err => ({ ...err, otp: '' }));
                     }}
-                    placeholder="000000" 
+                    placeholder="000000"
                     error={errors.otp}
-                    style={{ 
-                       textAlign: 'center', fontSize: 28, letterSpacing: '0.5em', 
-                       fontFamily: 'monospace', fontWeight: 700, height: 64 
+                    style={{
+                      textAlign: 'center', fontSize: 28, letterSpacing: '0.5em',
+                      fontFamily: 'monospace', fontWeight: 700, height: 64
                     }}
                   />
 
@@ -273,7 +273,7 @@ export default function RegisterPage() {
                       Verify Code
                     </Button>
                   </div>
-                  
+
                   <div style={{ marginTop: 24 }}>
                     <button onClick={handleSendOtp} disabled={loading} style={{ background: 'none', border: 'none', color: '#1a73e8', fontSize: 13, fontWeight: 600, cursor: loading ? 'default' : 'pointer' }}>
                       Resend code

@@ -7,10 +7,10 @@ import { Button, Input, Alert } from '../../components/shared/UI'
 import toast from 'react-hot-toast'
 
 export default function ForgotPasswordPage() {
-  const [email, setEmail]     = useState('')
+  const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
-  const [sent, setSent]       = useState(false)
-  const [error, setError]     = useState('')
+  const [sent, setSent] = useState(false)
+  const [error, setError] = useState('')
 
   const handleSubmit = async (e) => {
     e.preventDefault()
