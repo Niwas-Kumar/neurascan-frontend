@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Upload, FileImage, X, CheckCircle, AlertCircle, Zap, FileText, RefreshCw } from 'lucide-react'
-import { studentAPI, analysisAPI } from '../../services/api'
+import { optimizedStudentAPI, optimizedAnalysisAPI } from '../../services/optimizedApi'
 import { PageHeader, Button, RiskBadge, ScoreBar, SkeletonCard, Badge, Alert } from '../../components/shared/UI'
 import toast from 'react-hot-toast'
 import { useAuth } from '../../context/AuthContext'
@@ -21,7 +21,7 @@ export default function UploadPage() {
   const [step, setStep]           = useState(0)
 
   useEffect(() => {
-    studentAPI.getAll()
+    optimizedStudentAPI.getAll()
       .then(r => setStudents(r.data.data || []))
       .catch(() => toast.error('Failed to load students. Please refresh or try again.'))
   }, [])
@@ -65,7 +65,7 @@ export default function UploadPage() {
         setProgress(p => { if (p >= 85) { clearInterval(progressInterval); return 85 } return p + 15 })
       }, 200)
 
-      const res = await analysisAPI.upload(studentId, file, (event) => {
+      const res = await optimizedAnalysisAPI.upload(studentId, file, (event) => {
         if (event.total) setProgress(Math.round((event.loaded / event.total) * 85))
       })
 

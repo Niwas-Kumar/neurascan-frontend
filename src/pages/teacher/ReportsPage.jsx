@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FileText, Search, ChevronDown, ChevronUp, Filter, X, Download } from 'lucide-react'
-import { analysisAPI } from '../../services/api'
+import { optimizedAnalysisAPI } from '../../services/optimizedApi'
 import { PageHeader, RiskBadge, ScoreBar, EmptyState, SkeletonCard, Badge, Tooltip } from '../../components/shared/UI'
 import toast from 'react-hot-toast'
 import { format } from 'date-fns'
@@ -32,7 +32,7 @@ export function ReportsPage() {
   const debouncedSearch = useDebounce(search)
 
   useEffect(() => {
-    analysisAPI.getReports()
+    optimizedAnalysisAPI.getReports()
       .then(r => setReports(r.data.data || []))
       .catch(() => toast.error('Failed to load reports'))
       .finally(() => setLoading(false))

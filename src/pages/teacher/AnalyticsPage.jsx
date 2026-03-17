@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { TrendingUp, Brain, Users, BarChart3, AlertTriangle, FileText } from 'lucide-react'
-import { analysisAPI, studentAPI } from '../../services/api'
+import { optimizedAnalysisAPI, optimizedStudentAPI } from '../../services/optimizedApi'
 import { useAuth } from '../../context/AuthContext'
 import { PageHeader, StatCard, SkeletonCard, Badge, RiskBadge } from '../../components/shared/UI'
 import {
@@ -37,7 +37,7 @@ export default function AnalyticsPage() {
   const [loading, setLoading]   = useState(true)
 
   useEffect(() => {
-    Promise.all([analysisAPI.getReports(), analysisAPI.getDashboard(), studentAPI.getAll()])
+    Promise.all([optimizedAnalysisAPI.getReports(), optimizedAnalysisAPI.getDashboard(), optimizedStudentAPI.getAll()])
       .then(([r, d, s]) => {
         setReports(r.data.data || [])
         setDash(d.data.data)

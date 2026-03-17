@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { TrendingUp, TrendingDown, Minus, Calendar, Brain, ArrowUpRight, ArrowDownRight } from 'lucide-react'
-import { analysisAPI } from '../../services/api'
+import { optimizedAnalysisAPI } from '../../services/optimizedApi'
 import { useAuth } from '../../context/AuthContext'
 import { PageHeader, RiskBadge, SkeletonCard, StatCard, Badge, Alert } from '../../components/shared/UI'
 import {
@@ -21,7 +21,7 @@ export default function ProgressPage() {
     const sid = user?.studentId || localStorage.getItem('ns_studentId')
     if (!sid) { setNoData(true); setLoading(false); return }
 
-    analysisAPI.getProgress(sid)
+    optimizedAnalysisAPI.getProgress(sid)
       .then(res => setData(res.data.data))
       .catch(err => {
         if (err.response?.status === 404 || err.response?.status === 403) setNoData(true)

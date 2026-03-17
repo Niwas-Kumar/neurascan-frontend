@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Users, Plus, Pencil, Trash2, Search, GraduationCap, FileText, X, Check, UserPlus } from 'lucide-react'
-import { studentAPI } from '../../services/api'
+import { optimizedStudentAPI } from '../../services/optimizedApi'
 import { PageHeader, Button, Input, EmptyState, SkeletonCard, Badge, Modal } from '../../components/shared/UI'
 import toast from 'react-hot-toast'
 import { useDebounce } from '../../hooks'
@@ -27,8 +27,8 @@ function StudentForm({ student, onClose, onSave }) {
     setLoading(true)
     try {
       const payload = { name: form.name, className: form.className, age: Number(form.age) }
-      if (isEdit) await studentAPI.update(student.id, payload)
-      else        await studentAPI.create(payload)
+      if (isEdit) await optimizedStudentAPI.update(student.id, payload)
+      else        await optimizedStudentAPI.create(payload)
       toast.success(`Student ${isEdit ? 'updated' : 'added'} successfully`)
       onSave()
       onClose()
@@ -141,17 +141,18 @@ export default function StudentsPage() {
 
   const load = () => {
     setLoading(true)
-    studentAPI.getAll()
+    optimizedStudentAPI.getAll()
       .then(r => setStudents(r.data.data || []))
       .catch(() => toast.error('Failed to load students'))
       .finally(() => setLoading(false))
   }
+  
   useEffect(() => { load() }, [])
 
   const handleDelete = async (student) => {
     if (!confirm(`Delete "${student.name}"? All their papers and reports will also be removed.`)) return
     try {
-      await studentAPI.remove(student.id)
+      await optimizedStudentAPI.remove(student.id)
       toast.success(`${student.name} removed`)
       load()
     } catch { toast.error('Delete failed') }

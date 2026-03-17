@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import { clearAllCaches } from '../services/optimizedApi'
 
 const AuthContext = createContext(null)
 
@@ -137,6 +138,7 @@ export function AuthProvider({ children }) {
 
   const logout = useCallback(() => {
     Object.values(STORAGE_KEYS).forEach(k => localStorage.removeItem(k))
+    clearAllCaches() // Clear all cached API responses
     setUser(null)
     setNotifications([])
   }, [])

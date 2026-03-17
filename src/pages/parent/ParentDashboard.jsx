@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Brain, TrendingUp, AlertCircle, CheckCircle, ArrowRight, Calendar, Activity, User } from 'lucide-react'
-import { analysisAPI } from '../../services/api'
+import { optimizedAnalysisAPI } from '../../services/optimizedApi'
 import { useAuth } from '../../context/AuthContext'
 import { PageHeader, RiskBadge, ScoreBar, Button, SkeletonCard, StatCard, Alert } from '../../components/shared/UI'
 import toast from 'react-hot-toast'
@@ -19,7 +19,7 @@ export default function ParentDashboard() {
     const sid = user?.studentId || localStorage.getItem('ns_studentId')
     if (!sid) { setNoData(true); setLoading(false); return }
 
-    analysisAPI.getStudentReport(sid)
+    optimizedAnalysisAPI.getStudentReport(sid)
       .then(res => setReport(res.data.data))
       .catch(err => {
         if (err.response?.status === 404 || err.response?.status === 403) setNoData(true)
