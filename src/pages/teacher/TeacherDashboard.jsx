@@ -46,7 +46,7 @@ export default function TeacherDashboard() {
       })
       .catch(() => toast.error('Failed to load dashboard data'))
       .finally(() => setLoading(false))
-  }, [])
+  }, [user?.userId])
 
   const greeting = (() => {
     const h = new Date().getHours()

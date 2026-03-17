@@ -34,7 +34,7 @@ export function ReportsPage() {
       .then(r => setReports(r.data.data || []))
       .catch(() => toast.error('Failed to load reports'))
       .finally(() => setLoading(false))
-  }, [])
+  }, [user?.userId])
 
   const filtered = reports.filter(r => {
     const matchSearch = !debouncedSearch || r.studentName?.toLowerCase().includes(debouncedSearch.toLowerCase())

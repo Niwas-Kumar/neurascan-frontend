@@ -43,7 +43,7 @@ export default function AnalyticsPage() {
       })
       .catch(() => toast.error('Failed to load analytics'))
       .finally(() => setLoading(false))
-  }, [])
+  }, [user?.userId])
 
   if (loading) return (
     <div>

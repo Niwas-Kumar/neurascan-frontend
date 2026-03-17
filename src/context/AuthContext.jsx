@@ -45,6 +45,7 @@ export function AuthProvider({ children }) {
   }, [])
 
   const login = useCallback((data) => {
+    const { jwtToken, userRole, userId, userName, studentId, school, picture } = data
     const finalRole = userRole.startsWith('ROLE_') ? userRole : `ROLE_${userRole.toUpperCase()}`
     const finalEmail = data.userEmail || data.email || ''
     
