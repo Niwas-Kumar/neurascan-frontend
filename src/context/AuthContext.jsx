@@ -45,13 +45,14 @@ export function AuthProvider({ children }) {
   }, [])
 
   const login = useCallback((data) => {
-    const { jwtToken, userRole, userId, userName, studentId, school, picture } = data
-    const email = data.email || ''
+    const finalRole = userRole.startsWith('ROLE_') ? userRole : `ROLE_${userRole.toUpperCase()}`
+    const finalEmail = data.userEmail || data.email || ''
+    
     localStorage.setItem(STORAGE_KEYS.token,     jwtToken)
-    localStorage.setItem(STORAGE_KEYS.role,      userRole)
+    localStorage.setItem(STORAGE_KEYS.role,      finalRole)
     localStorage.setItem(STORAGE_KEYS.userId,    String(userId))
     localStorage.setItem(STORAGE_KEYS.userName,  userName)
-    localStorage.setItem(STORAGE_KEYS.userEmail, email)
+    localStorage.setItem(STORAGE_KEYS.userEmail, finalEmail)
     if (studentId) localStorage.setItem(STORAGE_KEYS.studentId, String(studentId))
     if (school)    localStorage.setItem(STORAGE_KEYS.school,    school)
     
@@ -62,7 +63,16 @@ export function AuthProvider({ children }) {
       localStorage.removeItem(STORAGE_KEYS.picture)
     }
 
-    setUser({ token: jwtToken, role: userRole, userId, name: userName, email, studentId, school, picture: (picture && picture !== 'null') ? picture : null })
+    setUser({ 
+      token: jwtToken, 
+      role: finalRole, 
+      userId, 
+      name: userName, 
+      email: finalEmail, 
+      studentId: studentId || null, 
+      school, 
+      picture: (picture && picture !== 'null') ? picture : null 
+    })
 
     // Welcome notification
     setNotifications(n => [{

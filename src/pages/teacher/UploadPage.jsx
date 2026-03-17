@@ -21,7 +21,9 @@ export default function UploadPage() {
   const [step, setStep]           = useState(0)
 
   useEffect(() => {
-    studentAPI.getAll().then(r => setStudents(r.data.data || []))
+    studentAPI.getAll()
+      .then(r => setStudents(r.data.data || []))
+      .catch(() => toast.error('Failed to load students. Please refresh or try again.'))
   }, [])
 
   const onDrop = useCallback((accepted, rejected) => {

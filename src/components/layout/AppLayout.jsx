@@ -107,25 +107,8 @@ function UserAvatar({ name, picture, size = 36 }) {
   )
 }
 
-export default function AppLayout() {
-  const { user, logout, isTeacher, notifications, unreadCount, markAllRead } = useAuth()
-  const navigate   = useNavigate()
-  const location   = useLocation()
-  const isMobile   = useIsMobile()
-  const [collapsed, setCollapsed]   = useState(false)
-  const [mobileOpen, setMobileOpen] = useState(false)
-  const [showNotifs, setShowNotifs] = useState(false)
-  const navItems = isTeacher ? teacherNav : parentNav
-
-  const sidebarWidth = collapsed ? 72 : 260
-
-  const handleLogout = () => {
-    logout()
-    toast.success('Signed out successfully')
-    navigate('/login')
-  }
-
-  const SidebarContent = () => (
+function Sidebar({ collapsed, isTeacher, navItems, location, setCollapsed, setMobileOpen, user, navigate, handleLogout, isMobile }) {
+  return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
       {/* Logo */}
       <div style={{
@@ -248,7 +231,28 @@ export default function AppLayout() {
       </div>
     </div>
   )
+}
+export default function AppLayout() {
+  const { user, logout, isTeacher, notifications, unreadCount, markAllRead } = useAuth()
+  const navigate   = useNavigate()
+  const location   = useLocation()
+  const isMobile   = useIsMobile()
+  const [collapsed, setCollapsed]   = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const [showNotifs, setShowNotifs] = useState(false)
+  const navItems = isTeacher ? teacherNav : parentNav
 
+  const sidebarWidth = collapsed ? 72 : 260
+
+  const handleLogout = () => {
+    logout()
+    toast.success('Signed out successfully')
+    navigate('/login')
+  }
+
+  // Breadcrumb
+  const currentNav = navItems.find(n => location.pathname.startsWith(n.to))
+  
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: '#f8f9fa' }}>
 
@@ -267,7 +271,18 @@ export default function AppLayout() {
             zIndex: 20,
           }}
         >
-          <SidebarContent />
+          <Sidebar
+            collapsed={collapsed}
+            isTeacher={isTeacher}
+            navItems={navItems}
+            location={location}
+            setCollapsed={setCollapsed}
+            setMobileOpen={setMobileOpen}
+            user={user}
+            navigate={navigate}
+            handleLogout={handleLogout}
+            isMobile={false}
+          />
         </motion.aside>
       )}
 
@@ -290,7 +305,18 @@ export default function AppLayout() {
                   zIndex: 50, overflow: 'hidden',
                 }}
               >
-                <SidebarContent />
+                <Sidebar
+                  collapsed={false}
+                  isTeacher={isTeacher}
+                  navItems={navItems}
+                  location={location}
+                  setCollapsed={setCollapsed}
+                  setMobileOpen={setMobileOpen}
+                  user={user}
+                  navigate={navigate}
+                  handleLogout={handleLogout}
+                  isMobile={true}
+                />
               </motion.aside>
             </>
           )}
@@ -320,7 +346,7 @@ export default function AppLayout() {
             <span style={{ color: '#5f6368' }}>NeuraScan</span>
             <span style={{ margin: '0 6px' }}>/</span>
             <span style={{ color: '#202124', fontWeight: 500 }}>
-              {navItems.find(n => location.pathname.startsWith(n.to))?.label || 'Dashboard'}
+              {currentNav?.label || 'Dashboard'}
             </span>
           </div>
 
