@@ -181,11 +181,13 @@ const Modal = ({ open, title, children, onClose, fullWidth = false }) => {
               borderRadius: 'var(--radius-lg)',
               padding: '28px',
               maxWidth: fullWidth ? '90vw' : '500px',
-              width: '100%',
-              maxHeight: '80vh',
+              width: fullWidth ? '90vw' : '500px',
+              maxHeight: '85vh',
               overflow: 'auto',
               zIndex: 1000,
               boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
+              display: 'flex',
+              flexDirection: 'column',
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
@@ -201,7 +203,7 @@ const Modal = ({ open, title, children, onClose, fullWidth = false }) => {
 }
 
 function StudentForm({ student, onClose, onSave }) {
-  const [form, setForm]     = useState(student || { name: '', className: '', age: '' })
+  const [form, setForm]     = useState(student || { name: '', className: '', rollNo: '', age: '' })
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState({})
   const isEdit = !!student?.id
@@ -209,6 +211,7 @@ function StudentForm({ student, onClose, onSave }) {
   const validate = () => {
     const e = {}
     if (!form.name)      e.name      = 'Name is required'
+    if (!form.rollNo)    e.rollNo    = 'Roll No is required'
     if (!form.className) e.className = 'Class is required'
     if (!form.age || form.age < 1) e.age = 'Valid age required'
     setErrors(e)
@@ -220,7 +223,7 @@ function StudentForm({ student, onClose, onSave }) {
     if (!validate()) return
     setLoading(true)
     try {
-      const payload = { name: form.name, className: form.className, age: Number(form.age) }
+      const payload = { name: form.name, rollNo: form.rollNo, className: form.className, age: Number(form.age) }
       if (isEdit) await optimizedStudentAPI.update(student.id, payload)
       else        await optimizedStudentAPI.create(payload)
       toast.success(`Student ${isEdit ? 'updated' : 'added'} successfully`)
@@ -234,6 +237,7 @@ function StudentForm({ student, onClose, onSave }) {
   return (
     <form onSubmit={handleSubmit}>
       <Input label="Full name"     value={form.name}      onChange={e => setForm(f => ({...f, name: e.target.value}))}      placeholder="John Doe"      required error={errors.name} />
+      <Input label="Roll No"       value={form.rollNo}    onChange={e => setForm(f => ({...f, rollNo: e.target.value}))}    placeholder="A001"         required error={errors.rollNo} />
       <Input label="Class / Grade" value={form.className} onChange={e => setForm(f => ({...f, className: e.target.value}))} placeholder="Grade 4-B"     required error={errors.className} />
       <Input label="Age" type="number" min="1" max="25" value={form.age} onChange={e => setForm(f => ({...f, age: e.target.value}))} placeholder="9" required error={errors.age} />
       <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
