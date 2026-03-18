@@ -155,34 +155,33 @@ const Modal = ({ open, title, children, onClose, fullWidth = false }) => {
   return (
     <AnimatePresence>
       {open && (
-        <>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            style={{
-              position: 'fixed',
-              inset: 0,
-              background: 'rgba(0, 0, 0, 0.5)',
-              zIndex: 999,
-            }}
-          />
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0, 0, 0, 0.5)',
+            zIndex: 999,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px',
+          }}
+          onClick={onClose}
+        >
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
+            onClick={(e) => e.stopPropagation()}
             style={{
-              position: 'fixed',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
               background: 'white',
               borderRadius: 'var(--radius-lg)',
-              padding: '28px',
-              width: fullWidth ? '90vw' : 'auto',
-              maxWidth: fullWidth ? '90vw' : '550px',
-              minWidth: '400px',
+              padding: '32px',
+              width: '100%',
+              maxWidth: '500px',
               maxHeight: '90vh',
               overflow: 'auto',
               zIndex: 1000,
@@ -191,11 +190,11 @@ const Modal = ({ open, title, children, onClose, fullWidth = false }) => {
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
               <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 800 }}>{title}</h2>
-              <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 24 }}>×</button>
+              <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 24, padding: 0 }}>×</button>
             </div>
             {children}
           </motion.div>
-        </>
+        </motion.div>
       )}
     </AnimatePresence>
   )
