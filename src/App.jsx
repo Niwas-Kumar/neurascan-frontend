@@ -3,6 +3,13 @@ import { Toaster } from 'react-hot-toast'
 import { AnimatePresence } from 'framer-motion'
 import { AuthProvider, useAuth } from './context/AuthContext'
 
+// Landing & Public pages
+import LandingPage from './pages/LandingPage'
+import PricingPage from './pages/PricingPage'
+import HelpPage from './pages/HelpPage'
+import ContactPage from './pages/ContactPage'
+import AboutPage from './pages/AboutPage'
+
 // Auth pages
 import LoginPage         from './pages/auth/LoginPage'
 import RegisterPage      from './pages/auth/RegisterPage'
@@ -31,6 +38,9 @@ import SettingsPage from './pages/SettingsPage'
 import AppLayout from './components/layout/AppLayout'
 import { FullPageLoader } from './components/shared/UI'
 
+// Import design system
+import './styles/designSystem.css'
+
 // ── Protected route wrapper ───────────────────────────────────
 function ProtectedRoute({ children, role }) {
   const { user, loading } = useAuth()
@@ -53,7 +63,14 @@ function RootRedirect() {
 function AppRoutes() {
   return (
     <Routes>
-      <Route path="/"               element={<RootRedirect />} />
+      {/* ── Public landing & info pages ── */}
+      <Route path="/"               element={<LandingPage />} />
+      <Route path="/pricing"        element={<PricingPage />} />
+      <Route path="/help"           element={<HelpPage />} />
+      <Route path="/contact"        element={<ContactPage />} />
+      <Route path="/about"          element={<AboutPage />} />
+
+      {/* ── Auth pages ── */}
       <Route path="/login"          element={<LoginPage />} />
       <Route path="/register"       element={<RegisterPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
