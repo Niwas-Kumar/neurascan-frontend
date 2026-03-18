@@ -180,14 +180,13 @@ const Modal = ({ open, title, children, onClose, fullWidth = false }) => {
               background: 'white',
               borderRadius: 'var(--radius-lg)',
               padding: '28px',
-              maxWidth: fullWidth ? '90vw' : '500px',
-              width: fullWidth ? '90vw' : '500px',
-              maxHeight: '85vh',
+              width: fullWidth ? '90vw' : 'auto',
+              maxWidth: fullWidth ? '90vw' : '550px',
+              minWidth: '400px',
+              maxHeight: '90vh',
               overflow: 'auto',
               zIndex: 1000,
               boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
-              display: 'flex',
-              flexDirection: 'column',
             }}
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
