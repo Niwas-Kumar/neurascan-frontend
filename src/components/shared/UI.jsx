@@ -346,7 +346,7 @@ export function Badge({ children, color = 'default', size = 'sm', dot = false })
     md: { padding: '5px 11px', fontSize: 12 },
   }
   const c = colors[color] || colors.default
-  const s = sizes[size] || sizes.sm
+  const s = sizes[size] || sizes.sm || sizes.sm
   return (
     <span style={{
       display: 'inline-flex', alignItems: 'center', gap: 5,

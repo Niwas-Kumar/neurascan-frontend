@@ -291,8 +291,8 @@ export function Badge({ children, variant = 'primary', size = 'md' }) {
     lg: { padding: '8px 16px', fontSize: 'var(--text-base)' },
   }
 
-  const current = variants[variant]
-  const sizeStyle = sizes[size]
+  const current = variants[variant] || variants.primary
+  const sizeStyle = sizes[size] || sizes.md
 
   return (
     <span
@@ -329,8 +329,8 @@ export function IconBox({ icon: Icon, size = 'md', color = 'primary' }) {
     danger: { bg: '#ffcdd2', color: 'var(--color-danger)' },
   }
 
-  const s = sizes[size]
-  const c = colorMap[color]
+  const s = sizes[size] || sizes.md
+  const c = colorMap[color] || colorMap.primary
 
   return (
     <div
