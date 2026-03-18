@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { BarChart, Calendar, CheckCircle, XCircle } from 'lucide-react'
+import { BarChart, Calendar, CheckCircle, XCircle, ArrowRight } from 'lucide-react'
 import { quizAPI } from '../../services/api'
 import toast from 'react-hot-toast'
 import { useAuth } from '../../context/AuthContext'
@@ -83,12 +84,17 @@ const ScoreBar = ({ label, value }) => {
 
 export default function QuizProgressPage() {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [responses, setResponses] = useState([])
   const [loading, setLoading] = useState(true)
+  const [noStudentId, setNoStudentId] = useState(false)
 
   const load = () => {
     setLoading(true)
+    setNoStudentId(false)
+    
     if (!user?.studentId) {
+      setNoStudentId(true)
       toast.error('No linked student assigned yet')
       setLoading(false)
       return
@@ -96,7 +102,18 @@ export default function QuizProgressPage() {
 
     quizAPI.getStudentResponses(user.studentId)
       .then(r => setResponses(r.data.data || []))
-      .catch(() => toast.error('Could not load quiz progress'))
+      .catch(err => {
+        // ✅ IMPROVED: Handle specific error messages from backend
+        const errorMsg = err.response?.data?.message || err.message || 'Could not load quiz progress'
+        
+        if (errorMsg.includes('Student ID not set')) {
+          // Parent hasn't set their child's student ID yet
+          setNoStudentId(true)
+        }
+        
+        console.error('Quiz progress error:', errorMsg)
+        toast.error(errorMsg)
+      })
       .finally(() => setLoading(false))
   }
 
@@ -122,6 +139,33 @@ export default function QuizProgressPage() {
         <div style={{ display: 'grid', gap: 10 }}>
           {[1,2].map(i => <SkeletonCard key={i} rows={2} />)}
         </div>
+      ) : (noStudentId ? (
+        // ✅ IMPROVED: Show helpful message when studentId not set
+        <div style={{border: '1px solid var(--warning-glow)', backgroundColor: 'var(--warning-dim)', borderRadius: 'var(--radius-lg)', padding: '32px 24px', textAlign: 'center' }}>
+          <div style={{ fontSize: 48, marginBottom: 16 }}>📝</div>
+          <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 800, marginBottom: 8, color: 'var(--warning)' }}>Student ID Required</h3>
+          <p style={{ color: 'var(--text-secondary)', fontSize: 14, lineHeight: 1.6, marginBottom: 20 }}>
+            To view your child's quiz progress, please add your child's Student ID in your profile settings. Ask the teacher for your child's unique student ID.
+          </p>
+          <button
+            onClick={() => navigate('/parent/settings')}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '12px 20px',
+              background: 'var(--warning)',
+              color: 'white',
+              border: 'none',
+              borderRadius: 'var(--radius-lg)',
+              fontWeight: 600,
+              cursor: 'pointer',
+              fontSize: 14,
+            }}
+          >
+            Go to Settings <ArrowRight size={16} />
+          </button>
+        </div>
       ) : (responses.length === 0 ? (
         <EmptyState icon={BarChart} title="No quiz data available" description="Ask teacher to assign or submit a quiz first." />
       ) : (
@@ -140,7 +184,7 @@ export default function QuizProgressPage() {
             </div>
           ))}
         </div>
-      ))}
+      )))}
     </div>
   )
 }
