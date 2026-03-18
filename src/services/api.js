@@ -27,7 +27,15 @@ api.interceptors.response.use(
     const url = err.config?.url || ''
     const isAuthEndpoint = url.includes('/auth/')
     if (err.response?.status === 401 && !isAuthEndpoint) {
-      localStorage.clear()
+      // ✅ FIX: Only clear authentication token, preserve other data (studentId, userId, etc)
+      // This allows parents to re-login without losing their child's student ID
+      localStorage.removeItem('ns_token')
+      localStorage.removeItem('ns_role')
+      localStorage.removeItem('ns_userName')
+      localStorage.removeItem('ns_userEmail')
+      localStorage.removeItem('ns_school')
+      localStorage.removeItem('ns_picture')
+      // ⚠️ NOTE: Intentionally NOT clearing ns_studentId or ns_userId
       window.location.href = '/login?session=expired'
     }
     return Promise.reject(err)

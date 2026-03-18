@@ -30,8 +30,22 @@ export default function ParentDashboard() {
     optimizedAnalysisAPI.getStudentReport(sid)
       .then(res => setReport(res.data.data))
       .catch(err => {
-        if (err.response?.status === 404 || err.response?.status === 403) setNoData(true)
-        else toast.error('Failed to load report')
+        // ✅ IMPROVED: Handle specific backend errors
+        const errorMsg = err.response?.data?.message || err.message || 'Failed to load report'
+        
+        if (errorMsg.includes('Student ID not set')) {
+          // Parent hasn't saved their child's student ID to Firestore yet
+          setNoStudentId(true)
+          setNoData(true)
+        } else if (err.response?.status === 404 || err.response?.status === 403) {
+          setNoData(true)
+        } else if (err.response?.status === 401) {
+          // Session expired - will be handled by global interceptor
+          toast.error('Session expired. Please log in again.')
+        } else {
+          console.error('Dashboard error:', errorMsg)
+          toast.error(errorMsg)
+        }
       })
       .finally(() => setLoading(false))
   }, [user?.userId, user?.studentId])
