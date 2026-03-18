@@ -3,8 +3,191 @@ import { motion } from 'framer-motion'
 import { User, Lock, Bell, Palette, Shield, Save, Check, Moon, Sun, Monitor } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { authAPI } from '../services/api'
-import { PageHeader, Button, Input, Alert, Badge, Tabs } from '../components/shared/UI'
 import toast from 'react-hot-toast'
+
+// ── Inline PageHeader Component ────────────────────────────
+const PageHeader = ({ title, subtitle, breadcrumb }) => (
+  <div style={{ marginBottom: 32 }}>
+    {breadcrumb && <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 12 }}>{breadcrumb}</div>}
+    <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 32, fontWeight: 800, marginBottom: 6, color: 'var(--text-primary)' }}>{title}</h1>
+    {subtitle && <p style={{ fontSize: 15, color: 'var(--text-secondary)', lineHeight: 1.6 }}>{subtitle}</p>}
+  </div>
+)
+
+// ── Inline Button Component ────────────────────────────
+const Button = ({ children, type = 'button', fullWidth = false, size = 'md', loading = false, disabled = false, variant = 'primary', onClick, icon, style = {}, ...props }) => {
+  const heights = { sm: 36, md: 40, lg: 44 }
+  const paddings = { sm: '8px 16px', md: '12px 20px', lg: '14px 24px' }
+  const [isHovering, setIsHovering] = useState(false)
+
+  const bgColor = variant === 'ghost' ? 'transparent' : isHovering && !disabled ? 'var(--primary-hover)' : 'var(--primary)'
+  const textColor = variant === 'ghost' ? 'var(--primary)' : 'white'
+
+  return (
+    <button
+      type={type}
+      disabled={loading || disabled}
+      onClick={onClick}
+      style={{
+        width: fullWidth ? '100%' : 'auto',
+        height: heights[size],
+        padding: paddings[size],
+        background: bgColor,
+        color: textColor,
+        border: variant === 'ghost' ? '1px solid var(--border)' : 'none',
+        borderRadius: 'var(--radius-lg)',
+        fontSize: size === 'sm' ? 13 : size === 'lg' ? 15 : 14,
+        fontWeight: 600,
+        cursor: loading || disabled ? 'not-allowed' : 'pointer',
+        opacity: loading || disabled ? 0.6 : 1,
+        transition: 'all 0.3s cubic-bezier(0.2, 0, 0, 1)',
+        boxShadow: isHovering && variant !== 'ghost' && !disabled ? '0 4px 16px rgba(26, 115, 232, 0.3)' : 'none',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: icon ? 8 : 0,
+        ...style,
+      }}
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
+      {...props}
+    >
+      {icon && <span>{icon}</span>}
+      {loading ? '...' : children}
+    </button>
+  )
+}
+
+// ── Inline Input Component ────────────────────────────
+const Input = ({ label, type = 'text', placeholder, value, onChange, required = false, error, style = {} }) => {
+  const [isFocused, setIsFocused] = useState(false)
+  
+  return (
+    <div style={{ marginBottom: 16 }}>
+      {label && (
+        <label style={{
+          display: 'block',
+          fontSize: 13,
+          fontWeight: 600,
+          color: 'var(--text-primary)',
+          marginBottom: 8,
+        }}>
+          {label}
+        </label>
+      )}
+      <input
+        type={type}
+        placeholder={placeholder}
+        value={value}
+        onChange={onChange}
+        required={required}
+        style={{
+          width: '100%',
+          padding: '12px 14px',
+          fontSize: 14,
+          border: error ? '1.5px solid var(--danger)' : isFocused ? '2px solid var(--primary)' : '1px solid var(--border)',
+          borderRadius: 'var(--radius)',
+          background: 'white',
+          color: 'var(--text-primary)',
+          transition: 'all 0.2s ease',
+          boxSizing: 'border-box',
+          fontFamily: 'inherit',
+          ...style,
+        }}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
+      />
+      {error && <div style={{ color: 'var(--danger)', fontSize: 12, marginTop: 6 }}>{error}</div>}
+    </div>
+  )
+}
+
+// ── Inline Alert Component ────────────────────────────
+const Alert = ({ type = 'info', children, onClose, style = {} }) => {
+  const colors = {
+    danger: { bg: 'var(--danger-dim)', border: 'var(--danger-glow)', text: 'var(--danger)' },
+    warning: { bg: 'var(--warning-dim)', border: 'var(--warning-glow)', text: 'var(--warning)' },
+    success: { bg: 'var(--success-dim)', border: 'var(--success-glow)', text: 'var(--success)' },
+    info: { bg: 'var(--primary-dim)', border: 'var(--primary-glow)', text: 'var(--primary)' },
+  }
+  const color = colors[type] || colors.info
+
+  return (
+    <div style={{
+      background: color.bg,
+      border: `1px solid ${color.border}`,
+      borderRadius: 'var(--radius)',
+      padding: '12px 14px',
+      fontSize: 13,
+      color: color.text,
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      ...style,
+    }}>
+      <span>{children}</span>
+      {onClose && (
+        <button
+          onClick={onClose}
+          style={{ background: 'none', border: 'none', color: color.text, cursor: 'pointer', fontSize: 18, padding: 0, marginLeft: 12 }}
+        >
+          ×
+        </button>
+      )}
+    </div>
+  )
+}
+
+// ── Inline Badge Component ────────────────────────────
+const Badge = ({ children, icon: Icon, variant = 'primary' }) => {
+  const colors = { primary: '#e8f0fe', secondary: '#f3f4f6', success: '#d1fae5' }
+  const textColors = { primary: '#1a73e8', secondary: '#374151', success: '#10b981' }
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 6,
+      padding: '6px 12px',
+      borderRadius: '12px',
+      fontSize: 12,
+      fontWeight: 600,
+      background: colors[variant],
+      color: textColors[variant],
+    }}>
+      {Icon && <Icon size={14} />}
+      {children}
+    </span>
+  )
+}
+
+// ── Inline Tabs Component ────────────────────────────
+const Tabs = ({ tabs, defaultTab = 0, children }) => {
+  const [active, setActive] = useState(defaultTab)
+  return (
+    <>
+      <div style={{ display: 'flex', gap: 24, borderBottom: '1px solid var(--border)', marginBottom: 28 }}>
+        {tabs.map((tab, i) => (
+          <button
+            key={i}
+            onClick={() => setActive(i)}
+            style={{
+              padding: '16px 0',
+              fontSize: 14,
+              fontWeight: active === i ? 700 : 600,
+              color: active === i ? 'var(--primary)' : 'var(--text-secondary)',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              borderBottom: active === i ? '2px solid var(--primary)' : 'none',
+              transition: 'all 0.3s ease',
+            }}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+      <div>{typeof children === 'function' ? children(active) : children[active]}</div>
+    </>
+  )
+}
 
 function ProfileSection({ user, isTeacher }) {
   const { updateUser } = useAuth()

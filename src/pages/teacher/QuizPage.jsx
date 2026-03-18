@@ -1,9 +1,65 @@
 import { useEffect, useState } from 'react'
 import { PlusCircle, Send, BookOpen, CheckCircle, XCircle } from 'lucide-react'
 import { quizAPI } from '../../services/api'
-import { PageHeader, Button, Badge, EmptyState, SkeletonCard } from '../../components/shared/UI'
 import toast from 'react-hot-toast'
 import { useAuth } from '../../context/AuthContext'
+
+// ── Inline PageHeader Component ────────────────────────────
+const PageHeader = ({ title, subtitle, action }) => (
+  <div style={{ marginBottom: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+    <div>
+      <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 32, fontWeight: 800, marginBottom: 6, color: 'var(--text-primary)' }}>{title}</h1>
+      {subtitle && <p style={{ fontSize: 15, color: 'var(--text-secondary)', lineHeight: 1.6 }}>{subtitle}</p>}
+    </div>
+    {action && <div>{action}</div>}
+  </div>
+)
+
+// ── Inline Badge Component ────────────────────────────
+const Badge = ({ children, icon: Icon, variant = 'primary' }) => {
+  const colors = { primary: '#e8f0fe', secondary: '#f3f4f6', success: '#d1fae5' }
+  const textColors = { primary: '#1a73e8', secondary: '#374151', success: '#10b981' }
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 6,
+      padding: '6px 12px',
+      borderRadius: '12px',
+      fontSize: 12,
+      fontWeight: 600,
+      background: colors[variant],
+      color: textColors[variant],
+    }}>
+      {Icon && <Icon size={14} />}
+      {children}
+    </span>
+  )
+}
+
+// ── Inline SkeletonCard Component ────────────────────────────
+const SkeletonCard = ({ rows = 4 }) => (
+  <div style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '20px 24px' }}>
+    {Array(rows).fill(0).map((_, i) => (
+      <div key={i} style={{
+        height: i === 0 ? 24 : 14,
+        background: 'linear-gradient(90deg, var(--bg-hover) 25%, var(--bg-elevated) 50%, var(--bg-hover) 75%)',
+        backgroundSize: '200% 100%',
+        animation: 'shimmer 1.5s infinite',
+        borderRadius: 6,
+        marginBottom: i < rows - 1 ? 12 : 0,
+      }} />
+    ))}
+    <style>{`@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }`}</style>
+  </div>
+)
+
+// ── Inline EmptyState Component ────────────────────────────
+const EmptyState = ({ icon: Icon, title, description }) => (
+  <div style={{border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '48px 32px', textAlign: 'center' }}>
+    {Icon && <Icon size={40} color="var(--text-muted)" strokeWidth={1.25} style={{ marginBottom: 16 }} />}
+    <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 800, marginBottom: 8 }}>{title}</h3>
+    {description && <p style={{ color: 'var(--text-secondary)', fontSize: 14, lineHeight: 1.75 }}>{description}</p>}
+  </div>
+)
 
 export default function QuizPage() {
   const { user } = useAuth()

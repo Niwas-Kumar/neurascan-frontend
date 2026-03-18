@@ -2,9 +2,203 @@ import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Users, Plus, Pencil, Trash2, Search, GraduationCap, FileText, X, Check, UserPlus } from 'lucide-react'
 import { optimizedStudentAPI } from '../../services/optimizedApi'
-import { PageHeader, Button, Input, EmptyState, SkeletonCard, Badge, Modal } from '../../components/shared/UI'
 import toast from 'react-hot-toast'
 import { useDebounce } from '../../hooks'
+
+// ── Inline PageHeader Component ────────────────────────────
+const PageHeader = ({ title, subtitle, breadcrumb, action }) => (
+  <div style={{ marginBottom: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+    <div>
+      <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 32, fontWeight: 800, marginBottom: 6, color: 'var(--text-primary)' }}>{title}</h1>
+      {subtitle && <p style={{ fontSize: 15, color: 'var(--text-secondary)', lineHeight: 1.6 }}>{subtitle}</p>}
+    </div>
+    {action && <div>{action}</div>}
+  </div>
+)
+
+// ── Inline Button Component ────────────────────────────
+const Button = ({ children, type = 'button', fullWidth = false, size = 'md', loading = false, disabled = false, variant = 'primary', onClick, icon, style = {}, ...props }) => {
+  const heights = { sm: 36, md: 40, lg: 44 }
+  const paddings = { sm: '8px 16px', md: '12px 20px', lg: '14px 24px' }
+  const [isHovering, setIsHovering] = useState(false)
+
+  const bgColor = variant === 'ghost' ? 'transparent' : isHovering && !disabled ? 'var(--primary-hover)' : 'var(--primary)'
+  const textColor = variant === 'ghost' ? 'var(--primary)' : 'white'
+
+  return (
+    <button
+      type={type}
+      disabled={loading || disabled}
+      onClick={onClick}
+      style={{
+        width: fullWidth ? '100%' : 'auto',
+        height: heights[size],
+        padding: paddings[size],
+        background: bgColor,
+        color: textColor,
+        border: variant === 'ghost' ? '1px solid var(--border)' : 'none',
+        borderRadius: 'var(--radius-lg)',
+        fontSize: size === 'sm' ? 13 : size === 'lg' ? 15 : 14,
+        fontWeight: 600,
+        cursor: loading || disabled ? 'not-allowed' : 'pointer',
+        opacity: loading || disabled ? 0.6 : 1,
+        transition: 'all 0.3s cubic-bezier(0.2, 0, 0, 1)',
+        boxShadow: isHovering && variant !== 'ghost' && !disabled ? '0 4px 16px rgba(26, 115, 232, 0.3)' : 'none',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: icon ? 8 : 0,
+        ...style,
+      }}
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
+      {...props}
+    >
+      {icon && <span>{icon}</span>}
+      {loading ? '...' : children}
+    </button>
+  )
+}
+
+// ── Inline Input Component ────────────────────────────
+const Input = ({ label, type = 'text', placeholder, value, onChange, required = false, error, style = {} }) => {
+  const [isFocused, setIsFocused] = useState(false)
+  
+  return (
+    <div style={{ marginBottom: 16 }}>
+      {label && (
+        <label style={{
+          display: 'block',
+          fontSize: 13,
+          fontWeight: 600,
+          color: 'var(--text-primary)',
+          marginBottom: 8,
+        }}>
+          {label}
+        </label>
+      )}
+      <input
+        type={type}
+        placeholder={placeholder}
+        value={value}
+        onChange={onChange}
+        required={required}
+        style={{
+          width: '100%',
+          padding: '12px 14px',
+          fontSize: 14,
+          border: error ? '1.5px solid var(--danger)' : isFocused ? '2px solid var(--primary)' : '1px solid var(--border)',
+          borderRadius: 'var(--radius)',
+          background: 'white',
+          color: 'var(--text-primary)',
+          transition: 'all 0.2s ease',
+          boxSizing: 'border-box',
+          fontFamily: 'inherit',
+          ...style,
+        }}
+        onFocus={() => setIFocused(true)}
+        onBlur={() => setIFocused(false)}
+      />
+      {error && <div style={{ color: 'var(--danger)', fontSize: 12, marginTop: 6 }}>{error}</div>}
+    </div>
+  )
+}
+
+// ── Inline EmptyState Component ────────────────────────────
+const EmptyState = ({ icon: Icon, title, description }) => (
+  <div style={{border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '48px 32px', textAlign: 'center' }}>
+    {Icon && <Icon size={40} color="var(--text-muted)" strokeWidth={1.25} style={{ marginBottom: 16 }} />}
+    <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 800, marginBottom: 8 }}>{title}</h3>
+    {description && <p style={{ color: 'var(--text-secondary)', fontSize: 14, lineHeight: 1.75 }}>{description}</p>}
+  </div>
+)
+
+// ── Inline SkeletonCard Component ────────────────────────────
+const SkeletonCard = ({ rows = 4 }) => (
+  <div style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '20px 24px' }}>
+    {Array(rows).fill(0).map((_, i) => (
+      <div key={i} style={{
+        height: i === 0 ? 24 : 14,
+        background: 'linear-gradient(90deg, var(--bg-hover) 25%, var(--bg-elevated) 50%, var(--bg-hover) 75%)',
+        backgroundSize: '200% 100%',
+        animation: 'shimmer 1.5s infinite',
+        borderRadius: 6,
+        marginBottom: i < rows - 1 ? 12 : 0,
+      }} />
+    ))}
+    <style>{`@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }`}</style>
+  </div>
+)
+
+// ── Inline Badge Component ────────────────────────────
+const Badge = ({ children, icon: Icon, variant = 'primary' }) => {
+  const colors = { primary: '#e8f0fe', secondary: '#f3f4f6', success: '#d1fae5' }
+  const textColors = { primary: '#1a73e8', secondary: '#374151', success: '#10b981' }
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 6,
+      padding: '6px 12px',
+      borderRadius: '12px',
+      fontSize: 12,
+      fontWeight: 600,
+      background: colors[variant],
+      color: textColors[variant],
+    }}>
+      {Icon && <Icon size={14} />}
+      {children}
+    </span>
+  )
+}
+
+// ── Inline Modal Component ────────────────────────────
+const Modal = ({ open, title, children, onClose, fullWidth = false }) => {
+  return (
+    <AnimatePresence>
+      {open && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(0, 0, 0, 0.5)',
+              zIndex: 999,
+            }}
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            style={{
+              position: 'fixed',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              background: 'white',
+              borderRadius: 'var(--radius-lg)',
+              padding: '28px',
+              maxWidth: fullWidth ? '90vw' : '500px',
+              width: '100%',
+              maxHeight: '80vh',
+              overflow: 'auto',
+              zIndex: 1000,
+              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 800 }}>{title}</h2>
+              <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 24 }}>×</button>
+            </div>
+            {children}
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  )
+}
 
 function StudentForm({ student, onClose, onSave }) {
   const [form, setForm]     = useState(student || { name: '', className: '', age: '' })

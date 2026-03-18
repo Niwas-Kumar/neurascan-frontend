@@ -1,10 +1,9 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Brain, GraduationCap, Users, ArrowRight, ArrowLeft, Check, KeyRound, Mail } from 'lucide-react'
+import { Brain, GraduationCap, Users, ArrowRight, ArrowLeft, Check, KeyRound, Mail, AlertCircle } from 'lucide-react'
 import { authAPI } from '../../services/api'
 import { useAuth } from '../../context/AuthContext'
-import { Button, Input, ProgressSteps, Alert, Tabs } from '../../components/shared/UI'
 import toast from 'react-hot-toast'
 
 export default function RegisterPage() {
@@ -132,14 +131,133 @@ export default function RegisterPage() {
     }
   }, [step])
 
+  // ── Inline Components ──
+  const Input = ({ label, type = 'text', value, onChange, placeholder, error, hint, ref, style }) => (
+    <div style={{ marginBottom: 18 }}>
+      {label && <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>{label}</label>}
+      <input
+        ref={ref}
+        type={type}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        style={{
+          width: '100%',
+          padding: '12px 14px',
+          border: `1px solid ${error ? 'var(--danger)' : 'var(--border)'}`,
+          borderRadius: 'var(--radius-lg)',
+          fontSize: 14,
+          color: 'var(--text-primary)',
+          background: 'var(--bg-surface)',
+          transition: 'all 0.3s ease',
+          ...style
+        }}
+        onFocus={e => {
+          e.target.style.borderColor = 'var(--primary)'
+          e.target.style.boxShadow = '0 0 0 3px rgba(26, 115, 232, 0.15)'
+        }}
+        onBlur={e => {
+          e.target.style.borderColor = error ? 'var(--danger)' : 'var(--border)'
+          e.target.style.boxShadow = 'none'
+        }}
+      />
+      {error && <div style={{ marginTop: 4, fontSize: 12, color: 'var(--danger)' }}>{error}</div>}
+      {hint && <div style={{ marginTop: 4, fontSize: 12, color: 'var(--text-muted)' }}>{hint}</div>}
+    </div>
+  )
+
+  const Button = ({ fullWidth, size = 'md', loading, children, onClick, disabled, icon, iconRight, variant = 'primary', style }) => {
+    const sizeMap = { lg: { padding: '14px 20px', fontSize: 15, height: 'auto' }, md: { padding: '10px 16px', fontSize: 14 }, sm: { padding: '8px 12px', fontSize: 13 } }
+    const bgMap = { primary: 'var(--primary)', ghost: 'transparent', secondary: 'var(--secondary)' }
+    const textMap = { primary: 'white', ghost: 'var(--primary)', secondary: 'white' }
+    const borderMap = { ghost: '1px solid var(--border)', primary: 'none', secondary: 'none' }
+    const sz = sizeMap[size]
+    return (
+      <button
+        onClick={onClick}
+        disabled={loading || disabled}
+        style={{
+          ...sz,
+          width: fullWidth ? '100%' : 'auto',
+          background: bgMap[variant],
+          color: textMap[variant],
+          border: borderMap[variant],
+          borderRadius: 'var(--radius-lg)',
+          fontWeight: 600,
+          cursor: loading || disabled ? 'not-allowed' : 'pointer',
+          transition: 'all 0.3s cubic-bezier(0.2, 0, 0, 1)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 8,
+          opacity: loading || disabled ? 0.6 : 1,
+          ...style
+        }}
+        onMouseEnter={e => {
+          if (!loading && !disabled) {
+            if (variant === 'primary') e.target.style.background = 'var(--primary-dark)'
+            if (variant === 'secondary') e.target.style.background = '#0679a0'
+            if (variant === 'ghost') e.target.style.background = 'var(--bg-elevated)'
+            e.target.style.transform = 'translateY(-1px)'
+          }
+        }}
+        onMouseLeave={e => {
+          e.target.style.background = bgMap[variant]
+          e.target.style.transform = 'translateY(0)'
+        }}
+      >
+        {icon}{children}{iconRight}
+      </button>
+    )
+  }
+
+  const ProgressSteps = ({ steps, current }) => (
+    <div style={{ display: 'flex', gap: 12, marginBottom: 32 }}>
+      {steps.map((s, i) => (
+        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1 }}>
+          <div style={{
+            width: 28, height: 28, borderRadius: '50%',
+            background: i <= current ? 'var(--primary)' : 'var(--bg-elevated)',
+            color: i <= current ? 'white' : 'var(--text-muted)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 12, fontWeight: 700, transition: 'all 0.3s ease'
+          }}>{i + 1}</div>
+          {i < steps.length - 1 && <div style={{ flex: 1, height: 2, background: i < current ? 'var(--primary)' : 'var(--border)' }} />}
+        </div>
+      ))}
+    </div>
+  )
+
+  const Alert = ({ type, children }) => {
+    const colorMap = { danger: 'var(--danger)', warning: 'var(--warning)', success: 'var(--success)' }
+    const bgMap = { danger: 'rgba(239, 68, 68, 0.08)', warning: 'rgba(245, 158, 11, 0.08)', success: 'rgba(16, 185, 129, 0.08)' }
+    return (
+      <div style={{
+        padding: '12px 14px',
+        background: bgMap[type],
+        border: `1px solid ${colorMap[type]}40`,
+        borderRadius: 'var(--radius-md)',
+        color: colorMap[type],
+        fontSize: 13,
+        marginBottom: 18,
+        lineHeight: 1.6
+      }}>
+        {children}
+      </div>
+    )
+  }
+
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f8f9fa', padding: 20 }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-page)', padding: 20 }}>
 
       {/* ── Return Home Link ── */}
       <Link to="/login" style={{
         position: 'absolute', top: 28, left: 36, display: 'flex', alignItems: 'center', gap: 8,
-        color: '#5f6368', textDecoration: 'none', fontSize: 13, fontWeight: 500, zIndex: 10
-      }} className="hide-mobile">
+        color: 'var(--text-muted)', textDecoration: 'none', fontSize: 13, fontWeight: 500, zIndex: 10, transition: 'all 0.3s ease'
+      }}
+      onMouseEnter={e => e.target.style.color = 'var(--primary)'}
+      onMouseLeave={e => e.target.style.color = 'var(--text-muted)'}
+      className="hide-mobile">
         <ArrowLeft size={16} /> Back to Sign in
       </Link>
 
@@ -149,25 +267,25 @@ export default function RegisterPage() {
         transition={{ duration: 0.4, ease: [0.2, 0, 0, 1] }}
         style={{
           width: '100%', maxWidth: 500,
-          background: '#fff',
-          borderRadius: 16,
-          border: '1px solid #e8eaed',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04)',
+          background: 'var(--bg-surface)',
+          borderRadius: 'var(--radius-xl)',
+          border: `1px solid var(--border)`,
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
           overflow: 'hidden',
         }}
       >
         {/* Top accent bar */}
-        <div style={{ height: 4, background: '#1a73e8' }} />
+        <div style={{ height: 4, background: 'var(--primary)' }} />
 
         <div style={{ padding: '36px 44px' }}>
           {/* Header */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 28 }}>
-            <div style={{ width: 44, height: 44, borderRadius: 12, background: '#1a73e8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: 44, height: 44, borderRadius: 12, background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Brain size={22} color="#fff" strokeWidth={2.5} />
             </div>
             <div>
-              <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 20, color: '#202124' }}>NeuraScan</div>
-              <div style={{ fontSize: 11, color: '#80868b', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 500 }}>Create Account</div>
+              <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 20, color: 'var(--text-primary)' }}>NeuraScan</div>
+              <div style={{ fontSize: 11, color: 'var(--text-light)', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 500 }}>Create Account</div>
             </div>
           </div>
 
@@ -186,13 +304,13 @@ export default function RegisterPage() {
               {/* ── Step 0: Base Info & Send OTP ── */}
               {step === 0 && (
                 <div>
-                  <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700, marginBottom: 6, color: '#202124' }}>Let's get started</h2>
-                  <p style={{ color: '#5f6368', fontSize: 14, marginBottom: 24 }}>
+                  <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700, marginBottom: 6, color: 'var(--text-primary)' }}>Let's get started</h2>
+                  <p style={{ color: 'var(--text-muted)', fontSize: 14, marginBottom: 24 }}>
                     Select your role and provide your email to begin.
                   </p>
 
                   <div style={{ marginBottom: 20 }}>
-                    <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#5f6368', marginBottom: 8 }}>I am a...</label>
+                    <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 8 }}>I am a...</label>
                     <div style={{ display: 'flex', gap: 12 }}>
                       {[
                         { id: 'teacher', icon: GraduationCap, title: 'Teacher' },
@@ -203,15 +321,15 @@ export default function RegisterPage() {
                           onClick={() => setRole(r.id)}
                           style={{
                             flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                            padding: '14px', borderRadius: 12, cursor: 'pointer',
-                            background: role === r.id ? '#e8f0fe' : '#f8f9fa',
-                            border: `2px solid ${role === r.id ? '#1a73e8' : '#e8eaed'}`,
-                            color: role === r.id ? '#1a73e8' : '#5f6368',
-                            transition: 'all 0.2s ease',
+                            padding: '14px', borderRadius: 'var(--radius-lg)', cursor: 'pointer',
+                            background: role === r.id ? 'rgba(26, 115, 232, 0.08)' : 'var(--bg-elevated)',
+                            border: `2px solid ${role === r.id ? 'var(--primary)' : 'var(--border)'}`,
+                            color: role === r.id ? 'var(--primary)' : 'var(--text-muted)',
+                            transition: 'all 0.3s ease',
                             fontWeight: 600, fontSize: 14,
                           }}
                         >
-                          <r.icon size={18} color={role === r.id ? '#1a73e8' : '#80868b'} />
+                          <r.icon size={18} color={role === r.id ? 'var(--primary)' : 'var(--text-light)'} />
                           {r.title}
                         </div>
                       ))}
@@ -224,7 +342,7 @@ export default function RegisterPage() {
                     hint="We will send a 6-digit verification code to this address."
                   />
 
-                  <Button fullWidth size="lg" loading={loading} onClick={() => { setDir(1); handleSendOtp() }} iconRight={<ArrowRight size={16} />} style={{ marginTop: 8 }}>
+                  <Button fullWidth size="lg" loading={loading} onClick={() => { setDir(1); handleSendOtp() }} iconRight={<ArrowRight size={16} />}>
                     Send Verification Code
                   </Button>
                 </div>
@@ -238,16 +356,16 @@ export default function RegisterPage() {
                     transition={{ type: 'spring', damping: 18, stiffness: 300 }}
                     style={{
                       width: 64, height: 64, borderRadius: '50%',
-                      background: '#e8f0fe', border: '2px solid #1a73e8',
+                      background: 'rgba(26, 115, 232, 0.08)', border: '2px solid var(--primary)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px',
                     }}
                   >
-                    <KeyRound size={28} color="#1a73e8" />
+                    <KeyRound size={28} color="var(--primary)" />
                   </motion.div>
 
-                  <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700, marginBottom: 8, color: '#202124' }}>Verify your email</h2>
-                  <p style={{ color: '#5f6368', fontSize: 14, marginBottom: 28 }}>
-                    We sent a 6-digit code to <strong style={{ color: '#202124' }}>{form.email}</strong>.
+                  <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700, marginBottom: 8, color: 'var(--text-primary)' }}>Verify your email</h2>
+                  <p style={{ color: 'var(--text-muted)', fontSize: 14, marginBottom: 28 }}>
+                    We sent a 6-digit code to <strong style={{ color: 'var(--text-primary)' }}>{form.email}</strong>.
                   </p>
 
                   <Input
@@ -275,7 +393,21 @@ export default function RegisterPage() {
                   </div>
 
                   <div style={{ marginTop: 24 }}>
-                    <button onClick={handleSendOtp} disabled={loading} style={{ background: 'none', border: 'none', color: '#1a73e8', fontSize: 13, fontWeight: 600, cursor: loading ? 'default' : 'pointer' }}>
+                    <button 
+                      onClick={handleSendOtp} 
+                      disabled={loading} 
+                      style={{ 
+                        background: 'none', 
+                        border: 'none', 
+                        color: 'var(--primary)', 
+                        fontSize: 13, 
+                        fontWeight: 600, 
+                        cursor: loading ? 'default' : 'pointer',
+                        transition: 'all 0.3s ease'
+                      }}
+                      onMouseEnter={e => !loading && (e.target.style.textDecoration = 'underline')}
+                      onMouseLeave={e => (e.target.style.textDecoration = 'none')}
+                    >
                       Resend code
                     </button>
                   </div>
@@ -285,8 +417,8 @@ export default function RegisterPage() {
               {/* ── Step 2: Full Details ── */}
               {step === 2 && (
                 <div>
-                  <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700, marginBottom: 6, color: '#202124' }}>Complete Profile</h2>
-                  <p style={{ color: '#5f6368', fontSize: 14, marginBottom: 24 }}>Almost there! Set up your credentials.</p>
+                  <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700, marginBottom: 6, color: 'var(--text-primary)' }}>Complete Profile</h2>
+                  <p style={{ color: 'var(--text-muted)', fontSize: 14, marginBottom: 24 }}>Almost there! Set up your credentials.</p>
 
                   {errors.general && <Alert type="danger">{errors.general}</Alert>}
 
@@ -305,7 +437,7 @@ export default function RegisterPage() {
 
                   <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
                     <Button fullWidth size="lg" loading={loading} onClick={handleRegister} iconRight={<Check size={18} />}
-                      style={{ background: '#1e8e3e' }}
+                      style={{ background: 'var(--success)' }}
                     >
                       Complete Registration
                     </Button>
@@ -317,9 +449,12 @@ export default function RegisterPage() {
           </AnimatePresence>
 
           {step === 0 && (
-            <div style={{ textAlign: 'center', marginTop: 28, fontSize: 13, color: '#80868b' }}>
+            <div style={{ textAlign: 'center', marginTop: 28, fontSize: 13, color: 'var(--text-light)' }}>
               Already registered?{' '}
-              <Link to="/login" style={{ color: '#1a73e8', textDecoration: 'none', fontWeight: 600 }}>Sign in instead</Link>
+              <Link to="/login" style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: 600, transition: 'all 0.3s ease' }}
+              onMouseEnter={e => e.target.style.textDecoration = 'underline'}
+              onMouseLeave={e => e.target.style.textDecoration = 'none'}
+              >Sign in instead</Link>
             </div>
           )}
         </div>

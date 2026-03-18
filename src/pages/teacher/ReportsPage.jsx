@@ -5,11 +5,140 @@ import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { FileText, Search, ChevronDown, ChevronUp, Filter, X, Download } from 'lucide-react'
 import { optimizedAnalysisAPI } from '../../services/optimizedApi'
-import { PageHeader, RiskBadge, ScoreBar, EmptyState, SkeletonCard, Badge, Tooltip } from '../../components/shared/UI'
 import toast from 'react-hot-toast'
 import { format } from 'date-fns'
 import { useAuth } from '../../context/AuthContext'
 import { useDebounce } from '../../hooks'
+
+// ── Inline PageHeader Component ────────────────────────────
+const PageHeader = ({ title, subtitle, breadcrumb }) => (
+  <div style={{ marginBottom: 32 }}>
+    {breadcrumb && <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 12 }}>{breadcrumb}</div>}
+    <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 32, fontWeight: 800, marginBottom: 6, color: 'var(--text-primary)' }}>{title}</h1>
+    {subtitle && <p style={{ fontSize: 15, color: 'var(--text-secondary)', lineHeight: 1.6 }}>{subtitle}</p>}
+  </div>
+)
+
+// ── Inline RiskBadge Component ────────────────────────────
+const RiskBadge = ({ level }) => {
+  const colors = { LOW: { bg: '#d1fae5', text: '#065f46' }, MEDIUM: { bg: '#fef3c7', text: '#92400e' }, HIGH: { bg: '#fee2e2', text: '#7f1d1d' } }
+  const color = colors[level] || colors.LOW
+  return (
+    <span style={{
+      display: 'inline-block',
+      padding: '4px 10px',
+      borderRadius: '12px',
+      fontSize: 12,
+      fontWeight: 600,
+      background: color.bg,
+      color: color.text,
+    }}>
+      {level}
+    </span>
+  )
+}
+
+// ── Inline ScoreBar Component ────────────────────────────
+const ScoreBar = ({ label, value }) => {
+  const color = value >= 70 ? 'var(--danger)' : value >= 45 ? 'var(--warning)' : 'var(--success)'
+  return (
+    <div style={{ marginBottom: 20 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{label}</span>
+        <span style={{ fontSize: 14, fontWeight: 700, color }}>{value?.toFixed(1)}%</span>
+      </div>
+      <div style={{ height: 6, background: 'var(--bg-elevated)', borderRadius: 3, overflow: 'hidden' }}>
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: `${value}%` }}
+          transition={{ duration: 1, ease: 'easeOut' }}
+          style={{ height: '100%', background: color, borderRadius: 3 }}
+        />
+      </div>
+    </div>
+  )
+}
+
+// ── Inline EmptyState Component ────────────────────────────
+const EmptyState = ({ icon: Icon, title, description }) => (
+  <div style={{border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '48px 32px', textAlign: 'center' }}>
+    {Icon && <Icon size={40} color="var(--text-muted)" strokeWidth={1.25} style={{ marginBottom: 16 }} />}
+    <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 800, marginBottom: 8 }}>{title}</h3>
+    {description && <p style={{ color: 'var(--text-secondary)', fontSize: 14, lineHeight: 1.75 }}>{description}</p>}
+  </div>
+)
+
+// ── Inline SkeletonCard Component ────────────────────────────
+const SkeletonCard = ({ rows = 4 }) => (
+  <div style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '20px 24px' }}>
+    {Array(rows).fill(0).map((_, i) => (
+      <div key={i} style={{
+        height: i === 0 ? 24 : 14,
+        background: 'linear-gradient(90deg, var(--bg-hover) 25%, var(--bg-elevated) 50%, var(--bg-hover) 75%)',
+        backgroundSize: '200% 100%',
+        animation: 'shimmer 1.5s infinite',
+        borderRadius: 6,
+        marginBottom: i < rows - 1 ? 12 : 0,
+      }} />
+    ))}
+    <style>{`@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }`}</style>
+  </div>
+)
+
+// ── Inline Badge Component ────────────────────────────
+const Badge = ({ children, icon: Icon, variant = 'primary' }) => {
+  const colors = { primary: '#e8f0fe', secondary: '#f3f4f6', success: '#d1fae5' }
+  const textColors = { primary: '#1a73e8', secondary: '#374151', success: '#10b981' }
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 6,
+      padding: '6px 12px',
+      borderRadius: '12px',
+      fontSize: 12,
+      fontWeight: 600,
+      background: colors[variant],
+      color: textColors[variant],
+    }}>
+      {Icon && <Icon size={14} />}
+      {children}
+    </span>
+  )
+}
+
+// ── Inline Tooltip Component ────────────────────────────
+const Tooltip = ({ children, text, position = 'top' }) => {
+  const [show, setShow] = useState(false)
+  const positions = {
+    top: { bottom: '120%', left: '50%', transform: 'translateX(-50%)' },
+    right: { left: '120%', top: '50%', transform: 'translateY(-50%)' },
+  }
+  return (
+    <div style={{ position: 'relative', display: 'inline-block' }}>
+      <div
+        onMouseEnter={() => setShow(true)}
+        onMouseLeave={() => setShow(false)}
+        style={{ cursor: 'help' }}
+      >
+        {children}
+      </div>
+      {show && (
+        <div style={{
+          position: 'absolute',
+          background: 'var(--text-primary)',
+          color: 'white',
+          padding: '6px 10px',
+          borderRadius: '6px',
+          fontSize: '12px',
+          whiteSpace: 'nowrap',
+          ...positions[position],
+          zIndex: 1000,
+        }}>
+          {text}
+        </div>
+      )}
+    </div>
+  )
+}
 
 function downloadCSV(data, filename) {
   const csvStr = data.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\\n')

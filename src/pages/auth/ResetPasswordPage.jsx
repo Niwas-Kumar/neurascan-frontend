@@ -3,8 +3,121 @@ import { Link, useSearchParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Brain, Lock, ArrowLeft, CheckCircle, AlertTriangle } from 'lucide-react'
 import { authAPI } from '../../services/api'
-import { Button, Input, Alert } from '../../components/shared/UI'
 import toast from 'react-hot-toast'
+
+// ── Inline Button Component ────────────────────────────
+const Button = ({ children, type = 'button', fullWidth = false, size = 'md', loading = false, style = {}, ...props }) => {
+  const heights = { sm: 36, md: 40, lg: 44 }
+  const paddings = { sm: '8px 16px', md: '12px 20px', lg: '14px 24px' }
+  const [isHovering, setIsHovering] = useState(false)
+
+  return (
+    <button
+      type={type}
+      disabled={loading}
+      style={{
+        width: fullWidth ? '100%' : 'auto',
+        height: heights[size],
+        padding: paddings[size],
+        background: isHovering ? 'var(--primary-hover)' : 'var(--primary)',
+        color: 'white',
+        border: 'none',
+        borderRadius: 'var(--radius-lg)',
+        fontSize: size === 'sm' ? 13 : size === 'lg' ? 15 : 14,
+        fontWeight: 600,
+        cursor: loading ? 'not-allowed' : 'pointer',
+        opacity: loading ? 0.7 : 1,
+        transition: 'all 0.3s cubic-bezier(0.2, 0, 0, 1)',
+        boxShadow: isHovering ? '0 4px 16px rgba(26, 115, 232, 0.3)' : 'none',
+        ...style,
+      }}
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
+      {...props}
+    >
+      {loading ? '...' : children}
+    </button>
+  )
+}
+
+// ── Inline Input Component ────────────────────────────
+const Input = ({ label, type = 'text', placeholder, value, onChange, required = false, style = {} }) => {
+  const [isFocused, setIsFocused] = useState(false)
+  
+  return (
+    <div style={{ marginBottom: 16 }}>
+      {label && (
+        <label style={{
+          display: 'block',
+          fontSize: 13,
+          fontWeight: 600,
+          color: 'var(--text-primary)',
+          marginBottom: 8,
+        }}>
+          {label}
+        </label>
+      )}
+      <input
+        type={type}
+        placeholder={placeholder}
+        value={value}
+        onChange={onChange}
+        required={required}
+        style={{
+          width: '100%',
+          padding: '12px 14px',
+          fontSize: 14,
+          border: isFocused ? '2px solid var(--primary)' : '1px solid var(--border)',
+          borderRadius: 'var(--radius)',
+          background: 'white',
+          color: 'var(--text-primary)',
+          transition: 'all 0.2s ease',
+          boxSizing: 'border-box',
+          fontFamily: 'inherit',
+          ...style,
+        }}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
+      />
+    </div>
+  )
+}
+
+// ── Inline Alert Component ────────────────────────────
+const Alert = ({ type = 'info', children, onClose }) => {
+  const colors = {
+    danger: { bg: 'var(--danger-dim)', border: 'var(--danger-glow)', text: 'var(--danger)' },
+    warning: { bg: 'var(--warning-dim)', border: 'var(--warning-glow)', text: 'var(--warning)' },
+    success: { bg: 'var(--success-dim)', border: 'var(--success-glow)', text: 'var(--success)' },
+    info: { bg: 'var(--primary-dim)', border: 'var(--primary-glow)', text: 'var(--primary)' },
+  }
+  const color = colors[type] || colors.info
+
+  return (
+    <div style={{
+      background: color.bg,
+      border: `1px solid ${color.border}`,
+      borderRadius: 'var(--radius)',
+      padding: '12px 14px',
+      marginBottom: 16,
+      fontSize: 13,
+      color: color.text,
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    }}>
+      <span>{children}</span>
+      {onClose && (
+        <button
+          onClick={onClose}
+          style={{ background: 'none', border: 'none', color: color.text, cursor: 'pointer', fontSize: 18, padding: 0 }}
+        >
+          ×
+        </button>
+      )}
+    </div>
+  )
+}
 
 export default function ResetPasswordPage() {
   const [params]    = useSearchParams()
@@ -131,10 +244,10 @@ export default function ResetPasswordPage() {
         <div style={{ marginBottom: 28 }}>
           <div style={{
             width: 52, height: 52, borderRadius: 13,
-            background: '#e8f0fe', border: '1px solid rgba(26,115,232,0.2)',
+            background: 'var(--primary-dim)', border: `1px solid var(--primary-glow)`,
             display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 18,
           }}>
-            <Lock size={24} color="var(--violet-soft)" />
+            <Lock size={24} color="var(--primary)" />
           </div>
           <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 800, letterSpacing: '-0.5px', marginBottom: 8 }}>
             Set new password
@@ -179,19 +292,19 @@ export default function ResetPasswordPage() {
         animate={{ opacity: 1, y: 0 }}
         style={{
           width: '100%', maxWidth: 440,
-          background: '#fff', border: '1px solid #e8eaed',
+          background: 'white', border: '1px solid var(--border)',
           borderRadius: 16, overflow: 'hidden',
           boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04)',
         }}
       >
-        <div style={{ height: 4, background: '#1a73e8' }} />
+        <div style={{ height: 4, background: 'var(--primary)' }} />
         <div style={{ padding: '36px 40px' }}>
           {/* Logo */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 40 }}>
-            <div style={{ width: 36, height: 36, borderRadius: 9, background: '#1a73e8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: 36, height: 36, borderRadius: 9, background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Brain size={18} color="#fff" strokeWidth={2.5} />
             </div>
-            <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 17, color: '#202124' }}>NeuraScan</span>
+            <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 17, color: 'var(--text-primary)' }}>NeuraScan</span>
           </div>
 
           {renderContent()}

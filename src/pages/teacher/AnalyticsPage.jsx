@@ -3,13 +3,100 @@ import { motion } from 'framer-motion'
 import { TrendingUp, Brain, Users, BarChart3, AlertTriangle, FileText } from 'lucide-react'
 import { optimizedAnalysisAPI, optimizedStudentAPI } from '../../services/optimizedApi'
 import { useAuth } from '../../context/AuthContext'
-import { PageHeader, StatCard, SkeletonCard, Badge, RiskBadge } from '../../components/shared/UI'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar,
   ScatterChart, Scatter, ZAxis, Cell, Legend
 } from 'recharts'
 import toast from 'react-hot-toast'
+
+// ── Inline PageHeader Component ────────────────────────────
+const PageHeader = ({ title, subtitle, breadcrumb }) => (
+  <div style={{ marginBottom: 32 }}>
+    {breadcrumb && <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 12 }}>{breadcrumb}</div>}
+    <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 32, fontWeight: 800, marginBottom: 6, color: 'var(--text-primary)' }}>{title}</h1>
+    {subtitle && <p style={{ fontSize: 15, color: 'var(--text-secondary)', lineHeight: 1.6 }}>{subtitle}</p>}
+  </div>
+)
+
+// ── Inline StatCard Component ────────────────────────────
+const StatCard = ({ icon: Icon, label, value, color = 'blue', delay = 0 }) => {
+  const colors = { blue: '#1a73e8', violet: '#7c3aed', green: '#10b981', amber: '#f59e0b' }
+  return (
+    <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: delay * 0.06 }}
+      style={{ borderRadius: 'var(--radius)', padding: '20px 22px', border: '1px solid var(--border)' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+        <div style={{
+          width: 40, height: 40, borderRadius: 10,
+          background: `${colors[color]}20`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center'
+        }}>
+          <Icon size={20} color={colors[color]} strokeWidth={2} />
+        </div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 4 }}>{label}</div>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 800, color: 'var(--text-primary)' }}>{value}</div>
+        </div>
+      </div>
+    </motion.div>
+  )
+}
+
+// ── Inline SkeletonCard Component ────────────────────────────
+const SkeletonCard = ({ rows = 4 }) => (
+  <div style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '20px 24px' }}>
+    {Array(rows).fill(0).map((_, i) => (
+      <div key={i} style={{
+        height: i === 0 ? 24 : 14,
+        background: 'linear-gradient(90deg, var(--bg-hover) 25%, var(--bg-elevated) 50%, var(--bg-hover) 75%)',
+        backgroundSize: '200% 100%',
+        animation: 'shimmer 1.5s infinite',
+        borderRadius: 6,
+        marginBottom: i < rows - 1 ? 12 : 0,
+      }} />
+    ))}
+    <style>{`@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }`}</style>
+  </div>
+)
+
+// ── Inline Badge Component ────────────────────────────
+const Badge = ({ children, icon: Icon, variant = 'primary' }) => {
+  const colors = { primary: '#e8f0fe', secondary: '#f3f4f6', success: '#d1fae5' }
+  const textColors = { primary: '#1a73e8', secondary: '#374151', success: '#10b981' }
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 6,
+      padding: '6px 12px',
+      borderRadius: '12px',
+      fontSize: 12,
+      fontWeight: 600,
+      background: colors[variant],
+      color: textColors[variant],
+    }}>
+      {Icon && <Icon size={14} />}
+      {children}
+    </span>
+  )
+}
+
+// ── Inline RiskBadge Component ────────────────────────────
+const RiskBadge = ({ level }) => {
+  const colors = { LOW: { bg: '#d1fae5', text: '#065f46' }, MEDIUM: { bg: '#fef3c7', text: '#92400e' }, HIGH: { bg: '#fee2e2', text: '#7f1d1d' } }
+  const color = colors[level] || colors.LOW
+  return (
+    <span style={{
+      display: 'inline-block',
+      padding: '4px 10px',
+      borderRadius: '12px',
+      fontSize: 12,
+      fontWeight: 600,
+      background: color.bg,
+      color: color.text,
+    }}>
+      {level}
+    </span>
+  )
+}
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null

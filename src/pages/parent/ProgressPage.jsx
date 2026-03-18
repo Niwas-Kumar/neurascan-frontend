@@ -3,13 +3,105 @@ import { motion } from 'framer-motion'
 import { TrendingUp, TrendingDown, Minus, Calendar, Brain, ArrowUpRight, ArrowDownRight } from 'lucide-react'
 import { optimizedAnalysisAPI } from '../../services/optimizedApi'
 import { useAuth } from '../../context/AuthContext'
-import { PageHeader, RiskBadge, SkeletonCard, StatCard, Badge, Alert } from '../../components/shared/UI'
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer, ReferenceLine
 } from 'recharts'
 import toast from 'react-hot-toast'
 import { format } from 'date-fns'
+
+// ── Inline PageHeader Component ────────────────────────────
+const PageHeader = ({ title, subtitle, breadcrumb }) => (
+  <div style={{ marginBottom: 32 }}>
+    {breadcrumb && <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 12 }}>{breadcrumb}</div>}
+    <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 32, fontWeight: 800, marginBottom: 6, color: 'var(--text-primary)' }}>{title}</h1>
+    {subtitle && <p style={{ fontSize: 15, color: 'var(--text-secondary)', lineHeight: 1.6 }}>{subtitle}</p>}
+  </div>
+)
+
+// ── Inline RiskBadge Component ────────────────────────────
+const RiskBadge = ({ level }) => {
+  const colors = { LOW: { bg: '#d1fae5', text: '#065f46' }, MEDIUM: { bg: '#fef3c7', text: '#92400e' }, HIGH: { bg: '#fee2e2', text: '#7f1d1d' } }
+  const color = colors[level] || colors.LOW
+  return (
+    <span style={{
+      display: 'inline-block',
+      padding: '4px 10px',
+      borderRadius: '12px',
+      fontSize: 12,
+      fontWeight: 600,
+      background: color.bg,
+      color: color.text,
+    }}>
+      {level}
+    </span>
+  )
+}
+
+// ── Inline SkeletonCard Component ────────────────────────────
+const SkeletonCard = ({ rows = 4 }) => (
+  <div className="glass-panel" style={{ padding: '20px 24px' }}>
+    {Array(rows).fill(0).map((_, i) => (
+      <div key={i} style={{
+        height: i === 0 ? 24 : 14,
+        background: 'linear-gradient(90deg, var(--bg-hover) 25%, var(--bg-elevated) 50%, var(--bg-hover) 75%)',
+        backgroundSize: '200% 100%',
+        animation: 'shimmer 1.5s infinite',
+        borderRadius: 6,
+        marginBottom: i < rows - 1 ? 12 : 0,
+      }} />
+    ))}
+    <style>{`
+      @keyframes shimmer {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+      }
+    `}</style>
+  </div>
+)
+
+// ── Inline StatCard Component ────────────────────────────
+const StatCard = ({ icon: Icon, label, value, color = 'blue', delay = 0 }) => {
+  const colors = { blue: '#1a73e8', violet: '#7c3aed', green: '#10b981', amber: '#f59e0b' }
+  return (
+    <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: delay * 0.06 }}
+      className="glass-panel" style={{ padding: '20px 22px' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+        <div style={{
+          width: 40, height: 40, borderRadius: 10,
+          background: `${colors[color]}20`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center'
+        }}>
+          <Icon size={20} color={colors[color]} strokeWidth={2} />
+        </div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 4 }}>{label}</div>
+          <div style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 800, color: 'var(--text-primary)' }}>{value}</div>
+        </div>
+      </div>
+    </motion.div>
+  )
+}
+
+// ── Inline Badge Component ────────────────────────────
+const Badge = ({ children, color = 'blue', dot = false }) => {
+  const colors = { blue: '#e8f0fe', violet: '#ede9fe', green: '#d1fae5' }
+  const textColors = { blue: '#1a73e8', violet: '#7c3aed', green: '#059669' }
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 6,
+      padding: '4px 10px',
+      borderRadius: '12px',
+      fontSize: 12,
+      fontWeight: 600,
+      background: colors[color],
+      color: textColors[color],
+    }}>
+      {dot && <span style={{ width: 6, height: 6, borderRadius: '50%', background: textColors[color] }} />}
+      {children}
+    </span>
+  )
+}
 
 export default function ProgressPage() {
   const { user }   = useAuth()
@@ -135,7 +227,7 @@ export default function ProgressPage() {
                   <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Score trends over all {reports.length} analyses</p>
                 </div>
                 <div style={{ display: 'flex', gap: 16, fontSize: 12 }}>
-                  {[['Dyslexia', '#7c3aed'], ['Dysgraphia', '#06b6d4']].map(([n, c]) => (
+                  {[['Dyslexia', 'var(--primary)'], ['Dysgraphia', 'var(--secondary)']].map(([n, c]) => (
                     <div key={n} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                       <div style={{ width: 8, height: 8, borderRadius: '50%', background: c }} />
                       <span style={{ color: 'var(--text-muted)' }}>{n}</span>
@@ -157,8 +249,8 @@ export default function ProgressPage() {
                     contentStyle={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 8, fontSize: 12 }}
                     formatter={v => [`${v}%`]}
                   />
-                  <Line type="monotone" dataKey="Dyslexia"   stroke="#7c3aed" strokeWidth={2.5} dot={{ fill: '#7c3aed', r: 4, strokeWidth: 0 }} activeDot={{ r: 6 }} filter="url(#glow2)" />
-                  <Line type="monotone" dataKey="Dysgraphia" stroke="#06b6d4" strokeWidth={2.5} dot={{ fill: '#06b6d4', r: 4, strokeWidth: 0 }} activeDot={{ r: 6 }} filter="url(#glow2)" />
+                  <Line type="monotone" dataKey="Dyslexia"   stroke="#1a73e8" strokeWidth={2.5} dot={{ fill: '#1a73e8', r: 4, strokeWidth: 0 }} activeDot={{ r: 6 }} filter="url(#glow2)" />
+                  <Line type="monotone" dataKey="Dysgraphia" stroke="#0891b2" strokeWidth={2.5} dot={{ fill: '#0891b2', r: 4, strokeWidth: 0 }} activeDot={{ r: 6 }} filter="url(#glow2)" />
                 </LineChart>
               </ResponsiveContainer>
             </motion.div>
@@ -179,12 +271,12 @@ export default function ProgressPage() {
                       initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.5 + i * 0.06, type: 'spring', damping: 15 }}
                       style={{
                         width: 34, height: 34, borderRadius: '50%', flexShrink: 0,
-                        background: i === 0 ? 'var(--violet-dim)' : 'var(--bg-elevated)',
-                        border: `2px solid ${i === 0 ? 'var(--violet)' : 'var(--border)'}`,
+                        background: i === 0 ? 'var(--primary-dim)' : 'var(--bg-elevated)',
+                        border: `2px solid ${i === 0 ? 'var(--primary)' : 'var(--border)'}`,
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 12,
-                        color: i === 0 ? 'var(--violet-soft)' : 'var(--text-muted)',
-                        boxShadow: i === 0 ? '0 0 12px var(--violet-glow)' : 'none',
+                        color: i === 0 ? 'var(--primary)' : 'var(--text-muted)',
+                        boxShadow: i === 0 ? '0 0 12px var(--primary-glow)' : 'none',
                       }}
                     >
                       {reports.length - i}
@@ -201,7 +293,7 @@ export default function ProgressPage() {
                         {r.createdAt ? format(new Date(r.createdAt), 'MMMM d, yyyy') : '—'}
                       </span>
                       <RiskBadge level={r.riskLevel} />
-                      {i === 0 && <Badge color="violet" dot>Latest</Badge>}
+                      {i === 0 && <Badge color="blue" dot>Latest</Badge>}
                     </div>
 
                     <div style={{ display: 'flex', gap: 20, marginBottom: 8, fontSize: 13 }}>

@@ -1,9 +1,43 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Brain, ArrowLeft, CheckCircle, AlertTriangle, Mail } from 'lucide-react'
 import { authAPI } from '../../services/api'
-import { Button } from '../../components/shared/UI'
+
+// ── Inline Button Component ────────────────────────────
+const Button = ({ children, type = 'button', fullWidth = false, size = 'md', loading = false, style = {}, ...props }) => {
+  const heights = { sm: 36, md: 40, lg: 44 }
+  const paddings = { sm: '8px 16px', md: '12px 20px', lg: '14px 24px' }
+  const [isHovering, setIsHovering] = useState(false)
+
+  return (
+    <button
+      type={type}
+      disabled={loading}
+      style={{
+        width: fullWidth ? '100%' : 'auto',
+        height: heights[size],
+        padding: paddings[size],
+        background: isHovering ? 'var(--primary-hover)' : 'var(--primary)',
+        color: 'white',
+        border: 'none',
+        borderRadius: 'var(--radius-lg)',
+        fontSize: size === 'sm' ? 13 : size === 'lg' ? 15 : 14,
+        fontWeight: 600,
+        cursor: loading ? 'not-allowed' : 'pointer',
+        opacity: loading ? 0.7 : 1,
+        transition: 'all 0.3s cubic-bezier(0.2, 0, 0, 1)',
+        boxShadow: isHovering ? '0 4px 16px rgba(26, 115, 232, 0.3)' : 'none',
+        ...style,
+      }}
+      onMouseEnter={() => setIsHovering(true)}
+      onMouseLeave={() => setIsHovering(false)}
+      {...props}
+    >
+      {loading ? '...' : children}
+    </button>
+  )
+}
 
 export default function VerifyEmailPage() {
   const [params]    = useSearchParams()
@@ -94,19 +128,19 @@ export default function VerifyEmailPage() {
         animate={{ opacity: 1, y: 0 }}
         style={{
           width: '100%', maxWidth: 440,
-          background: '#fff', border: '1px solid #e8eaed',
+          background: 'white', border: '1px solid var(--border)',
           borderRadius: 16, overflow: 'hidden',
           boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04)',
         }}
       >
-        <div style={{ height: 4, background: '#1a73e8' }} />
+        <div style={{ height: 4, background: 'var(--primary)' }} />
         <div style={{ padding: '36px 40px' }}>
           {/* Logo */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 40 }}>
-            <div style={{ width: 36, height: 36, borderRadius: 9, background: '#1a73e8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ width: 36, height: 36, borderRadius: 9, background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Brain size={18} color="#fff" strokeWidth={2.5} />
             </div>
-            <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 17, color: '#202124' }}>NeuraScan</span>
+            <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 17, color: 'var(--text-primary)' }}>NeuraScan</span>
           </div>
 
           {renderContent()}

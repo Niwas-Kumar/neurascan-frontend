@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Brain, TrendingUp, AlertCircle, CheckCircle, ArrowRight, Calendar, Activity, User } from 'lucide-react'
+import { Brain, TrendingUp, AlertCircle, CheckCircle, ArrowRight, Calendar, Activity, Zap } from 'lucide-react'
 import { optimizedAnalysisAPI } from '../../services/optimizedApi'
 import { useAuth } from '../../context/AuthContext'
-import { PageHeader, RiskBadge, ScoreBar, Button, SkeletonCard, StatCard, Alert } from '../../components/shared/UI'
 import toast from 'react-hot-toast'
 import { format, formatDistanceToNow } from 'date-fns'
 
@@ -33,26 +32,126 @@ export default function ParentDashboard() {
 
   if (loading) return (
     <div>
-      <PageHeader title={greeting} subtitle="Loading your child's report…" />
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-        <SkeletonCard rows={6} /><SkeletonCard rows={5} />
+      {/* Page Header */}
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ marginBottom: 32 }}>
+        <h1 style={{ fontSize: 36, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8 }}>
+          {greeting} 👋
+        </h1>
+        <p style={{ fontSize: 16, color: 'var(--text-muted)' }}>Loading your child's report…</p>
+      </motion.div>
+
+      {/* Skeleton Cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16, marginBottom: 24 }}>
+        {[1, 2, 3, 4].map(i => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.1 }}
+            style={{
+              background: 'white',
+              border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-lg)',
+              padding: 16,
+              minHeight: 100,
+            }}
+          >
+            <div style={{ background: 'var(--bg-elevated)', height: 12, borderRadius: 4, marginBottom: 12, animation: 'pulse 2s infinite' }} />
+            <div style={{ background: 'var(--bg-elevated)', height: 12, borderRadius: 4, animation: 'pulse 2s infinite' }} />
+          </motion.div>
+        ))}
       </div>
     </div>
   )
 
   const isAtRisk = report?.riskLevel === 'HIGH' || report?.riskLevel === 'MEDIUM'
+  const riskColor = report?.riskLevel === 'HIGH' ? 'var(--danger)' : report?.riskLevel === 'MEDIUM' ? 'var(--warning)' : 'var(--success)'
+
+  const StatCard = ({ icon: Icon, label, value, color, delay, sub }) => {
+    const colorMap = {
+      success: 'var(--success)',
+      warning: 'var(--warning)',
+      danger: 'var(--danger)',
+      primary: 'var(--primary)',
+      secondary: 'var(--secondary)'
+    }
+    const bgMap = {
+      success: 'rgba(16, 185, 129, 0.08)',
+      warning: 'rgba(245, 158, 11, 0.08)',
+      danger: 'rgba(239, 68, 68, 0.06)',
+      primary: 'rgba(26, 115, 232, 0.08)',
+      secondary: 'rgba(8, 145, 178, 0.08)'
+    }
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay }}
+        style={{
+          background: 'white',
+          border: `1px solid ${colorMap[color]}`,
+          borderRadius: 'var(--radius-lg)',
+          padding: '16px 18px',
+          cursor: 'default',
+        }}
+        onMouseEnter={e => e.currentTarget.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.08)'}
+        onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}
+        style={{
+          background: 'white',
+          border: `1px solid ${colorMap[color]}`,
+          borderRadius: 'var(--radius-lg)',
+          padding: '16px 18px',
+          transition: 'all 0.3s ease'
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+          <div style={{ width: 40, height: 40, borderRadius: 10, background: bgMap[color], border: `1px solid ${colorMap[color]}40`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Icon size={20} color={colorMap[color]} strokeWidth={2} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 13, color: 'var(--text-muted)', fontWeight: 500, marginBottom: 4 }}>{label}</div>
+            <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)' }}>{value}</div>
+            {sub && <div style={{ fontSize: 12, color: 'var(--text-light)', marginTop: 4 }}>{sub}</div>}
+          </div>
+        </div>
+      </motion.div>
+    )
+  }
+
+  const ScoreBar = ({ label, value }) => {
+    const percentage = Math.min(Math.max(value || 0, 0), 100)
+    const barColor = percentage <= 30 ? 'var(--success)' : percentage <= 60 ? 'var(--warning)' : 'var(--danger)'
+    return (
+      <div style={{ marginBottom: 18 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+          <span style={{ fontSize: 14, color: 'var(--text-secondary)', fontWeight: 500 }}>{label}</span>
+          <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>{percentage.toFixed(1)}%</span>
+        </div>
+        <div style={{ height: 8, background: 'var(--bg-elevated)', borderRadius: 'var(--radius-full)', overflow: 'hidden', border: '1px solid var(--border)' }}>
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${percentage}%` }}
+            transition={{ duration: 1, ease: 'easeOut' }}
+            style={{ height: '100%', background: barColor, borderRadius: 'var(--radius-full)' }}
+          />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div>
-      <PageHeader
-        title={<>{greeting}, <span className="gradient-text">{user?.name?.split(' ')[0]}</span> 👋</>}
-        subtitle={report ? `Latest analysis for ${report.studentName} · ${report.className}` : 'Your child\'s learning health at a glance.'}
-        action={
-          <Button variant="secondary" icon={<TrendingUp size={14} />} onClick={() => navigate('/parent/progress')}>
-            View Progress
-          </Button>
-        }
-      />
+      {/* Page Header */}
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ marginBottom: 32 }}>
+        <h1 style={{ fontSize: 36, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8 }}>
+          {greeting}, <span style={{ color: 'var(--primary)' }}>{user?.name?.split(' ')[0]}</span> 👋
+        </h1>
+        {report && (
+          <p style={{ fontSize: 15, color: 'var(--text-secondary)' }}>
+            Latest analysis for {report.studentName} · {report.className}
+          </p>
+        )}
+      </motion.div>
 
       {noData || !report ? (
         <motion.div
@@ -60,40 +159,102 @@ export default function ParentDashboard() {
           animate={{ opacity: 1, y: 0 }}
           style={{ maxWidth: 560 }}
         >
-          <div className="glass-panel" style={{ borderRadius: 'var(--radius-xl)', overflow: 'hidden' }}>
-            <div style={{ height: 4, background: 'linear-gradient(90deg, var(--violet), var(--cyan))' }} />
+          <div style={{
+            background: 'white',
+            border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-xl)',
+            overflow: 'hidden',
+          }}>
+            <div style={{ height: 4, background: 'linear-gradient(90deg, var(--primary), var(--secondary))' }} />
             <div style={{ padding: '48px 40px', textAlign: 'center' }}>
-              <div style={{ width: 72, height: 72, borderRadius: 18, background: 'var(--violet-dim)', border: '1px solid rgba(139,92,246,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
-                <Brain size={32} color="var(--violet-soft)" strokeWidth={1.5} />
+              <div style={{
+                width: 72, height: 72, borderRadius: 16,
+                background: 'rgba(26, 115, 232, 0.08)',
+                border: '1px solid rgba(26, 115, 232, 0.2)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px'
+              }}>
+                <Brain size={32} color="var(--primary)" strokeWidth={1.5} />
               </div>
-              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 800, marginBottom: 10 }}>No Reports Yet</h3>
-              <p style={{ color: 'var(--text-secondary)', fontSize: 14, lineHeight: 1.75, marginBottom: 24 }}>
+              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700, marginBottom: 12, color: 'var(--text-primary)' }}>
+                No Reports Yet
+              </h3>
+              <p style={{ color: 'var(--text-secondary)', fontSize: 15, lineHeight: 1.75, marginBottom: 28 }}>
                 Your child's teacher hasn't uploaded a test paper yet. Once they do, the AI analysis results will appear here automatically.
               </p>
               {!user?.studentId && (
-                <Alert type="warning">
-                  Your account doesn't have a linked student ID. Go to <strong>Settings → Profile</strong> to link your child's account.
-                </Alert>
+                <div style={{
+                  background: 'rgba(245, 158, 11, 0.08)',
+                  border: '1px solid rgba(245, 158, 11, 0.2)',
+                  borderRadius: 'var(--radius-md)',
+                  padding: '12px 14px',
+                  marginBottom: 24,
+                  fontSize: 14,
+                  color: 'var(--text-secondary)',
+                  textAlign: 'left'
+                }}>
+                  <strong style={{ color: 'var(--warning)' }}>⚠️ Action Required:</strong> Your account doesn't have a linked student ID. Go to <strong>Settings → Profile</strong> to link your child's account.
+                </div>
               )}
-              <Button variant="ghost" icon={<ArrowRight size={14} />} onClick={() => navigate('/parent/progress')}>
-                Check progress history
-              </Button>
+              <button
+                style={{
+                  background: 'var(--primary)',
+                  color: 'white',
+                  border: 'none',
+                  padding: '12px 20px',
+                  borderRadius: 'var(--radius-lg)',
+                  fontSize: 14,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  transition: 'all 0.3s cubic-bezier(0.2, 0, 0, 1)',
+                }}
+                onClick={() => navigate('/parent/progress')}
+                onMouseEnter={e => {
+                  e.target.style.background = 'var(--primary-dark)'
+                  e.target.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.1)'
+                }}
+                onMouseLeave={e => {
+                  e.target.style.background = 'var(--primary)'
+                  e.target.style.boxShadow = 'none'
+                }}
+              >
+                Check progress history →
+              </button>
             </div>
           </div>
         </motion.div>
       ) : (
         <div>
           {/* Stats row */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16, marginBottom: 24 }}>
-            <StatCard icon={isAtRisk ? AlertCircle : CheckCircle}
-              label={isAtRisk ? 'Needs Attention' : 'All Good'}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16, marginBottom: 28 }}>
+            <StatCard
+              icon={isAtRisk ? AlertCircle : CheckCircle}
+              label={isAtRisk ? 'Risk Level' : 'Status'}
               value={report.riskLevel}
               color={isAtRisk ? (report.riskLevel === 'HIGH' ? 'danger' : 'warning') : 'success'}
               delay={0}
             />
-            <StatCard icon={Activity} label="Dyslexia Score"   value={`${report.dyslexiaScore?.toFixed(1)}%`}   color="violet"  delay={1} />
-            <StatCard icon={Brain}    label="Dysgraphia Score" value={`${report.dysgraphiaScore?.toFixed(1)}%`} color="cyan"    delay={2} />
-            <StatCard icon={Calendar} label="Last Analysis"    value={report.createdAt ? format(new Date(report.createdAt), 'MMM d') : '—'} color="success" delay={3} sub={report.createdAt ? formatDistanceToNow(new Date(report.createdAt), { addSuffix: true }) : ''} />
+            <StatCard
+              icon={Brain}
+              label="Dyslexia Score"
+              value={`${report.dyslexiaScore?.toFixed(1)}%`}
+              color={report.dyslexiaScore <= 30 ? 'success' : report.dyslexiaScore <= 60 ? 'warning' : 'danger'}
+              delay={0.1}
+            />
+            <StatCard
+              icon={Zap}
+              label="Dysgraphia Score"
+              value={`${report.dysgraphiaScore?.toFixed(1)}%`}
+              color={report.dysgraphiaScore <= 30 ? 'success' : report.dysgraphiaScore <= 60 ? 'warning' : 'danger'}
+              delay={0.2}
+            />
+            <StatCard
+              icon={Calendar}
+              label="Last Analysis"
+              value={report.createdAt ? format(new Date(report.createdAt), 'MMM d') : '—'}
+              color="primary"
+              delay={0.3}
+              sub={report.createdAt ? formatDistanceToNow(new Date(report.createdAt), { addSuffix: true }) : ''}
+            />
           </div>
 
           {/* Main cards row */}
@@ -101,42 +262,72 @@ export default function ParentDashboard() {
 
             {/* Score card */}
             <motion.div
-              initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }}
-              className="glass-panel"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
               style={{
-                border: `1px solid ${isAtRisk ? 'rgba(239,68,68,0.25)' : 'rgba(16,185,129,0.2)'}`,
+                background: 'white',
+                border: `1px solid ${isAtRisk ? 'rgba(239, 68, 68, 0.25)' : 'rgba(16, 185, 129, 0.25)'}`,
+                borderRadius: 'var(--radius-xl)',
                 overflow: 'hidden',
               }}
             >
               <div style={{
-                padding: '18px 24px', borderBottom: '1px solid var(--border)',
-                background: isAtRisk ? 'linear-gradient(135deg, rgba(239,68,68,0.06) 0%, transparent 60%)' : 'linear-gradient(135deg, rgba(16,185,129,0.06) 0%, transparent 60%)',
-                display: 'flex', alignItems: 'center', gap: 12,
+                padding: '20px 24px',
+                borderBottom: '1px solid var(--border)',
+                background: isAtRisk ? 'linear-gradient(135deg, rgba(239, 68, 68, 0.06) 0%, transparent 60%)' : 'linear-gradient(135deg, rgba(16, 185, 129, 0.06) 0%, transparent 60%)',
+                display: 'flex', alignItems: 'center', gap: 14,
               }}>
-                <div style={{ width: 40, height: 40, borderRadius: 10, background: isAtRisk ? 'var(--danger-dim)' : 'var(--success-dim)', border: `1px solid ${isAtRisk ? 'rgba(239,68,68,0.3)' : 'rgba(16,185,129,0.3)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{
+                  width: 40, height: 40, borderRadius: 10,
+                  background: isAtRisk ? 'rgba(239, 68, 68, 0.08)' : 'rgba(16, 185, 129, 0.08)',
+                  border: `1px solid ${isAtRisk ? 'rgba(239, 68, 68, 0.25)' : 'rgba(16, 185, 129, 0.25)'}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}>
                   {isAtRisk ? <AlertCircle size={20} color="var(--danger)" /> : <CheckCircle size={20} color="var(--success)" />}
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16 }}>{report.studentName}</div>
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{report.className} · Paper #{report.paperId}</div>
+                  <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, color: 'var(--text-primary)' }}>{report.studentName}</div>
+                  <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>{report.className} · Paper #{report.paperId}</div>
                 </div>
-                <RiskBadge level={report.riskLevel} />
+                <div style={{
+                  background: riskColor,
+                  color: 'white',
+                  padding: '6px 12px',
+                  borderRadius: 'var(--radius-md)',
+                  fontSize: 12,
+                  fontWeight: 700,
+                  textTransform: 'uppercase'
+                }}>
+                  {report.riskLevel}
+                </div>
               </div>
 
-              <div style={{ padding: '22px 24px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--text-muted)', marginBottom: 20 }}>
-                  <Calendar size={12} />
+              <div style={{ padding: '24px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-muted)', marginBottom: 22 }}>
+                  <Calendar size={14} />
                   Analyzed {report.createdAt ? format(new Date(report.createdAt), 'MMMM d, yyyy \'at\' h:mm a') : '—'}
                 </div>
-                <ScoreBar label="Dyslexia Score"   value={report.dyslexiaScore} />
+                <ScoreBar label="Dyslexia Score" value={report.dyslexiaScore} />
                 <ScoreBar label="Dysgraphia Score" value={report.dysgraphiaScore} />
 
                 {isAtRisk && (
                   <motion.div
-                    initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}
-                    style={{ marginTop: 16, padding: '12px 14px', background: 'var(--warning-dim)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 'var(--radius)', fontSize: 13, color: 'var(--warning)', lineHeight: 1.65 }}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.6 }}
+                    style={{
+                      marginTop: 18,
+                      padding: '14px 16px',
+                      background: 'rgba(245, 158, 11, 0.08)',
+                      border: '1px solid rgba(245, 158, 11, 0.2)',
+                      borderRadius: 'var(--radius-md)',
+                      fontSize: 13,
+                      color: 'var(--text-secondary)',
+                      lineHeight: 1.7
+                    }}
                   >
-                    <strong>Recommended action:</strong> Schedule a consultation with a learning specialist. Early intervention significantly improves outcomes.
+                    <strong style={{ color: 'var(--warning)' }}>📋 Recommended action:</strong> Schedule a consultation with a learning specialist. Early intervention significantly improves outcomes.
                   </motion.div>
                 )}
               </div>
@@ -144,30 +335,73 @@ export default function ParentDashboard() {
 
             {/* AI Comment card */}
             <motion.div
-              initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
-              className="glass-panel"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              style={{
+                background: 'white',
+                border: '1px solid var(--border)',
+                borderRadius: 'var(--radius-xl)',
+                overflow: 'hidden'
+              }}
             >
-              <div style={{ padding: '18px 24px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 10 }}>
-                <div style={{ width: 32, height: 32, borderRadius: 8, background: 'var(--violet-dim)', border: '1px solid rgba(139,92,246,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Brain size={15} color="var(--violet-soft)" />
+              <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{
+                  width: 36, height: 36, borderRadius: 8,
+                  background: 'rgba(26, 115, 232, 0.08)',
+                  border: '1px solid rgba(26, 115, 232, 0.2)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center'
+                }}>
+                  <Brain size={18} color="var(--primary)" strokeWidth={2} />
                 </div>
-                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 15 }}>AI Assessment</div>
+                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, color: 'var(--text-primary)' }}>AI Assessment</div>
               </div>
-              <div style={{ padding: '22px 24px' }}>
-                <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.8, marginBottom: 24 }}>
+              <div style={{ padding: '24px' }}>
+                <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.8, marginBottom: 22 }}>
                   {report.aiComment}
                 </p>
-                <div style={{ padding: '14px 16px', background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.6 }}>
-                  <strong style={{ color: 'var(--text-secondary)' }}>Note:</strong> This AI assessment is a screening tool, not a clinical diagnosis. Always consult a qualified educational psychologist for a comprehensive evaluation.
+                <div style={{
+                  padding: '14px 16px',
+                  background: 'var(--bg-elevated)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 'var(--radius-md)',
+                  fontSize: 13,
+                  color: 'var(--text-secondary)',
+                  lineHeight: 1.7
+                }}>
+                  <strong style={{ color: 'var(--text-secondary)' }}>📌 Note:</strong> This AI assessment is a screening tool, not a clinical diagnosis. Always consult a qualified educational psychologist for a comprehensive evaluation.
                 </div>
-                <Button
-                  variant="ghost" fullWidth
-                  iconRight={<ArrowRight size={14} />}
-                  style={{ marginTop: 16 }}
+                <button
+                  style={{
+                    width: '100%',
+                    marginTop: 16,
+                    padding: '12px 16px',
+                    background: 'white',
+                    border: '1px solid var(--border)',
+                    color: 'var(--primary)',
+                    borderRadius: 'var(--radius-lg)',
+                    fontSize: 14,
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    transition: 'all 0.3s cubic-bezier(0.2, 0, 0, 1)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 8
+                  }}
                   onClick={() => navigate('/parent/progress')}
+                  onMouseEnter={e => {
+                    e.target.style.background = 'var(--bg-elevated)'
+                    e.target.style.borderColor = 'var(--primary)'
+                  }}
+                  onMouseLeave={e => {
+                    e.target.style.background = 'white'
+                    e.target.style.borderColor = 'var(--border)'
+                  }}
                 >
                   View full progress history
-                </Button>
+                  <ArrowRight size={14} />
+                </button>
               </div>
             </motion.div>
           </div>
