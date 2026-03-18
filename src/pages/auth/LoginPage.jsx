@@ -10,6 +10,20 @@ import toast from 'react-hot-toast'
 
 import { auth, googleProvider, GoogleAuthProvider, signInWithPopup } from '../../firebase'
 
+// Add placeholder color styling
+const placeholderStyle = `
+  input::placeholder {
+    color: #9aa0a6 !important;
+    opacity: 1 !important;
+  }
+  input::-ms-input-placeholder {
+    color: #9aa0a6 !important;
+  }
+  input::-webkit-input-placeholder {
+    color: #9aa0a6 !important;
+  }
+`
+
 const TABS = [
   { id: 'teacher', label: '🎓 Teacher', icon: GraduationCap },
   { id: 'parent',  label: '👨‍👩‍👧 Parent',  icon: Users },
@@ -85,12 +99,14 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      display: 'flex',
-      background: 'linear-gradient(135deg, #f8fafb 0%, #f3f7fc 100%)',
-    }}>
-      {/* ─── LEFT PANEL: HERO SECTION ─── */}
+    <>
+      <style>{placeholderStyle}</style>
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        background: 'linear-gradient(135deg, #f8fafb 0%, #f3f7fc 100%)',
+      }}>
+        {/* ─── LEFT PANEL: HERO SECTION ─── */}
       <motion.div
         initial={{ opacity: 0, x: -40 }}
         animate={{ opacity: 1, x: 0 }}
@@ -165,10 +181,11 @@ export default function LoginPage() {
             </div>
             <div style={{
               fontSize: 12,
-              opacity: 0.9,
+              opacity: 0.95,
               letterSpacing: '0.8px',
               textTransform: 'uppercase',
               fontWeight: 600,
+              color: 'rgba(255, 255, 255, 0.95)',
             }}>
               AI Learning Platform
             </div>
@@ -203,9 +220,10 @@ export default function LoginPage() {
             fontSize: 18,
             lineHeight: 1.7,
             marginBottom: 56,
-            opacity: 0.95,
+            opacity: 1,
             maxWidth: 520,
             fontWeight: 400,
+            color: 'rgba(255, 255, 255, 0.98)',
           }}
         >
           Our AI-powered handwriting analysis identifies learning disorders like dyslexia and dysgraphia in seconds, giving educators and parents the insights they need to support every student's success.
@@ -256,7 +274,8 @@ export default function LoginPage() {
               </div>
               <div style={{
                 fontSize: 13,
-                opacity: 0.85,
+                opacity: 0.95,
+                color: 'rgba(255, 255, 255, 0.95)',
               }}>
                 {feature.desc}
               </div>
@@ -328,7 +347,7 @@ export default function LoginPage() {
           </h2>
           <p style={{
             fontSize: 15,
-            color: '#5f6368',
+            color: '#3c4043',
             lineHeight: 1.6,
           }}>
             Sign in to your account to continue. New here?{' '}
@@ -385,7 +404,7 @@ export default function LoginPage() {
             display: 'block',
             fontSize: 12,
             fontWeight: 700,
-            color: '#80868b',
+            color: '#3c4043',
             marginBottom: 12,
             textTransform: 'uppercase',
             letterSpacing: '0.5px',
@@ -407,7 +426,7 @@ export default function LoginPage() {
                   border: tab === t.id ? '2px solid #1a73e8' : '2px solid #e8eaed',
                   background: tab === t.id ? '#e8f0fe' : 'transparent',
                   borderRadius: 10,
-                  color: tab === t.id ? '#1a73e8' : '#5f6368',
+                  color: tab === t.id ? '#1a73e8' : '#202124',
                   fontWeight: 700,
                   fontSize: 14,
                   cursor: 'pointer',
@@ -488,7 +507,7 @@ export default function LoginPage() {
           }} />
           <span style={{
             fontSize: 13,
-            color: '#80868b',
+            color: '#3c4043',
             fontWeight: 600,
           }}>
             OR
@@ -688,7 +707,7 @@ export default function LoginPage() {
             marginTop: 32,
             textAlign: 'center',
             fontSize: 12,
-            color: '#5f6368',
+            color: '#3c4043',
             lineHeight: 1.8,
           }}
         >
@@ -711,5 +730,6 @@ export default function LoginPage() {
         </motion.div>
       </motion.div>
     </div>
+    </>
   )
 }
