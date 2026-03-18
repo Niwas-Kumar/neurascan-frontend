@@ -198,13 +198,13 @@ function ProfileSection({ user, isTeacher }) {
   const handleSave = async () => {
     setLoading(true)
     try {
-      const updateData = { name: form.name, school: isTeacher ? form.school : undefined }
-      // NOTE: calls PUT /api/auth/profile (new backend endpoint)
+      const updateData = { name: form.name, school: isTeacher ? form.school : undefined, studentId: !isTeacher ? form.studentId : undefined }
+      // NOTE: calls PUT /api/auth/profile - now includes studentId for parents
       const res = await authAPI.updateProfile(updateData)
       if (res.data?.success) {
         updateUser(res.data.data)
       }
-      // Save student ID to localStorage for parents
+      // Save student ID to localStorage for parents as well
       if (!isTeacher && form.studentId) {
         localStorage.setItem('ns_studentId', form.studentId)
       }
