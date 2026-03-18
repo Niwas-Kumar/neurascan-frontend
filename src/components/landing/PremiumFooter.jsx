@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { Mail, MapPin, Phone, Twitter, Linkedin, Github } from 'lucide-react'
-import { BrandLogo } from '../shared/PremiumUI'
+import { BrandLogo } from '../shared/PremiumUI.jsx'
 
 export default function PremiumFooter() {
   const currentYear = new Date().getFullYear()

@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { Award, Users, Target } from 'lucide-react'
 import PremiumNavbar from '../../components/landing/PremiumNavbar'
 import PremiumFooter from '../../components/landing/PremiumFooter'
-import { Badge, IconBox } from '../../components/shared/PremiumUI'
+import { Badge, IconBox } from '../../components/shared/PremiumUI.jsx'
 import '../../styles/designSystem.css'
 
 export default function AboutPage() {

@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Menu, X } from 'lucide-react'
-import { BrandLogo, PremiumButton } from '../shared/PremiumUI'
+import { BrandLogo, PremiumButton } from '../shared/PremiumUI.jsx'
 
 export default function PremiumNavbar() {
   const [mobileOpen, setMobileOpen] = useState(false)
