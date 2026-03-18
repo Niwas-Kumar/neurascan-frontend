@@ -196,11 +196,11 @@ export default function LoginPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
           style={{
-            fontSize: 48,
-            fontWeight: 800,
-            lineHeight: 1.15,
+            fontSize: 42,
+            fontWeight: 700,
+            lineHeight: 1.2,
             marginBottom: 24,
-            letterSpacing: '-1.5px',
+            letterSpacing: '-0.8px',
             fontFamily: 'system-ui, -apple-system, sans-serif',
           }}
         >

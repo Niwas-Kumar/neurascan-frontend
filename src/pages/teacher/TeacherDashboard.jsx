@@ -121,10 +121,10 @@ export default function TeacherDashboard() {
         marginBottom: 48,
       }}>
         <h1 style={{
-          fontSize: 40,
-          fontWeight: 800,
+          fontSize: 32,
+          fontWeight: 700,
           color: '#202124',
-          letterSpacing: '-1px',
+          letterSpacing: '-0.5px',
           marginBottom: 8,
           fontFamily: 'system-ui, -apple-system, sans-serif',
         }}>
@@ -212,10 +212,10 @@ export default function TeacherDashboard() {
         }}>
           <div>
             <h1 style={{
-              fontSize: 40,
-              fontWeight: 800,
+              fontSize: 32,
+              fontWeight: 700,
               color: '#202124',
-              letterSpacing: '-1px',
+              letterSpacing: '-0.5px',
               marginBottom: 8,
               fontFamily: 'system-ui, -apple-system, sans-serif',
             }}>
@@ -345,8 +345,8 @@ export default function TeacherDashboard() {
                 marginBottom: 8,
               }}>Total Students</p>
               <p style={{
-                fontSize: 36,
-                fontWeight: 800,
+                fontSize: 32,
+                fontWeight: 700,
                 color: '#202124',
                 fontFamily: 'system-ui, -apple-system, sans-serif',
               }}>{dash?.totalStudents ?? 0}</p>
@@ -397,8 +397,8 @@ export default function TeacherDashboard() {
                 marginBottom: 8,
               }}>Papers Uploaded</p>
               <p style={{
-                fontSize: 36,
-                fontWeight: 800,
+                fontSize: 32,
+                fontWeight: 700,
                 color: '#202124',
                 fontFamily: 'system-ui, -apple-system, sans-serif',
               }}>{dash?.totalPapersUploaded ?? 0}</p>
@@ -449,8 +449,8 @@ export default function TeacherDashboard() {
                 marginBottom: 8,
               }}>Students at Risk</p>
               <p style={{
-                fontSize: 36,
-                fontWeight: 800,
+                fontSize: 32,
+                fontWeight: 700,
                 color: '#202124',
                 fontFamily: 'system-ui, -apple-system, sans-serif',
               }}>{dash?.studentsAtRisk ?? 0}</p>
@@ -501,8 +501,8 @@ export default function TeacherDashboard() {
                 marginBottom: 8,
               }}>Avg. Dyslexia Score</p>
               <p style={{
-                fontSize: 36,
-                fontWeight: 800,
+                fontSize: 32,
+                fontWeight: 700,
                 color: '#202124',
                 fontFamily: 'system-ui, -apple-system, sans-serif',
               }}>{dash?.averageDyslexiaScore?.toFixed(1) ?? 0}%</p>
@@ -533,8 +533,8 @@ export default function TeacherDashboard() {
           }}
         >
           <h3 style={{
-            fontSize: 18,
-            fontWeight: 700,
+            fontSize: 16,
+            fontWeight: 600,
             color: '#202124',
             marginBottom: 24,
             fontFamily: 'system-ui, -apple-system, sans-serif',
@@ -582,8 +582,8 @@ export default function TeacherDashboard() {
           }}
         >
           <h3 style={{
-            fontSize: 18,
-            fontWeight: 700,
+            fontSize: 16,
+            fontWeight: 600,
             color: '#202124',
             marginBottom: 24,
             fontFamily: 'system-ui, -apple-system, sans-serif',
@@ -625,8 +625,8 @@ export default function TeacherDashboard() {
             marginBottom: 20,
           }}>
             <h3 style={{
-              fontSize: 20,
-              fontWeight: 700,
+              fontSize: 18,
+              fontWeight: 600,
               color: '#202124',
               fontFamily: 'system-ui, -apple-system, sans-serif',
             }}>Recent Reports</h3>

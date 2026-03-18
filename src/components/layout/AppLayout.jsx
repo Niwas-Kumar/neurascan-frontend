@@ -15,10 +15,10 @@ import toast from 'react-hot-toast'
 const teacherNav = [
   { to: '/teacher/dashboard', icon: LayoutDashboard, label: 'Dashboard',    badge: null },
   { to: '/teacher/students',  icon: Users,           label: 'Students',     badge: null },
-  { to: '/teacher/upload',    icon: Upload,          label: 'Upload Paper', badge: 'new' },
+  { to: '/teacher/upload',    icon: Upload,          label: 'Upload Paper', badge: null },
   { to: '/teacher/analytics', icon: TrendingUp,      label: 'Analytics',    badge: null },
   { to: '/teacher/reports',   icon: FileText,        label: 'Reports',      badge: null },
-  { to: '/teacher/quizzes',   icon: FileText,        label: 'Quizzes',      badge: 'new' },
+  { to: '/teacher/quizzes',   icon: FileText,        label: 'Quizzes',      badge: null },
   { to: '/teacher/settings',  icon: Settings,        label: 'Settings',     badge: null },
 ]
 
