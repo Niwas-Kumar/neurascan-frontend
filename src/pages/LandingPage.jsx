@@ -8,7 +8,7 @@ import {
 import { BrandLogo, PremiumButton, PremiumCard, Badge, IconBox } from '../components/shared/PremiumUI.jsx'
 import PremiumNavbar from '../components/landing/PremiumNavbar.jsx'
 import PremiumFooter from '../components/landing/PremiumFooter.jsx'
-import '../../styles/designSystem.css'
+import '../styles/designSystem.css'
 
 const containerVariants = {
   hidden: { opacity: 0 },
