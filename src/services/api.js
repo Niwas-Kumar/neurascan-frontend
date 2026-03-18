@@ -26,7 +26,14 @@ api.interceptors.response.use(
     // Auth endpoints (login, register, forgot/reset password) should handle their own errors
     const url = err.config?.url || ''
     const isAuthEndpoint = url.includes('/auth/')
-    if (err.response?.status === 401 && !isAuthEndpoint) {
+    const errorMessage = err.response?.data?.message || ''
+    
+    // ✅ IMPROVED: Don't logout if it's just a missing studentId configuration
+    // This is a user config issue, not a session/auth issue
+    const isStudentIdMissing = errorMessage.includes('STUDENT_ID_NOT_SET') || 
+                               errorMessage.includes('Student ID not set in your profile')
+    
+    if (err.response?.status === 401 && !isAuthEndpoint && !isStudentIdMissing) {
       // ✅ FIX: Only clear authentication token, preserve other data (studentId, userId, etc)
       // This allows parents to re-login without losing their child's student ID
       localStorage.removeItem('ns_token')
