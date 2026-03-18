@@ -49,7 +49,7 @@ export function BrandLogo({ size = 44, variant = 'full', animated = false }) {
           <div
             style={{
               fontFamily: 'var(--font-display)',
-              fontWeight: var(--font-bold),
+              fontWeight: 'var(--font-bold)',
               fontSize: `calc(${size}px * 0.5)`,
               color: 'var(--color-primary)',
               letterSpacing: 'var(--letter-spacing-tight)',
