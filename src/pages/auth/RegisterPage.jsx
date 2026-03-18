@@ -252,14 +252,14 @@ export default function RegisterPage() {
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-page)', padding: 20 }}>
 
       {/* ── Return Home Link ── */}
-      <Link to="/login" style={{
+      <Link to="/" style={{
         position: 'absolute', top: 28, left: 36, display: 'flex', alignItems: 'center', gap: 8,
         color: 'var(--text-muted)', textDecoration: 'none', fontSize: 13, fontWeight: 500, zIndex: 10, transition: 'all 0.3s ease'
       }}
       onMouseEnter={e => e.target.style.color = 'var(--primary)'}
       onMouseLeave={e => e.target.style.color = 'var(--text-muted)'}
       className="hide-mobile">
-        <ArrowLeft size={16} /> Back to Sign in
+        <ArrowLeft size={16} /> Back to Home
       </Link>
 
       <motion.div
@@ -279,16 +279,21 @@ export default function RegisterPage() {
         <div style={{ height: 4, background: 'var(--primary)' }} />
 
         <div style={{ padding: '36px 44px' }}>
-          {/* Header */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 28 }}>
-            <div style={{ width: 44, height: 44, borderRadius: 12, background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Brain size={22} color="#fff" strokeWidth={2.5} />
+          {/* Header - Logo clickable to go home */}
+          <Link to="/" style={{ textDecoration: 'none', display: 'inline-flex', cursor: 'pointer' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 28, transition: 'all 0.3s ease' }}
+              onMouseEnter={e => e.currentTarget.style.opacity = '0.8'}
+              onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+            >
+              <div style={{ width: 44, height: 44, borderRadius: 12, background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Brain size={22} color="#fff" strokeWidth={2.5} />
+              </div>
+              <div>
+                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 20, color: 'var(--text-primary)' }}>NeuraScan</div>
+                <div style={{ fontSize: 11, color: 'var(--text-light)', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 500 }}>Create Account</div>
+              </div>
             </div>
-            <div>
-              <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 20, color: 'var(--text-primary)' }}>NeuraScan</div>
-              <div style={{ fontSize: 11, color: 'var(--text-light)', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 500 }}>Create Account</div>
-            </div>
-          </div>
+          </Link>
 
           <ProgressSteps steps={STEPS} current={step} />
 

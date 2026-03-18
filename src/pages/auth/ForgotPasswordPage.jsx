@@ -84,13 +84,18 @@ export default function ForgotPasswordPage() {
       >
         <div style={{ height: 4, background: 'var(--primary)' }} />
         <div style={{ padding: '36px 40px' }}>
-          {/* Logo */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 40 }}>
-            <div style={{ width: 36, height: 36, borderRadius: 9, background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Brain size={18} color="#fff" strokeWidth={2.5} />
+          {/* Logo - Clickable to go home */}
+          <Link to="/" style={{ textDecoration: 'none', display: 'inline-flex', cursor: 'pointer' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 40, transition: 'all 0.3s ease' }}
+              onMouseEnter={e => e.currentTarget.style.opacity = '0.8'}
+              onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+            >
+              <div style={{ width: 36, height: 36, borderRadius: 9, background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Brain size={18} color="#fff" strokeWidth={2.5} />
+              </div>
+              <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 17, color: 'var(--text-primary)' }}>NeuraScan</span>
             </div>
-            <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 17, color: 'var(--text-primary)' }}>NeuraScan</span>
-          </div>
+          </Link>
 
           {!sent ? (
             <>
@@ -148,8 +153,8 @@ export default function ForgotPasswordPage() {
           )}
 
           <div style={{ marginTop: 24, paddingTop: 20, borderTop: '1px solid var(--border)', textAlign: 'center' }}>
-            <Link to="/login" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-secondary)', textDecoration: 'none', fontWeight: 500 }}>
-              <ArrowLeft size={14} /> Back to sign in
+            <Link to="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-secondary)', textDecoration: 'none', fontWeight: 500 }}>
+              <ArrowLeft size={14} /> Back to Home
             </Link>
           </div>
         </div>

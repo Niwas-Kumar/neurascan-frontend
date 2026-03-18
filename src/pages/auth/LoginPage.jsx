@@ -142,53 +142,68 @@ export default function LoginPage() {
           borderRadius: '50%',
         }} />
 
-        {/* Logo Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 16,
-            marginBottom: 80,
-            position: 'relative',
-            zIndex: 1,
-          }}
-        >
-          <div style={{
-            width: 56,
-            height: 56,
-            borderRadius: 16,
-            background: 'rgba(255, 255, 255, 0.95)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
-          }}>
-            <Brain size={32} color="#1a73e8" strokeWidth={2} />
-          </div>
-          <div>
+        {/* Logo Section - Clickable to go home */}
+        <Link to="/" style={{ textDecoration: 'none' }}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 16,
+              marginBottom: 80,
+              position: 'relative',
+              zIndex: 1,
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.transform = 'translateY(-4px)'
+              e.currentTarget.style.opacity = '0.9'
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.transform = 'translateY(0)'
+              e.currentTarget.style.opacity = '1'
+            }}
+          >
             <div style={{
-              fontSize: 28,
-              fontWeight: 800,
-              letterSpacing: '-0.5px',
-              fontFamily: 'system-ui, -apple-system, sans-serif',
+              width: 56,
+              height: 56,
+              borderRadius: 16,
+              background: 'rgba(255, 255, 255, 0.95)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
+              transition: 'all 0.3s ease',
             }}>
-              NeuraScan
+              <Brain size={32} color="#1a73e8" strokeWidth={2} />
             </div>
-            <div style={{
-              fontSize: 12,
-              opacity: 0.95,
-              letterSpacing: '0.8px',
-              textTransform: 'uppercase',
-              fontWeight: 600,
-              color: 'rgba(255, 255, 255, 0.95)',
-            }}>
-              AI Learning Platform
+            <div>
+              <div style={{
+                fontSize: 28,
+                fontWeight: 800,
+                letterSpacing: '-0.5px',
+                fontFamily: 'system-ui, -apple-system, sans-serif',
+                transition: 'all 0.3s ease',
+              }}>
+                NeuraScan
+              </div>
+              <div style={{
+                fontSize: 12,
+                opacity: 0.95,
+                letterSpacing: '0.8px',
+                textTransform: 'uppercase',
+                fontWeight: 600,
+                color: 'rgba(255, 255, 255, 0.95)',
+                transition: 'all 0.3s ease',
+              }}>
+                AI Learning Platform
+              </div>
             </div>
-          </div>
-        </motion.div>
+          </motion.div>
+        </Link>
 
         {/* Hero Headline */}
         <motion.h1
@@ -304,24 +319,28 @@ export default function LoginPage() {
           gap: 12,
           marginBottom: 40,
         }} className="show-mobile">
-          <div style={{
-            width: 44,
-            height: 44,
-            borderRadius: 12,
-            background: '#1a73e8',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-            <Brain size={24} color="white" strokeWidth={2} />
-          </div>
-          <span style={{
-            fontSize: 20,
-            fontWeight: 800,
-            color: '#202124',
-          }}>
-            NeuraScan
-          </span>
+          <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none', cursor: 'pointer' }}>
+            <div style={{
+              width: 44,
+              height: 44,
+              borderRadius: 12,
+              background: '#1a73e8',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.3s ease',
+            }}>
+              <Brain size={24} color="white" strokeWidth={2} />
+            </div>
+            <span style={{
+              fontSize: 20,
+              fontWeight: 800,
+              color: '#202124',
+              transition: 'all 0.3s ease',
+            }}>
+              NeuraScan
+            </span>
+          </Link>
         </div>
 
         {/* Form Header */}
