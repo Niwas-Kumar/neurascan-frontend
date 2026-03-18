@@ -93,14 +93,19 @@ export default function QuizProgressPage() {
     setLoading(true)
     setNoStudentId(false)
     
-    if (!user?.studentId) {
+    // ✅ IMPROVED: Check both user object and localStorage for studentId
+    const sid = user?.studentId || localStorage.getItem('ns_studentId')
+    
+    if (!sid) {
+      console.warn('No studentId found in user object or localStorage')
       setNoStudentId(true)
       toast.error('No linked student assigned yet')
       setLoading(false)
       return
     }
 
-    quizAPI.getStudentResponses(user.studentId)
+    console.log('Loading quiz progress for studentId:', sid)
+    quizAPI.getStudentResponses(sid)
       .then(r => setResponses(r.data.data || []))
       .catch(err => {
         // ✅ IMPROVED: Handle specific error messages from backend
@@ -119,7 +124,7 @@ export default function QuizProgressPage() {
 
   useEffect(() => {
     load()
-  }, [user?.studentId])
+  }, [user?.studentId, user?.userId])  // Reload if studentId or userId changes
 
   const average = responses.length > 0 ? (responses.reduce((sum, x) => sum + (x.score || 0), 0) / responses.length).toFixed(1) : 0
 

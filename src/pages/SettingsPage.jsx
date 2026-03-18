@@ -201,17 +201,25 @@ function ProfileSection({ user, isTeacher }) {
       const updateData = { name: form.name, school: isTeacher ? form.school : undefined, studentId: !isTeacher ? form.studentId : undefined }
       // NOTE: calls PUT /api/auth/profile - now includes studentId for parents
       const res = await authAPI.updateProfile(updateData)
+      
       if (res.data?.success) {
-        updateUser(res.data.data)
-      }
-      // Save student ID to localStorage for parents as well
-      if (!isTeacher && form.studentId) {
-        localStorage.setItem('ns_studentId', form.studentId)
+        // ✅ IMPROVED: Update user object with response (which contains the updated studentId from Firestore)
+        const profileData = res.data.data || {}
+        
+        // For parents, also ensure studentId is explicitly set if provided
+        if (!isTeacher && form.studentId) {
+          localStorage.setItem('ns_studentId', form.studentId)
+          // Ensure studentId is in the update if not returned from server
+          profileData.studentId = profileData.studentId || form.studentId
+        }
+        
+        updateUser(profileData)
       }
       setSaved(true)
       toast.success('Profile updated!')
       setTimeout(() => setSaved(false), 2500)
     } catch (err) {
+      console.error('Profile update error:', err)
       toast.error(err.response?.data?.message || 'Update failed')
     } finally { setLoading(false) }
   }
