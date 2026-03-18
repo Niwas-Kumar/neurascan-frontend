@@ -211,7 +211,13 @@ function StudentForm({ student, onClose, onSave }) {
     if (!form.name)      e.name      = 'Name is required'
     if (!form.rollNumber) e.rollNumber = 'Roll No is required'
     if (!form.className) e.className = 'Class is required'
-    if (!form.age || form.age < 1) e.age = 'Valid age required'
+    
+    // ✅ Improved age validation
+    const age = parseInt(form.age, 10)
+    if (!form.age || isNaN(age) || age < 1 || age > 100) {
+      e.age = 'Age must be between 1 and 100'
+    }
+    
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -221,14 +227,20 @@ function StudentForm({ student, onClose, onSave }) {
     if (!validate()) return
     setLoading(true)
     try {
-      const payload = { name: form.name, rollNumber: form.rollNumber, className: form.className, age: Number(form.age) }
+      // ✅ Ensure age is a valid integer
+      const age = parseInt(form.age, 10)
+      if (isNaN(age) || age < 1 || age > 100) {
+        throw new Error('Invalid age value')
+      }
+      
+      const payload = { name: form.name, rollNumber: form.rollNumber, className: form.className, age }
       if (isEdit) await optimizedStudentAPI.update(student.id, payload)
       else        await optimizedStudentAPI.create(payload)
       toast.success(`Student ${isEdit ? 'updated' : 'added'} successfully`)
       onSave()
       onClose()
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to save')
+      toast.error(err.response?.data?.message || err.message || 'Failed to save')
     } finally { setLoading(false) }
   }
 
