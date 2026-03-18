@@ -5,13 +5,35 @@ import { Brain, Mail, ArrowLeft, CheckCircle } from 'lucide-react'
 import { authAPI } from '../../services/api'
 import toast from 'react-hot-toast'
 
-const Input = ({ label, type = 'text', value, onChange, placeholder, error, required }) => (
-  <div style={{ marginBottom: 18 }}>
-    {label && <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>{label}</label>}
-    <input type={type} value={value} onChange={onChange} placeholder={placeholder} required={required} style={{ width: '100%', padding: '12px 14px', border: `1px solid ${error ? 'var(--danger)' : 'var(--border)'}`, borderRadius: 'var(--radius-lg)', fontSize: 14, color: 'var(--text-primary)', background: 'var(--bg-surface)', transition: 'all 0.3s ease' }} onFocus={e => { e.target.style.borderColor = 'var(--primary)'; e.target.style.boxShadow = '0 0 0 3px rgba(26, 115, 232, 0.15)' }} onBlur={e => { e.target.style.borderColor = error ? 'var(--danger)' : 'var(--border)'; e.target.style.boxShadow = 'none' }} />
-    {error && <div style={{ marginTop: 4, fontSize: 12, color: 'var(--danger)' }}>{error}</div>}
-  </div>
-)
+const Input = ({ label, type = 'text', value, onChange, placeholder, error, required }) => {
+  const [isFocused, setIsFocused] = useState(false)
+  return (
+    <div style={{ marginBottom: 18 }}>
+      {label && <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>{label}</label>}
+      <input 
+        type={type} 
+        value={value} 
+        onChange={onChange} 
+        placeholder={placeholder} 
+        required={required} 
+        style={{ 
+          width: '100%', 
+          padding: '12px 14px', 
+          border: isFocused ? '2px solid var(--primary)' : `1px solid ${error ? 'var(--danger)' : 'var(--border)'}`, 
+          borderRadius: 'var(--radius-lg)', 
+          fontSize: 14, 
+          color: 'var(--text-primary)', 
+          background: 'var(--bg-surface)', 
+          transition: 'all 0.3s ease',
+          boxShadow: isFocused ? '0 0 0 3px rgba(26, 115, 232, 0.15)' : 'none'
+        }} 
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
+      />
+      {error && <div style={{ marginTop: 4, fontSize: 12, color: 'var(--danger)' }}>{error}</div>}
+    </div>
+  )
+}
 
 const Button = ({ fullWidth, size = 'md', loading, children, onClick, disabled, type = 'button' }) => {
   const sizeMap = { lg: { padding: '14px 20px', fontSize: 15 }, md: { padding: '10px 16px', fontSize: 14 } }

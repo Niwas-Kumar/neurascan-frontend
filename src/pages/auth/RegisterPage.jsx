@@ -132,39 +132,37 @@ export default function RegisterPage() {
   }, [step])
 
   // ── Inline Components ──
-  const Input = ({ label, type = 'text', value, onChange, placeholder, error, hint, ref, style }) => (
-    <div style={{ marginBottom: 18 }}>
-      {label && <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>{label}</label>}
-      <input
-        ref={ref}
-        type={type}
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        style={{
-          width: '100%',
-          padding: '12px 14px',
-          border: `1px solid ${error ? 'var(--danger)' : 'var(--border)'}`,
-          borderRadius: 'var(--radius-lg)',
-          fontSize: 14,
-          color: 'var(--text-primary)',
-          background: 'var(--bg-surface)',
-          transition: 'all 0.3s ease',
-          ...style
-        }}
-        onFocus={e => {
-          e.target.style.borderColor = 'var(--primary)'
-          e.target.style.boxShadow = '0 0 0 3px rgba(26, 115, 232, 0.15)'
-        }}
-        onBlur={e => {
-          e.target.style.borderColor = error ? 'var(--danger)' : 'var(--border)'
-          e.target.style.boxShadow = 'none'
-        }}
-      />
-      {error && <div style={{ marginTop: 4, fontSize: 12, color: 'var(--danger)' }}>{error}</div>}
-      {hint && <div style={{ marginTop: 4, fontSize: 12, color: 'var(--text-muted)' }}>{hint}</div>}
-    </div>
-  )
+  const Input = ({ label, type = 'text', value, onChange, placeholder, error, hint, ref, style }) => {
+    const [isFocused, setIsFocused] = useState(false)
+    return (
+      <div style={{ marginBottom: 18 }}>
+        {label && <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>{label}</label>}
+        <input
+          ref={ref}
+          type={type}
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+          style={{
+            width: '100%',
+            padding: '12px 14px',
+            border: isFocused ? '2px solid var(--primary)' : `1px solid ${error ? 'var(--danger)' : 'var(--border)'}`,
+            borderRadius: 'var(--radius-lg)',
+            fontSize: 14,
+            color: 'var(--text-primary)',
+            background: 'var(--bg-surface)',
+            transition: 'all 0.3s ease',
+            boxShadow: isFocused ? '0 0 0 3px rgba(26, 115, 232, 0.15)' : 'none',
+            ...style
+          }}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+        />
+        {error && <div style={{ marginTop: 4, fontSize: 12, color: 'var(--danger)' }}>{error}</div>}
+        {hint && <div style={{ marginTop: 4, fontSize: 12, color: 'var(--text-muted)' }}>{hint}</div>}
+      </div>
+    )
+  }
 
   const Button = ({ fullWidth, size = 'md', loading, children, onClick, disabled, icon, iconRight, variant = 'primary', style }) => {
     const sizeMap = { lg: { padding: '14px 20px', fontSize: 15, height: 'auto' }, md: { padding: '10px 16px', fontSize: 14 }, sm: { padding: '8px 12px', fontSize: 13 } }
