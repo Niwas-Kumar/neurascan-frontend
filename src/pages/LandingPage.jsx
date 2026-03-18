@@ -356,10 +356,6 @@ function HowItWorksSection() {
                   width: 40,
                   height: 2,
                   background: 'var(--primary-gradient)',
-                  display: 'none',
-                  '@media (min-width: 1024px)': {
-                    display: 'block',
-                  },
                 }} />
               )}
             </motion.div>

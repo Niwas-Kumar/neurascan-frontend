@@ -45,9 +45,6 @@ export default function PremiumNavbar() {
           display: 'flex',
           gap: 40,
           alignItems: 'center',
-          '@media (max-width: 1024px)': {
-            display: 'none',
-          },
         }}>
           {navLinks.map(({ label, href }) => (
             <a
@@ -76,7 +73,7 @@ export default function PremiumNavbar() {
           <Link to="/login">
             <PremiumButton variant="ghost">Sign In</PremiumButton>
           </Link>
-          <Link to="/register" style={{ display: 'none', '@media (max-width: 640px)': { display: 'none' } }}>
+          <Link to="/register">
             <PremiumButton>Get Started</PremiumButton>
           </Link>
 
@@ -84,9 +81,6 @@ export default function PremiumNavbar() {
           <button
             style={{
               display: 'none',
-              '@media (max-width: 1024px)': {
-                display: 'flex',
-              },
               background: 'none',
               border: 'none',
               cursor: 'pointer',
