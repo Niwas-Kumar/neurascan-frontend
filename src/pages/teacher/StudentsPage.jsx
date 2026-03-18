@@ -347,12 +347,22 @@ export default function StudentsPage() {
   const [modal, setModal]       = useState(null)
   const debouncedSearch = useDebounce(search, 250)
 
-  const load = () => {
+  const load = async () => {
     setLoading(true)
-    optimizedStudentAPI.getAll()
-      .then(r => setStudents(r.data.data || []))
-      .catch(() => toast.error('Failed to load students'))
-      .finally(() => setLoading(false))
+    try {
+      // Use retry logic immediately after student is created/updated
+      const result = await optimizedStudentAPI.getAllWithIndexRetry()
+      setStudents(result.data.data || [])
+      if (result.attempts > 1) {
+        console.log(`✅ Found students after ${result.attempts} attempts`)
+      }
+    } catch (error) {
+      console.error('Failed to load students:', error)
+      toast.error('Failed to load students')
+      setStudents([])
+    } finally {
+      setLoading(false)
+    }
   }
   
   useEffect(() => { load() }, [])

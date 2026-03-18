@@ -67,6 +67,44 @@ export const optimizedStudentAPI = {
     return requestCache.setPendingRequest(cacheKey, request)
   },
 
+  getAllWithIndexRetry: async (maxRetries = 5, delayMs = 300) => {
+    // Special method that retries on empty results (Firestore index delay)
+    console.log('📚 [LOAD_RETRY] Starting student load with Firestore index retry...')
+    
+    for (let i = 0; i < maxRetries; i++) {
+      try {
+        // Skip cache for retry attempts - always hit server
+        const res = await retryWithBackoff(() => studentAPI.getAll())
+        const students = res.data.data || []
+        
+        console.log(`📚 [LOAD_ATTEMPT ${i + 1}/${maxRetries}] Got ${students.length} students`)
+        
+        // If we got students OR this is the last retry, return
+        if (students.length > 0 || i === maxRetries - 1) {
+          // Cache successful result
+          if (students.length > 0) {
+            requestCache.set('students/all', students, 10 * 60 * 1000)
+            console.log(`✅ [LOAD_SUCCESS] Student list cached`)
+          }
+          return { success: students.length > 0, data: { data: students }, attempts: i + 1 }
+        }
+        
+        // Wait before retry (exponential backoff: 300ms, 600ms, 1.2s, 2.4s, 4.8s)
+        const wait = delayMs * Math.pow(2, i)
+        console.warn(`⏳ [LOAD_WAIT] Waiting ${wait}ms before retry ${i + 2}/${maxRetries} (Firestore index update in progress)`)
+        await new Promise(r => setTimeout(r, wait))
+        
+      } catch (error) {
+        console.error(`❌ [LOAD_ERROR_${i + 1}] Error on attempt ${i + 1}: ${error.message}`)
+        if (i === maxRetries - 1) throw error
+        const wait = delayMs * Math.pow(2, i)
+        await new Promise(r => setTimeout(r, wait))
+      }
+    }
+    
+    return { success: false, data: { data: [] }, attempts: maxRetries }
+  },
+
   getById: (id) => {
     const cacheKey = `students/${id}`
     const cached = requestCache.get(cacheKey)
