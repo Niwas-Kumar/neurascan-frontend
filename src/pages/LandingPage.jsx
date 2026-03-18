@@ -5,9 +5,9 @@ import {
   Brain, Zap, Shield, BarChart3, TrendingUp, Users, Award, CheckCircle,
   Star, ArrowRight, Play, Quote, Mail, Lock
 } from 'lucide-react'
-import { BrandLogo, PremiumButton, PremiumCard, Badge, IconBox } from '../../components/shared/PremiumUI.jsx'
-import PremiumNavbar from '../../components/landing/PremiumNavbar.jsx'
-import PremiumFooter from '../../components/landing/PremiumFooter.jsx'
+import { BrandLogo, PremiumButton, PremiumCard, Badge, IconBox } from '../components/shared/PremiumUI.jsx'
+import PremiumNavbar from '../components/landing/PremiumNavbar.jsx'
+import PremiumFooter from '../components/landing/PremiumFooter.jsx'
 import '../../styles/designSystem.css'
 
 const containerVariants = {

@@ -1,10 +1,10 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import { Award, Users, Target } from 'lucide-react'
-import PremiumNavbar from '../../components/landing/PremiumNavbar'
-import PremiumFooter from '../../components/landing/PremiumFooter'
-import { Badge, IconBox } from '../../components/shared/PremiumUI.jsx'
-import '../../styles/designSystem.css'
+import PremiumNavbar from '../components/landing/PremiumNavbar.jsx'
+import PremiumFooter from '../components/landing/PremiumFooter.jsx'
+import { Badge, IconBox } from '../components/shared/PremiumUI.jsx'
+import '../styles/designSystem.css'
 
 export default function AboutPage() {
   const stats = [

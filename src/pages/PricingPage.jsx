@@ -2,10 +2,10 @@ import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { CheckCircle, ArrowRight, Zap } from 'lucide-react'
-import { PremiumButton, Badge } from '../../components/shared/PremiumUI.jsx'
-import PremiumNavbar from '../../components/landing/PremiumNavbar.jsx'
-import PremiumFooter from '../../components/landing/PremiumFooter.jsx'
-import '../../styles/designSystem.css'
+import { PremiumButton, Badge } from '../components/shared/PremiumUI.jsx'
+import PremiumNavbar from '../components/landing/PremiumNavbar.jsx'
+import PremiumFooter from '../components/landing/PremiumFooter.jsx'
+import '../styles/designSystem.css'
 
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },

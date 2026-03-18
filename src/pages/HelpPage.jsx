@@ -1,10 +1,10 @@
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Search, MessageSquare, FileText, Video, CheckCircle } from 'lucide-react'
-import { Badge, PremiumButton } from '../../components/shared/PremiumUI.jsx'
-import PremiumNavbar from '../../components/landing/PremiumNavbar.jsx'
-import PremiumFooter from '../../components/landing/PremiumFooter.jsx'
-import '../../styles/designSystem.css'
+import { Badge, PremiumButton } from '../components/shared/PremiumUI.jsx'
+import PremiumNavbar from '../components/landing/PremiumNavbar.jsx'
+import PremiumFooter from '../components/landing/PremiumFooter.jsx'
+import '../styles/designSystem.css'
 
 export default function HelpPage() {
   const [searchTerm, setSearchTerm] = useState('')
