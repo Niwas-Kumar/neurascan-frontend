@@ -4,8 +4,6 @@ import { motion } from 'framer-motion'
 import { Brain, GraduationCap, Users, ArrowRight, LogIn } from 'lucide-react'
 import { authAPI } from '../../services/api'
 import { useAuth } from '../../context/AuthContext'
-import { PremiumButton, Badge } from '../../components/shared/PremiumUI.jsx'
-import PremiumAuthLayout from '../../components/auth/PremiumAuthLayout'
 import toast from 'react-hot-toast'
 
 import { auth, googleProvider, GoogleAuthProvider, signInWithPopup } from '../../firebase'

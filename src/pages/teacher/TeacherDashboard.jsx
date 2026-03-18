@@ -112,13 +112,77 @@ export default function TeacherDashboard() {
 
   // Show loading only if both are still loading
   if (loading && dashLoading && reportsLoading) return (
-    <div>
-      <PageHeader title="Dashboard" subtitle="Loading your data…" />
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 24 }}>
-        {[0,1,2,3].map(i => <SkeletonCard key={i} rows={2} />)}
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #f8fafb 0%, #f3f7fc 100%)',
+      padding: '32px 40px',
+    }}>
+      <div style={{
+        marginBottom: 48,
+      }}>
+        <h1 style={{
+          fontSize: 40,
+          fontWeight: 800,
+          color: '#202124',
+          letterSpacing: '-1px',
+          marginBottom: 8,
+          fontFamily: 'system-ui, -apple-system, sans-serif',
+        }}>
+          Loading Dashboard
+        </h1>
+        <p style={{
+          fontSize: 16,
+          color: '#5f6368',
+          lineHeight: 1.5,
+        }}>
+          Fetching your data...
+        </p>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: 20 }}>
-        <SkeletonCard rows={8} /><SkeletonCard rows={6} />
+
+      <style>{pulseStyle}</style>
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+        gap: 20,
+        marginBottom: 48,
+      }}>
+        {[0, 1, 2, 3].map(i => (
+          <div
+            key={i}
+            style={{
+              height: 140,
+              background: 'white',
+              borderRadius: 12,
+              border: '1px solid #dadce0',
+              animation: 'pulse 2s infinite',
+            }}
+          />
+        ))}
+      </div>
+
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(500px, 1fr))',
+        gap: 24,
+      }}>
+        <div
+          style={{
+            height: 400,
+            background: 'white',
+            border: '1px solid #dadce0',
+            borderRadius: 12,
+            animation: 'pulse 2s infinite',
+          }}
+        />
+        <div
+          style={{
+            height: 400,
+            background: 'white',
+            border: '1px solid #dadce0',
+            borderRadius: 12,
+            animation: 'pulse 2s infinite',
+          }}
+        />
       </div>
     </div>
   )
