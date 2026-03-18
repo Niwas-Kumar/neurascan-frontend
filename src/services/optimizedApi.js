@@ -80,28 +80,35 @@ export const optimizedStudentAPI = {
   },
 
   create: (data) => {
-    const request = retryWithBackoff(() => studentAPI.create(data))
-    // Clear list cache when creating new student
-    request.then(() => requestCache.clear('students/all'))
-    return request
+    // Returns a promise that clears cache BEFORE resolving
+    return retryWithBackoff(() => studentAPI.create(data))
+      .then((res) => {
+        // Clear cache BEFORE returning so subsequent getAll() calls get fresh data
+        requestCache.clear('students/all')
+        return res
+      })
   },
 
   update: (id, data) => {
-    const request = retryWithBackoff(() => studentAPI.update(id, data))
-    request.then(() => {
-      requestCache.clear(`students/${id}`)
-      requestCache.clear('students/all')
-    })
-    return request
+    // Returns a promise that clears cache BEFORE resolving
+    return retryWithBackoff(() => studentAPI.update(id, data))
+      .then((res) => {
+        // Clear caches BEFORE returning so subsequent getAll() and getById() calls get fresh data
+        requestCache.clear(`students/${id}`)
+        requestCache.clear('students/all')
+        return res
+      })
   },
 
   remove: (id) => {
-    const request = retryWithBackoff(() => studentAPI.remove(id))
-    request.then(() => {
-      requestCache.clear(`students/${id}`)
-      requestCache.clear('students/all')
-    })
-    return request
+    // Returns a promise that clears cache BEFORE resolving
+    return retryWithBackoff(() => studentAPI.remove(id))
+      .then((res) => {
+        // Clear caches BEFORE returning so subsequent getAll() and getById() calls get fresh data
+        requestCache.clear(`students/${id}`)
+        requestCache.clear('students/all')
+        return res
+      })
   },
 }
 
