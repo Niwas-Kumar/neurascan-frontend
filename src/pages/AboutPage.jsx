@@ -15,9 +15,9 @@ export default function AboutPage() {
   ]
 
   const team = [
-    { name: 'Dr. Sarah Chen', role: 'CEO & Co-founder', bio: 'PhD in Educational Psychology' },
-    { name: 'Prof. David Kumar', role: 'Chief Science Officer', bio: 'Leading AI researcher in learning sciences' },
-    { name: 'Elena Rodriguez', role: 'VP Product', bio: 'Former product lead at EdTech pioneer' },
+    { name: 'Niwas Kumar', role: 'CEO & Co-founder', bio: 'Software engineer with a passion for education technology' },
+    { name: 'Ratish Raj', role: 'Chief Science Officer', bio: 'Leading AI researcher in learning sciences' },
+    { name: 'Lavit Tyagi', role: 'VP Product', bio: 'Former product lead at EdTech pioneer' },
   ]
 
   const values = [
