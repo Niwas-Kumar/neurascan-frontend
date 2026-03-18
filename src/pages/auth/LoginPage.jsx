@@ -1,23 +1,18 @@
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Brain, GraduationCap, Users, ArrowRight, Zap, Shield, BarChart3 } from 'lucide-react'
+import { Brain, GraduationCap, Users, ArrowRight, LogIn } from 'lucide-react'
 import { authAPI } from '../../services/api'
 import { useAuth } from '../../context/AuthContext'
-import { Button, Input, Divider, Alert, Tabs } from '../../components/shared/UI'
+import { PremiumButton, Badge } from '../../components/shared/PremiumUI.jsx'
+import PremiumAuthLayout from '../../components/auth/PremiumAuthLayout'
 import toast from 'react-hot-toast'
 
 import { auth, googleProvider, GoogleAuthProvider, signInWithPopup } from '../../firebase'
 
 const TABS = [
-  { id: 'teacher', label: 'Teacher', icon: GraduationCap },
-  { id: 'parent',  label: 'Parent',  icon: Users },
-]
-
-const FEATURES = [
-  { icon: Zap,       title: 'Instant AI Analysis',     desc: 'Results in under 30 seconds per paper.' },
-  { icon: Shield,    title: 'FERPA Compliant',          desc: 'Student data is encrypted and protected.' },
-  { icon: BarChart3, title: 'Progress Tracking',        desc: 'Monitor improvements over time.' },
+  { id: 'teacher', label: '🎓 Teacher', icon: GraduationCap },
+  { id: 'parent',  label: '👨‍👩‍👧 Parent',  icon: Users },
 ]
 
 export default function LoginPage() {
@@ -59,11 +54,9 @@ export default function LoginPage() {
   }
 
   const handleGoogleLogin = async () => {
-    const id = toast.loading('Signing in with Google...')
+    const id = toast.loading('🔐 Signing in with Google...')
     try {
         const result = await signInWithPopup(auth, googleProvider)
-        // result.user.getIdToken() returns the Firebase ID token (audience: neurascan-8ada2)
-        // credential.idToken returns the Google ID token (audience: client-id)
         const idToken = await result.user.getIdToken()
         
         if (!idToken) {
@@ -92,192 +85,267 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{
-      minHeight: '100vh', display: 'flex',
-      background: '#f8f9fa',
-    }}>
-
-      {/* ── Left panel — branding ── */}
-      <motion.div
-        initial={{ opacity: 0, x: -30 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.5, ease: [0.2,0,0,1] }}
-        style={{
-          flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center',
-          padding: '60px 64px', background: '#fff',
-          borderRight: '1px solid #e8eaed',
-        }}
-        className="hide-mobile"
-      >
-        {/* Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 64 }}>
-          <div style={{
-            width: 44, height: 44, borderRadius: 12,
-            background: '#1a73e8',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <Brain size={24} color="#fff" strokeWidth={2.5} />
-          </div>
-          <div>
-            <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 20, color: '#202124', letterSpacing: '-0.3px' }}>NeuraScan</div>
-            <div style={{ fontSize: 11, color: '#80868b', letterSpacing: '0.08em', textTransform: 'uppercase' }}>AI Learning Platform</div>
-          </div>
-        </div>
-
-        <motion.h1
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1, duration: 0.4 }}
-          style={{ fontFamily: 'var(--font-display)', fontSize: 44, fontWeight: 700, letterSpacing: '-1px', lineHeight: 1.15, marginBottom: 16, color: '#202124' }}
-        >
-          Detect learning{' '}
-          <span style={{ color: '#1a73e8' }}>disorders early.</span>
-        </motion.h1>
-
-        <motion.p
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          style={{ color: '#5f6368', fontSize: 16, lineHeight: 1.75, marginBottom: 48, maxWidth: 440 }}
-        >
-          AI-powered handwriting analysis that identifies dyslexia and dysgraphia from student test papers — giving teachers and parents actionable insights within seconds.
-        </motion.p>
-
-        {/* Feature highlights */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-          {FEATURES.map(({ icon: Icon, title, desc }, i) => (
-            <motion.div
-              key={title}
-              initial={{ opacity: 0, x: -12 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 + i * 0.08 }}
-              style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}
-            >
-              <div style={{
-                width: 40, height: 40, borderRadius: 10, flexShrink: 0,
-                background: '#e8f0fe', 
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-              }}>
-                <Icon size={18} color="#1a73e8" strokeWidth={1.75} />
-              </div>
-              <div>
-                <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 2, color: '#202124' }}>{title}</div>
-                <div style={{ fontSize: 13, color: '#5f6368' }}>{desc}</div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Stats */}
+    <PremiumAuthLayout
+      title="Sign In"
+      subtitle="Welcome back to NeuraScan. Sign in to continue."
+    >
+      {expired && (
         <motion.div
-          initial={{ opacity: 0, y: 12 }}
+          initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          style={{ display: 'flex', gap: 40, marginTop: 56 }}
+          style={{
+            background: '#fce8e6',
+            border: '1px solid #f5b6b0',
+            borderRadius: 'var(--radius-lg)',
+            padding: '12px 16px',
+            marginBottom: 20,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+          }}
         >
-          {[['12K+', 'Students analyzed'], ['340+', 'Schools onboard'], ['94%', 'Detection accuracy']].map(([v, l]) => (
-            <div key={l}>
-              <div style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, color: '#1a73e8' }}>{v}</div>
-              <div style={{ fontSize: 12, color: '#80868b', marginTop: 2 }}>{l}</div>
-            </div>
-          ))}
+          <div style={{ color: '#d93025', fontWeight: 600, fontSize: 'var(--text-sm)' }}>
+            ⚠️ Session expired. Please sign in again.
+          </div>
         </motion.div>
+      )}
+
+      {/* Role Selection */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        style={{ marginBottom: 24 }}
+      >
+        <label style={{
+          display: 'block',
+          fontSize: 'var(--text-xs)',
+          fontWeight: 700,
+          color: 'var(--color-text-muted)',
+          marginBottom: 12,
+          textTransform: 'uppercase',
+          letterSpacing: '0.5px',
+        }}>
+          Login as
+        </label>
+        <div style={{ display: 'flex', gap: 12 }}>
+          {TABS.map(t => (
+            <motion.button
+              key={t.id}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setTab(t.id)}
+              style={{
+                flex: 1,
+                padding: '12px 16px',
+                border: tab === t.id ? '2px solid var(--color-primary)' : '2px solid var(--color-border)',
+                background: tab === t.id ? 'var(--color-primary-background)' : 'transparent',
+                borderRadius: 'var(--radius-md)',
+                color: tab === t.id ? 'var(--color-primary)' : 'var(--color-text-secondary)',
+                fontWeight: 600,
+                fontSize: 'var(--text-sm)',
+                cursor: 'pointer',
+                transition: 'all var(--duration-fast) var(--easing-out)',
+              }}
+            >
+              {t.label}
+            </motion.button>
+          ))}
+        </div>
       </motion.div>
 
-      {/* ── Right panel — form ── */}
-      <motion.div
-        initial={{ opacity: 0, x: 30 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.4, ease: [0.2,0,0,1] }}
+      {/* Google Sign In */}
+      <motion.button
+        whileTap={{ scale: 0.98 }}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        onClick={handleGoogleLogin}
         style={{
-          width: 480,
-          display: 'flex', flexDirection: 'column', justifyContent: 'center',
-          padding: '48px 48px', background: '#fff',
-          overflowY: 'auto',
+          width: '100%',
+          padding: '12px 16px',
+          border: '1px solid var(--color-border)',
+          background: 'white',
+          borderRadius: 'var(--radius-lg)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 10,
+          marginBottom: 16,
+          fontWeight: 600,
+          fontSize: 'var(--text-sm)',
+          color: 'var(--color-text-primary)',
+          cursor: 'pointer',
+          transition: 'all var(--duration-fast) var(--easing-out)',
+        }}
+        onMouseEnter={e => {
+          e.currentTarget.style.background = 'var(--color-background)'
+          e.currentTarget.style.borderColor = 'var(--color-primary)'
+        }}
+        onMouseLeave={e => {
+          e.currentTarget.style.background = 'white'
+          e.currentTarget.style.borderColor = 'var(--color-border)'
         }}
       >
-        {/* Mobile logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 36 }} className="show-mobile hide-desktop">
-          <div style={{ width: 36, height: 36, borderRadius: 9, background: '#1a73e8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Brain size={18} color="#fff" strokeWidth={2.5} />
-          </div>
-          <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 18, color: '#202124' }}>NeuraScan</span>
+        <img src="https://www.gstatic.com/images/branding/product/1x/googleg_40dp.png" alt="Google" style={{ width: 18, height: 18 }} />
+        Continue with Google
+      </motion.button>
+
+      {/* Divider */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 12,
+        margin: '20px 0',
+      }}>
+        <div style={{ flex: 1, height: '1px', background: 'var(--color-border)' }} />
+        <span style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)', fontWeight: 600 }}>OR</span>
+        <div style={{ flex: 1, height: '1px', background: 'var(--color-border)' }} />
+      </div>
+
+      {/* Login Form */}
+      <motion.form
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+        onSubmit={handleSubmit}
+        style={{ display: 'flex', flexDirection: 'column', gap: 16 }}
+      >
+        {/* Email Input */}
+        <div>
+          <label style={{
+            display: 'block',
+            fontSize: 'var(--text-sm)',
+            fontWeight: 600,
+            marginBottom: 8,
+            color: 'var(--color-text-primary)',
+          }}>
+            Email Address
+          </label>
+          <input
+            type="email"
+            value={form.email}
+            onChange={e => {
+              setForm(f => ({ ...f, email: e.target.value }))
+              setErrors(er => ({ ...er, email: '' }))
+            }}
+            placeholder="you@school.edu"
+            style={{
+              width: '100%',
+              padding: '12px 14px',
+              border: errors.email ? '2px solid #d93025' : '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-md)',
+              fontSize: 'var(--text-sm)',
+              background: 'var(--color-background)',
+              color: 'var(--color-text-primary)',
+              transition: 'all var(--duration-fast) var(--easing-out)',
+              fontFamily: 'var(--font-body)',
+            }}
+            onFocus={e => {
+              if (!errors.email) e.target.style.borderColor = 'var(--color-primary)'
+            }}
+            onBlur={e => {
+              if (!errors.email) e.target.style.borderColor = 'var(--color-border)'
+            }}
+          />
+          {errors.email && (
+            <div style={{ color: '#d93025', fontSize: 'var(--text-xs)', marginTop: 4 }}>
+              {errors.email}
+            </div>
+          )}
         </div>
 
-        <div style={{ marginBottom: 28 }}>
-          <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 700, letterSpacing: '-0.5px', marginBottom: 6, color: '#202124' }}>
-            Sign in
-          </h2>
-          <p style={{ color: '#5f6368', fontSize: 14 }}>
-            New here?{' '}
-            <Link to="/register" style={{ color: '#1a73e8', textDecoration: 'none', fontWeight: 600 }}>
-              Create an account
-            </Link>
-          </p>
-        </div>
-
-        {expired && (
-          <Alert type="warning" title="Session expired">
-            Your session has expired. Please sign in again.
-          </Alert>
-        )}
-
-        {/* Role tabs */}
-        <div style={{ marginBottom: 24 }}>
-          <Tabs tabs={TABS} active={tab} onChange={setTab} />
-        </div>
-
-        {/* OAuth buttons */}
-        <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
-            <Button type="button" variant="ghost" fullWidth size="md"
-              style={{ 
-                background: '#fff', color: '#3c4043', fontWeight: 500, gap: 10,
-                border: '1px solid #dadce0', borderRadius: 8,
+        {/* Password Input */}
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <label style={{
+              fontSize: 'var(--text-sm)',
+              fontWeight: 600,
+              color: 'var(--color-text-primary)',
+            }}>
+              Password
+            </label>
+            <Link
+              to="/forgot-password"
+              style={{
+                fontSize: 'var(--text-xs)',
+                color: 'var(--color-primary)',
+                textDecoration: 'none',
+                fontWeight: 600,
               }}
-              onClick={handleGoogleLogin}
             >
-              <img src="https://www.google.com/favicon.ico" alt="G" style={{ width: 18, height: 18 }} />
-              Continue with Google
-            </Button>
-        </div>
-
-        <Divider label="or continue with email" />
-        <div style={{ height: 16 }} />
-
-        {errors.general && <Alert type="danger">{errors.general}</Alert>}
-
-        <form onSubmit={handleSubmit}>
-          <Input
-            label="Email address" type="email" name="email"
-            value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-            placeholder="you@school.edu" required
-            error={errors.email}
-          />
-          <Input
-            label="Password" type="password" name="password"
-            value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-            placeholder="Enter your password" required
-            error={errors.password}
-          />
-
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 20, marginTop: -8 }}>
-            <Link to="/forgot-password" style={{ fontSize: 13, color: '#1a73e8', textDecoration: 'none', fontWeight: 500 }}>
-              Forgot password?
+              Forgot?
             </Link>
           </div>
+          <input
+            type="password"
+            value={form.password}
+            onChange={e => {
+              setForm(f => ({ ...f, password: e.target.value }))
+              setErrors(er => ({ ...er, password: '' }))
+            }}
+            placeholder="••••••••"
+            style={{
+              width: '100%',
+              padding: '12px 14px',
+              border: errors.password ? '2px solid #d93025' : '1px solid var(--color-border)',
+              borderRadius: 'var(--radius-md)',
+              fontSize: 'var(--text-sm)',
+              background: 'var(--color-background)',
+              color: 'var(--color-text-primary)',
+              transition: 'all var(--duration-fast) var(--easing-out)',
+              fontFamily: 'var(--font-body)',
+            }}
+            onFocus={e => {
+              if (!errors.password) e.target.style.borderColor = 'var(--color-primary)'
+            }}
+            onBlur={e => {
+              if (!errors.password) e.target.style.borderColor = 'var(--color-border)'
+            }}
+          />
+          {errors.password && (
+            <div style={{ color: '#d93025', fontSize: 'var(--text-xs)', marginTop: 4 }}>
+              {errors.password}
+            </div>
+          )}
+        </div>
 
-          <Button type="submit" fullWidth size="lg" loading={loading} iconRight={!loading && <ArrowRight size={16} />}>
-            Sign in as {tab === 'teacher' ? 'Teacher' : 'Parent'}
-          </Button>
-        </form>
+        {/* Submit Button */}
+        <PremiumButton
+          type="submit"
+          disabled={loading}
+          style={{
+            width: '100%',
+            marginTop: 8,
+          }}
+        >
+          {loading ? '🔐 Signing in...' : `Sign In as ${tab === 'teacher' ? 'Teacher' : 'Parent'}`}
+        </PremiumButton>
+      </motion.form>
 
-        <p style={{ textAlign: 'center', marginTop: 28, fontSize: 12, color: '#80868b', lineHeight: 1.6 }}>
-          By signing in you agree to our{' '}
-          <a href="#" style={{ color: '#1a73e8', textDecoration: 'none' }}>Terms of Service</a>
-          {' '}and{' '}
-          <a href="#" style={{ color: '#1a73e8', textDecoration: 'none' }}>Privacy Policy</a>
-        </p>
+      {/* Sign Up Link */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.5 }}
+        style={{
+          marginTop: 20,
+          textAlign: 'center',
+          fontSize: 'var(--text-sm)',
+          color: 'var(--color-text-secondary)',
+        }}
+      >
+        Don't have an account?{' '}
+        <Link
+          to="/register"
+          style={{
+            color: 'var(--color-primary)',
+            textDecoration: 'none',
+            fontWeight: 700,
+          }}
+        >
+          Create one
+        </Link>
       </motion.div>
-    </div>
+    </PremiumAuthLayout>
   )
 }
