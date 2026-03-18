@@ -191,17 +191,22 @@ const Tabs = ({ tabs, defaultTab = 0, children }) => {
 
 function ProfileSection({ user, isTeacher }) {
   const { updateUser } = useAuth()
-  const [form, setForm]     = useState({ name: user?.name || '', email: user?.email || '', school: user?.school || '' })
+  const [form, setForm]     = useState({ name: user?.name || '', email: user?.email || '', school: user?.school || '', studentId: localStorage.getItem('ns_studentId') || '' })
   const [loading, setLoading] = useState(false)
   const [saved, setSaved]   = useState(false)
 
   const handleSave = async () => {
     setLoading(true)
     try {
+      const updateData = { name: form.name, school: isTeacher ? form.school : undefined }
       // NOTE: calls PUT /api/auth/profile (new backend endpoint)
-      const res = await authAPI.updateProfile({ name: form.name, school: form.school })
+      const res = await authAPI.updateProfile(updateData)
       if (res.data?.success) {
         updateUser(res.data.data)
+      }
+      // Save student ID to localStorage for parents
+      if (!isTeacher && form.studentId) {
+        localStorage.setItem('ns_studentId', form.studentId)
       }
       setSaved(true)
       toast.success('Profile updated!')
@@ -246,6 +251,22 @@ function ProfileSection({ user, isTeacher }) {
       </div>
       {isTeacher && (
         <Input label="School / Institution" value={form.school} onChange={e => setForm(f => ({...f, school: e.target.value}))} placeholder="Springfield Elementary" />
+      )}
+      
+      {/* Parent-specific: Student ID field */}
+      {!isTeacher && (
+        <div style={{ marginBottom: 16, padding: 16, background: 'rgba(99, 102, 241, 0.05)', borderRadius: 'var(--radius-lg)', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
+          <Input 
+            label="Child's Student ID" 
+            value={form.studentId} 
+            onChange={e => setForm(f => ({...f, studentId: e.target.value}))} 
+            placeholder="Enter your child's student ID to view their progress"
+            required={false}
+          />
+          <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 8 }}>
+            📝 <strong>How to find Student ID:</strong> Ask the teacher or check the handwritten notes that came home. It's usually a unique identifier assigned to each student.
+          </div>
+        </div>
       )}
 
       <Button

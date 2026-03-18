@@ -13,11 +13,20 @@ export default function ParentDashboard() {
   const [report, setReport]   = useState(null)
   const [loading, setLoading] = useState(true)
   const [noData, setNoData]   = useState(false)
+  const [noStudentId, setNoStudentId] = useState(false)
 
   useEffect(() => {
     const sid = user?.studentId || localStorage.getItem('ns_studentId')
-    if (!sid) { setNoData(true); setLoading(false); return }
+    
+    // Check if student ID is missing
+    if (!sid) { 
+      setNoStudentId(true)
+      setNoData(true)
+      setLoading(false)
+      return 
+    }
 
+    setNoStudentId(false)
     optimizedAnalysisAPI.getStudentReport(sid)
       .then(res => setReport(res.data.data))
       .catch(err => {
@@ -176,23 +185,33 @@ export default function ParentDashboard() {
                 <Brain size={32} color="var(--primary)" strokeWidth={1.5} />
               </div>
               <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700, marginBottom: 12, color: 'var(--text-primary)' }}>
-                No Reports Yet
+                {noStudentId ? 'Set Up Your Child\'s Account' : 'No Reports Yet'}
               </h3>
               <p style={{ color: 'var(--text-secondary)', fontSize: 15, lineHeight: 1.75, marginBottom: 28 }}>
-                Your child's teacher hasn't uploaded a test paper yet. Once they do, the AI analysis results will appear here automatically.
+                {noStudentId 
+                  ? 'To view your child\'s progress and AI analysis reports, you need to link their student ID in your profile settings.'
+                  : 'Your child\'s teacher hasn\'t uploaded a test paper yet. Once they do, the AI analysis results will appear here automatically.'
+                }
               </p>
-              {!user?.studentId && (
+              {noStudentId && (
                 <div style={{
-                  background: 'rgba(245, 158, 11, 0.08)',
-                  border: '1px solid rgba(245, 158, 11, 0.2)',
+                  background: 'rgba(26, 115, 232, 0.08)',
+                  border: '1px solid rgba(26, 115, 232, 0.2)',
                   borderRadius: 'var(--radius-md)',
-                  padding: '12px 14px',
+                  padding: '14px 16px',
                   marginBottom: 24,
                   fontSize: 14,
                   color: 'var(--text-secondary)',
                   textAlign: 'left'
                 }}>
-                  <strong style={{ color: 'var(--warning)' }}>⚠️ Action Required:</strong> Your account doesn't have a linked student ID. Go to <strong>Settings → Profile</strong> to link your child's account.
+                  <div style={{ marginBottom: 8 }}>
+                    <strong style={{ color: 'var(--primary)' }}>📝 How to get your child's Student ID:</strong>
+                  </div>
+                  <ul style={{ margin: 0, paddingLeft: 20, color: 'var(--text-muted)' }}>
+                    <li>Ask your child's teacher directly</li>
+                    <li>Check the welcome email or documents from school</li>
+                    <li>Look in your child's assignment notebook</li>
+                  </ul>
                 </div>
               )}
               <button
@@ -207,7 +226,7 @@ export default function ParentDashboard() {
                   cursor: 'pointer',
                   transition: 'all 0.3s cubic-bezier(0.2, 0, 0, 1)',
                 }}
-                onClick={() => navigate('/parent/progress')}
+                onClick={() => noStudentId ? navigate('/settings?tab=profile') : navigate('/parent/progress')}
                 onMouseEnter={e => {
                   e.target.style.background = 'var(--primary-dark)'
                   e.target.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.1)'
@@ -217,7 +236,7 @@ export default function ParentDashboard() {
                   e.target.style.boxShadow = 'none'
                 }}
               >
-                Check progress history →
+                {noStudentId ? 'Go to Settings →' : 'Check progress history →'}
               </button>
             </div>
           </div>
