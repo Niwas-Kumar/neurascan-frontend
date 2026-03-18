@@ -104,6 +104,30 @@ export const quizAPI = {
   submitQuiz: (quizId, data) => api.post(`/quizzes/${quizId}/submit`, data),
   getQuizResponses: (quizId) => api.get(`/quizzes/${quizId}/responses`),
   getStudentResponses: (studentId) => api.get(`/quizzes/student/${studentId}/responses`),
+
+  // Quiz Distribution (Teacher)
+  distributeQuiz: (quizId, data) => api.post(`/quizzes/${quizId}/distribute`, data),
+  getQuizProgress: (quizId) => api.get(`/quizzes/${quizId}/progress`),
+}
+
+// ── PUBLIC QUIZ ATTEMPT API (No Auth Required) ─────────────
+// These endpoints are accessed via token-based links sent to parents
+export const quizAttemptAPI = {
+  // Validate quiz link token and get quiz questions
+  validateLink: (quizId, token) => api.get(`/quiz-attempt/validate?quizId=${quizId}&token=${token}`),
+
+  // Start a new quiz attempt session
+  startAttempt: (quizId, token) => api.post('/quiz-attempt/start', { quizId, token }),
+
+  // Submit answer for a single question
+  submitAnswer: (attemptId, questionId, studentAnswer, responseTimeMs) =>
+    api.post(`/quiz-attempt/${attemptId}/answer`, { questionId, studentAnswer, responseTimeMs }),
+
+  // Complete the quiz and get results
+  completeAttempt: (attemptId) => api.post(`/quiz-attempt/${attemptId}/complete`),
+
+  // Get quiz attempt result
+  getResult: (attemptId) => api.get(`/quiz-attempt/${attemptId}/result`),
 }
 
 export default api

@@ -1,0 +1,413 @@
+/* Parent Quiz Progress Styles */
+
+.parent-quiz-progress {
+  padding: 20px;
+}
+
+.parent-quiz-progress h2 {
+  font-size: 24px;
+  color: #1a1a1a;
+  margin: 0 0 20px 0;
+}
+
+/* Error Message */
+.error-message {
+  background: #fef2f2;
+  border-left: 4px solid #ef4444;
+  padding: 12px 16px;
+  border-radius: 6px;
+  color: #991b1b;
+  margin-bottom: 20px;
+}
+
+/* Progress List */
+.progress-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.progress-card {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 20px;
+  align-items: center;
+  padding: 16px;
+  background: white;
+  border-radius: 8px;
+  border-left: 4px solid #ccc;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.progress-card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transform: translateX(4px);
+}
+
+.progress-card.excellent {
+  border-left-color: #10b981;
+  background: #f0fdf4;
+}
+
+.progress-card.good {
+  border-left-color: #3b82f6;
+  background: #f0f9ff;
+}
+
+.progress-card.fair {
+  border-left-color: #f59e0b;
+  background: #fffbeb;
+}
+
+.progress-card.poor {
+  border-left-color: #ef4444;
+  background: #fef2f2;
+}
+
+.card-left h3 {
+  margin: 0 0 6px 0;
+  font-size: 18px;
+  color: #1a1a1a;
+}
+
+.card-left .date {
+  margin: 0;
+  font-size: 12px;
+  color: #999;
+}
+
+.card-right {
+  text-align: right;
+}
+
+.score-display {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.score-display .score {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1a73e8;
+}
+
+.score-display .status {
+  font-size: 12px;
+  color: #666;
+}
+
+.card-right .answers {
+  margin: 4px 0 0 0;
+  font-size: 12px;
+  color: #999;
+}
+
+.card-arrow {
+  color: #ccc;
+  font-size: 20px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.progress-card:hover .card-arrow {
+  opacity: 1;
+}
+
+/* No Quizzes */
+.no-quizzes {
+  text-align: center;
+  padding: 40px 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+}
+
+.no-quizzes p {
+  margin: 12px 0;
+  color: #666;
+}
+
+.no-quizzes p:first-child {
+  font-size: 18px;
+  font-weight: 500;
+}
+
+/* Detail View */
+.attempt-detail-view {
+  padding: 20px;
+}
+
+.btn-back {
+  background: none;
+  border: none;
+  color: #1a73e8;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 20px;
+}
+
+.btn-back:hover {
+  color: #1557bb;
+}
+
+.detail-header {
+  margin-bottom: 30px;
+}
+
+.detail-header h2 {
+  font-size: 24px;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.attempt-date {
+  color: #666;
+  margin: 8px 0 0 0;
+}
+
+/* Score Breakdown */
+.score-breakdown {
+  display: flex;
+  gap: 30px;
+  align-items: center;
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.score-circle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1a73e8 0%, #8b5cf6 100%);
+  color: white;
+}
+
+.score-value {
+  font-size: 48px;
+  font-weight: 700;
+}
+
+.score-label {
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+.breakdown-details {
+  flex: 1;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #e8eaed;
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-row .value {
+  font-weight: 600;
+  color: #1a73e8;
+}
+
+/* AI Insights */
+.ai-insights {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  padding: 20px;
+  border-radius: 8px;
+  border-left: 4px solid #10b981;
+  margin-bottom: 20px;
+}
+
+.ai-insights h3 {
+  color: #065f46;
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+
+.ai-insights p {
+  color: #166534;
+  margin: 0 0 16px 0;
+  line-height: 1.6;
+}
+
+.insights-section {
+  background: white;
+  padding: 12px;
+  border-radius: 6px;
+  margin-top: 12px;
+}
+
+.insights-section h4 {
+  margin: 0 0 10px 0;
+  color: #1a1a1a;
+  font-size: 14px;
+}
+
+.insights-section ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.insights-section li {
+  padding: 6px 0;
+  color: #666;
+  font-size: 14px;
+  padding-left: 20px;
+  position: relative;
+}
+
+.insights-section li:before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: #10b981;
+  font-weight: bold;
+}
+
+/* Question Review */
+.question-review {
+  margin-top: 20px;
+}
+
+.question-review h3 {
+  margin: 0 0 16px 0;
+  color: #1a1a1a;
+}
+
+.review-item {
+  background: white;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  border-left: 4px solid #ddd;
+}
+
+.review-item.correct {
+  border-left-color: #10b981;
+  background: #f0fdf4;
+}
+
+.review-item.incorrect {
+  border-left-color: #ef4444;
+  background: #fef2f2;
+}
+
+.review-header {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.review-header .q-num {
+  background: #1a73e8;
+  color: white;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.review-header .status {
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.review-header .status.correct {
+  color: #10b981;
+}
+
+.review-header .status.wrong {
+  color: #ef4444;
+}
+
+.review-header .time {
+  margin-left: auto;
+  color: #666;
+  font-size: 12px;
+}
+
+.review-content {
+  margin-top: 12px;
+}
+
+.review-content .question {
+  margin: 0 0 12px 0;
+  color: #1a1a1a;
+  font-weight: 500;
+}
+
+.answer-review {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.answer-review div {
+  padding: 8px;
+  background: white;
+  border-radius: 4px;
+}
+
+.answer-review .correct {
+  border-left: 3px solid #10b981;
+  color: #065f46;
+}
+
+.answer-review .wrong {
+  border-left: 3px solid #ef4444;
+  color: #7f1d1d;
+}
+
+.answer-review strong {
+  display: block;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+/* Loading */
+.loading {
+  padding: 20px;
+  text-align: center;
+  color: #666;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .progress-card {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .card-right {
+    text-align: left;
+  }
+
+  .score-breakdown {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .answer-review {
+    grid-template-columns: 1fr;
+  }
+}

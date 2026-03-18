@@ -33,6 +33,7 @@ import QuizProgressPage from './pages/parent/QuizProgressPage'
 
 // Shared
 import SettingsPage from './pages/SettingsPage'
+import QuizAttemptPage from './pages/QuizAttemptPage'
 
 // Layout
 import AppLayout from './components/layout/AppLayout'
@@ -77,6 +78,9 @@ function AppRoutes() {
       <Route path="/reset-password"  element={<ResetPasswordPage />} />
       <Route path="/verify-email"    element={<VerifyEmailPage />} />
       <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />} />
+
+      {/* ── Public Quiz Attempt (accessed via email link with token) ── */}
+      <Route path="/quiz-attempt" element={<QuizAttemptPage />} />
 
       {/* ── Teacher routes ── */}
       <Route path="/teacher" element={
