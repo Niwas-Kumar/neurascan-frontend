@@ -6,6 +6,123 @@ import { authAPI } from '../../services/api'
 import { useAuth } from '../../context/AuthContext'
 import toast from 'react-hot-toast'
 
+// ── Input Component ────────────────────────────
+const Input = ({ label, type = 'text', value, onChange, placeholder, error, hint, ref, style }) => {
+  const [isFocused, setIsFocused] = useState(false)
+  return (
+    <div style={{ marginBottom: 18 }}>
+      {label && <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>{label}</label>}
+      <input
+        ref={ref}
+        type={type}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        style={{
+          width: '100%',
+          padding: '12px 14px',
+          border: isFocused ? '2px solid var(--primary)' : `1px solid ${error ? 'var(--danger)' : 'var(--border)'}`,
+          borderRadius: 'var(--radius-lg)',
+          fontSize: 14,
+          color: 'var(--text-primary)',
+          background: 'var(--bg-surface)',
+          transition: 'all 0.3s ease',
+          boxShadow: isFocused ? '0 0 0 3px rgba(26, 115, 232, 0.15)' : 'none',
+          ...style
+        }}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
+      />
+      {error && <div style={{ marginTop: 4, fontSize: 12, color: 'var(--danger)' }}>{error}</div>}
+      {hint && <div style={{ marginTop: 4, fontSize: 12, color: 'var(--text-muted)' }}>{hint}</div>}
+    </div>
+  )
+}
+
+// ── Button Component ────────────────────────────
+const Button = ({ fullWidth, size = 'md', loading, children, onClick, disabled, icon, iconRight, variant = 'primary', style }) => {
+  const sizeMap = { lg: { padding: '14px 20px', fontSize: 15, height: 'auto' }, md: { padding: '10px 16px', fontSize: 14 }, sm: { padding: '8px 12px', fontSize: 13 } }
+  const bgMap = { primary: 'var(--primary)', ghost: 'transparent', secondary: 'var(--secondary)' }
+  const textMap = { primary: 'white', ghost: 'var(--primary)', secondary: 'white' }
+  const borderMap = { ghost: '1px solid var(--border)', primary: 'none', secondary: 'none' }
+  const sz = sizeMap[size]
+  return (
+    <button
+      onClick={onClick}
+      disabled={loading || disabled}
+      style={{
+        ...sz,
+        width: fullWidth ? '100%' : 'auto',
+        background: bgMap[variant],
+        color: textMap[variant],
+        border: borderMap[variant],
+        borderRadius: 'var(--radius-lg)',
+        fontWeight: 600,
+        cursor: loading || disabled ? 'not-allowed' : 'pointer',
+        transition: 'all 0.3s cubic-bezier(0.2, 0, 0, 1)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
+        opacity: loading || disabled ? 0.6 : 1,
+        ...style
+      }}
+      onMouseEnter={e => {
+        if (!loading && !disabled) {
+          if (variant === 'primary') e.target.style.background = 'var(--primary-dark)'
+          if (variant === 'secondary') e.target.style.background = '#0679a0'
+          if (variant === 'ghost') e.target.style.background = 'var(--bg-elevated)'
+          e.target.style.transform = 'translateY(-1px)'
+        }
+      }}
+      onMouseLeave={e => {
+        e.target.style.background = bgMap[variant]
+        e.target.style.transform = 'translateY(0)'
+      }}
+    >
+      {icon}{children}{iconRight}
+    </button>
+  )
+}
+
+// ── ProgressSteps Component ────────────────────────────
+const ProgressSteps = ({ steps, current }) => (
+  <div style={{ display: 'flex', gap: 12, marginBottom: 32 }}>
+    {steps.map((s, i) => (
+      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1 }}>
+        <div style={{
+          width: 28, height: 28, borderRadius: '50%',
+          background: i <= current ? 'var(--primary)' : 'var(--bg-elevated)',
+          color: i <= current ? 'white' : 'var(--text-muted)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 12, fontWeight: 700, transition: 'all 0.3s ease'
+        }}>{i + 1}</div>
+        {i < steps.length - 1 && <div style={{ flex: 1, height: 2, background: i < current ? 'var(--primary)' : 'var(--border)' }} />}
+      </div>
+    ))}
+  </div>
+)
+
+// ── Alert Component ────────────────────────────
+const Alert = ({ type, children }) => {
+  const colorMap = { danger: 'var(--danger)', warning: 'var(--warning)', success: 'var(--success)' }
+  const bgMap = { danger: 'rgba(239, 68, 68, 0.08)', warning: 'rgba(245, 158, 11, 0.08)', success: 'rgba(16, 185, 129, 0.08)' }
+  return (
+    <div style={{
+      padding: '12px 14px',
+      background: bgMap[type],
+      border: `1px solid ${colorMap[type]}40`,
+      borderRadius: 'var(--radius-md)',
+      color: colorMap[type],
+      fontSize: 13,
+      marginBottom: 18,
+      lineHeight: 1.6
+    }}>
+      {children}
+    </div>
+  )
+}
+
 export default function RegisterPage() {
   const { login } = useAuth()
   const navigate = useNavigate()
@@ -130,120 +247,6 @@ export default function RegisterPage() {
       otpInputRef.current.focus()
     }
   }, [step])
-
-  // ── Inline Components ──
-  const Input = ({ label, type = 'text', value, onChange, placeholder, error, hint, ref, style }) => {
-    const [isFocused, setIsFocused] = useState(false)
-    return (
-      <div style={{ marginBottom: 18 }}>
-        {label && <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>{label}</label>}
-        <input
-          ref={ref}
-          type={type}
-          value={value}
-          onChange={onChange}
-          placeholder={placeholder}
-          style={{
-            width: '100%',
-            padding: '12px 14px',
-            border: isFocused ? '2px solid var(--primary)' : `1px solid ${error ? 'var(--danger)' : 'var(--border)'}`,
-            borderRadius: 'var(--radius-lg)',
-            fontSize: 14,
-            color: 'var(--text-primary)',
-            background: 'var(--bg-surface)',
-            transition: 'all 0.3s ease',
-            boxShadow: isFocused ? '0 0 0 3px rgba(26, 115, 232, 0.15)' : 'none',
-            ...style
-          }}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
-        />
-        {error && <div style={{ marginTop: 4, fontSize: 12, color: 'var(--danger)' }}>{error}</div>}
-        {hint && <div style={{ marginTop: 4, fontSize: 12, color: 'var(--text-muted)' }}>{hint}</div>}
-      </div>
-    )
-  }
-
-  const Button = ({ fullWidth, size = 'md', loading, children, onClick, disabled, icon, iconRight, variant = 'primary', style }) => {
-    const sizeMap = { lg: { padding: '14px 20px', fontSize: 15, height: 'auto' }, md: { padding: '10px 16px', fontSize: 14 }, sm: { padding: '8px 12px', fontSize: 13 } }
-    const bgMap = { primary: 'var(--primary)', ghost: 'transparent', secondary: 'var(--secondary)' }
-    const textMap = { primary: 'white', ghost: 'var(--primary)', secondary: 'white' }
-    const borderMap = { ghost: '1px solid var(--border)', primary: 'none', secondary: 'none' }
-    const sz = sizeMap[size]
-    return (
-      <button
-        onClick={onClick}
-        disabled={loading || disabled}
-        style={{
-          ...sz,
-          width: fullWidth ? '100%' : 'auto',
-          background: bgMap[variant],
-          color: textMap[variant],
-          border: borderMap[variant],
-          borderRadius: 'var(--radius-lg)',
-          fontWeight: 600,
-          cursor: loading || disabled ? 'not-allowed' : 'pointer',
-          transition: 'all 0.3s cubic-bezier(0.2, 0, 0, 1)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 8,
-          opacity: loading || disabled ? 0.6 : 1,
-          ...style
-        }}
-        onMouseEnter={e => {
-          if (!loading && !disabled) {
-            if (variant === 'primary') e.target.style.background = 'var(--primary-dark)'
-            if (variant === 'secondary') e.target.style.background = '#0679a0'
-            if (variant === 'ghost') e.target.style.background = 'var(--bg-elevated)'
-            e.target.style.transform = 'translateY(-1px)'
-          }
-        }}
-        onMouseLeave={e => {
-          e.target.style.background = bgMap[variant]
-          e.target.style.transform = 'translateY(0)'
-        }}
-      >
-        {icon}{children}{iconRight}
-      </button>
-    )
-  }
-
-  const ProgressSteps = ({ steps, current }) => (
-    <div style={{ display: 'flex', gap: 12, marginBottom: 32 }}>
-      {steps.map((s, i) => (
-        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1 }}>
-          <div style={{
-            width: 28, height: 28, borderRadius: '50%',
-            background: i <= current ? 'var(--primary)' : 'var(--bg-elevated)',
-            color: i <= current ? 'white' : 'var(--text-muted)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 12, fontWeight: 700, transition: 'all 0.3s ease'
-          }}>{i + 1}</div>
-          {i < steps.length - 1 && <div style={{ flex: 1, height: 2, background: i < current ? 'var(--primary)' : 'var(--border)' }} />}
-        </div>
-      ))}
-    </div>
-  )
-
-  const Alert = ({ type, children }) => {
-    const colorMap = { danger: 'var(--danger)', warning: 'var(--warning)', success: 'var(--success)' }
-    const bgMap = { danger: 'rgba(239, 68, 68, 0.08)', warning: 'rgba(245, 158, 11, 0.08)', success: 'rgba(16, 185, 129, 0.08)' }
-    return (
-      <div style={{
-        padding: '12px 14px',
-        background: bgMap[type],
-        border: `1px solid ${colorMap[type]}40`,
-        borderRadius: 'var(--radius-md)',
-        color: colorMap[type],
-        fontSize: 13,
-        marginBottom: 18,
-        lineHeight: 1.6
-      }}>
-        {children}
-      </div>
-    )
-  }
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-page)', padding: 20 }}>
