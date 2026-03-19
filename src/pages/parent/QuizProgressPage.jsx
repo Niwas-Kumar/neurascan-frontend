@@ -278,7 +278,9 @@ export default function QuizProgressPage() {
     }
 
     console.log('Loading quiz progress for studentId:', sid)
-    quizAPI.getStudentResponses(sid)
+
+    // Use the new endpoint that fetches quiz attempts (with per-question data)
+    quizAPI.getStudentQuizAttempts(sid)
       .then(r => {
         const data = r.data.data || []
         // Sort by date, most recent first
@@ -288,12 +290,12 @@ export default function QuizProgressPage() {
       .catch(err => {
         const errorMsg = err.response?.data?.message || err.message || 'Could not load quiz progress'
 
-        if (errorMsg.includes('Student ID not set')) {
+        if (errorMsg.includes('Student ID not set') || errorMsg.includes('STUDENT_ID_NOT_SET')) {
           setNoStudentId(true)
         }
 
         console.error('Quiz progress error:', errorMsg)
-        toast.error(errorMsg)
+        toast.error(errorMsg.replace('STUDENT_ID_NOT_SET|', ''))
       })
       .finally(() => setLoading(false))
   }

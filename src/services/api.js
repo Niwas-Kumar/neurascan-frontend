@@ -27,12 +27,15 @@ api.interceptors.response.use(
     const url = err.config?.url || ''
     const isAuthEndpoint = url.includes('/auth/')
     const errorMessage = err.response?.data?.message || ''
-    
+
     // ✅ IMPROVED: Don't logout if it's just a missing studentId configuration
     // This is a user config issue, not a session/auth issue
-    const isStudentIdMissing = errorMessage.includes('STUDENT_ID_NOT_SET') || 
+    const isStudentIdMissing = errorMessage.includes('STUDENT_ID_NOT_SET') ||
                                errorMessage.includes('Student ID not set in your profile')
-    
+
+    // ✅ FIX: Only logout on 401 (unauthorized), NOT on 403 (forbidden)
+    // 403 means the user IS authenticated but doesn't have permission
+    // 401 means the token is invalid/expired
     if (err.response?.status === 401 && !isAuthEndpoint && !isStudentIdMissing) {
       // ✅ FIX: Only clear authentication token, preserve other data (studentId, userId, etc)
       // This allows parents to re-login without losing their child's student ID
@@ -45,6 +48,12 @@ api.interceptors.response.use(
       // ⚠️ NOTE: Intentionally NOT clearing ns_studentId or ns_userId
       window.location.href = '/login?session=expired'
     }
+
+    // Log 403 errors for debugging but don't logout
+    if (err.response?.status === 403) {
+      console.warn('Access forbidden (403):', url, errorMessage)
+    }
+
     return Promise.reject(err)
   }
 )
@@ -104,6 +113,9 @@ export const quizAPI = {
   submitQuiz: (quizId, data) => api.post(`/quizzes/${quizId}/submit`, data),
   getQuizResponses: (quizId) => api.get(`/quizzes/${quizId}/responses`),
   getStudentResponses: (studentId) => api.get(`/quizzes/student/${studentId}/responses`),
+
+  // New endpoint for quiz attempts (parent dashboard)
+  getStudentQuizAttempts: (studentId) => api.get(`/quizzes/student/${studentId}/all-attempts`),
 
   // Quiz Distribution (Teacher)
   distributeQuiz: (quizId, data) => api.post(`/quizzes/${quizId}/distribute`, data),
