@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Upload, FileImage, X, CheckCircle, AlertCircle, Zap, FileText, RefreshCw } from 'lucide-react'
+import { Upload, FileImage, X, CheckCircle, AlertCircle, Zap, FileText, RefreshCw, ImageOff } from 'lucide-react'
 import { optimizedStudentAPI, optimizedAnalysisAPI } from '../../services/optimizedApi'
 import toast from 'react-hot-toast'
 import { useAuth } from '../../context/AuthContext'
@@ -148,6 +148,7 @@ export default function UploadPage() {
   const [analyzing, setAnalyzing] = useState(false)
   const [result, setResult]       = useState(null)
   const [step, setStep]           = useState(0)
+  const [validationError, setValidationError] = useState(null)
 
   useEffect(() => {
     optimizedStudentAPI.getAll()
@@ -164,6 +165,7 @@ export default function UploadPage() {
     if (accepted[0]) {
       setFile(accepted[0])
       setResult(null)
+      setValidationError(null)
       if (studentId) setStep(2)
     }
   }, [studentId])
@@ -220,11 +222,24 @@ export default function UploadPage() {
       setUploading(false)
       setAnalyzing(false)
       setStep(file ? 1 : 0)
-      toast.error(err.response?.data?.message || 'Upload failed. Ensure the AI service is running.')
+
+      // Check for validation error (invalid image - not handwriting on paper)
+      const errorData = err.response?.data
+      if (errorData?.validation_error) {
+        setValidationError({
+          reason: errorData.reason || 'Invalid image',
+          message: errorData.message || 'Please upload a clear image of handwriting on paper.',
+          confidence: errorData.confidence || 0
+        })
+        toast.error('Invalid image: ' + (errorData.reason || 'Not a handwriting paper'))
+      } else {
+        setValidationError(null)
+        toast.error(errorData?.message || 'Upload failed. Ensure the AI service is running.')
+      }
     }
   }
 
-  const reset = () => { setFile(null); setResult(null); setProgress(0); setStudentId(''); setStep(0) }
+  const reset = () => { setFile(null); setResult(null); setProgress(0); setStudentId(''); setStep(0); setValidationError(null) }
   const selectedStudent = students.find(s => String(s.id) === String(studentId))
 
   return (
@@ -366,7 +381,57 @@ export default function UploadPage() {
               )}
             </motion.div>
 
-            {selectedStudent && file && !uploading && !analyzing && !result && (
+            {/* Validation Error Display */}
+            {validationError && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                style={{
+                  background: 'linear-gradient(135deg, rgba(239,68,68,0.08) 0%, rgba(239,68,68,0.02) 100%)',
+                  border: '1px solid rgba(239,68,68,0.3)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: '18px 20px',
+                  marginBottom: 16,
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+                  <div style={{
+                    width: 42, height: 42, borderRadius: 11,
+                    background: 'var(--danger-dim)',
+                    border: '1px solid rgba(239,68,68,0.3)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    flexShrink: 0
+                  }}>
+                    <ImageOff size={20} color="var(--danger)" />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 700, color: 'var(--danger)', marginBottom: 6, fontSize: 14 }}>
+                      Invalid Image Detected
+                    </div>
+                    <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 10 }}>
+                      {validationError.reason}
+                    </div>
+                    <div style={{
+                      fontSize: 12, color: 'var(--text-muted)',
+                      background: 'var(--bg-elevated)',
+                      padding: '10px 12px',
+                      borderRadius: 'var(--radius)',
+                      border: '1px solid var(--border)'
+                    }}>
+                      <strong style={{ color: 'var(--text-secondary)' }}>Tip:</strong> {validationError.message}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setValidationError(null)}
+                    style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 4 }}
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
+            {selectedStudent && file && !uploading && !analyzing && !result && !validationError && (
               <Alert type="info" style={{ marginBottom: 16 }}>
                 Ready to analyze <strong>{selectedStudent.name}</strong>'s paper ({selectedStudent.className}).
               </Alert>
