@@ -220,7 +220,14 @@ export default function TeacherDashboard() {
   const [reportsLoading, setReportsLoading] = useState(true)
 
   useEffect(() => {
+    // Don't fetch if user is not available yet
+    if (!user?.userId) {
+      return
+    }
+
     setLoading(true)
+    setDashLoading(true)
+    setReportsLoading(true)
 
     // Fetch dashboard data
     optimizedAnalysisAPI.getDashboard()
@@ -233,11 +240,12 @@ export default function TeacherDashboard() {
             body: `${d.data.data.studentsAtRisk} student(s) flagged for follow-up assessment.`
           })
         }
-        setDashLoading(false)
       })
       .catch(err => {
         console.error('Dashboard error:', err)
         toast.error('Unable to load dashboard metrics')
+      })
+      .finally(() => {
         setDashLoading(false)
       })
 
@@ -245,14 +253,13 @@ export default function TeacherDashboard() {
     optimizedAnalysisAPI.getReports()
       .then(r => {
         setReports(r.data.data || [])
-        setReportsLoading(false)
       })
       .catch(err => {
         console.error('Reports error:', err)
         toast.error('Unable to load recent reports')
-        setReportsLoading(false)
       })
       .finally(() => {
+        setReportsLoading(false)
         setLoading(false)
       })
 
@@ -301,7 +308,7 @@ export default function TeacherDashboard() {
   // ════════════════════════════════════════════════════════════════
   // FULL LOADING STATE
   // ════════════════════════════════════════════════════════════════
-  if (loading && dashLoading && reportsLoading) return (
+  if (!user?.userId || (loading && dashLoading && reportsLoading)) return (
     <div style={{
       minHeight: '100vh',
       background: COLORS.bgBase,
