@@ -121,7 +121,7 @@ function Sidebar({ collapsed, isTeacher, navItems, location, setCollapsed, setMo
       }}>
         <div style={{
           width: 34, height: 34, borderRadius: 10, flexShrink: 0,
-          background: '#1a73e8',
+          background: '#312E81',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
           <Brain size={18} color="#fff" strokeWidth={2.5} />
@@ -243,7 +243,7 @@ export default function AppLayout() {
           animate={{ width: sidebarWidth }}
           transition={{ type: 'spring', damping: 30, stiffness: 300 }}
           style={{
-            background: 'linear-gradient(180deg, #eff5ff 0%, #ffffff 100%)',
+            background: 'linear-gradient(180deg, #f0f4ff 0%, #ffffff 100%)',
             borderRight: '1px solid var(--border)',
             height: '100vh',
             position: 'sticky', top: 0,
@@ -312,11 +312,11 @@ export default function AppLayout() {
           height: 60, display: 'flex', alignItems: 'center',
           padding: '0 20px 0 24px',
           borderBottom: '1px solid var(--border)',
-          background: 'linear-gradient(90deg, #4f46e5, #3b82f6)',
+          background: 'linear-gradient(135deg, #312E81 0%, #14B8A6 100%)',
           position: 'sticky', top: 0, zIndex: 10,
           gap: 12,
           color: '#fff',
-          boxShadow: '0 8px 18px rgba(31, 41, 55, 0.15)',
+          boxShadow: '0 8px 18px rgba(49, 46, 129, 0.2)',
         }}>
           {isMobile && (
             <button onClick={() => setMobileOpen(true)} style={{ background: 'none', border: 'none', color: '#5f6368', cursor: 'pointer' }}>
