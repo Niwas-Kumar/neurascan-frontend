@@ -198,7 +198,7 @@ function FeatureCard({ icon: Icon, title, description, color = 'primary' }) {
 function HeroSection() {
   return (
     <div style={{
-      background: `linear-gradient(180deg, ${COLORS.bgBase} 0%, ${COLORS.primaryBg} 100%)`,
+      background: '#FFFFFF',
       minHeight: '92vh',
       display: 'flex',
       alignItems: 'center',
@@ -214,7 +214,7 @@ function HeroSection() {
         height: 400,
         background: `radial-gradient(circle, ${COLORS.primaryBg} 0%, transparent 70%)`,
         borderRadius: '50%',
-        opacity: 0.8,
+        opacity: 0.4,
         pointerEvents: 'none',
       }} />
       <div style={{
@@ -225,7 +225,7 @@ function HeroSection() {
         height: 300,
         background: `radial-gradient(circle, ${COLORS.secondaryBg} 0%, transparent 70%)`,
         borderRadius: '50%',
-        opacity: 0.6,
+        opacity: 0.3,
         pointerEvents: 'none',
       }} />
 
