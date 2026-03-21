@@ -1,10 +1,51 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Award, Users, Target } from 'lucide-react'
 import PremiumNavbar from '../components/landing/PremiumNavbar.jsx'
 import PremiumFooter from '../components/landing/PremiumFooter.jsx'
 import { Badge, IconBox } from '../components/shared/PremiumUI.jsx'
 import '../styles/designSystem.css'
+
+// Team member photo component with fallback to initials
+function TeamPhoto({ photo, initials, name }) {
+  const [imgError, setImgError] = useState(false)
+
+  if (photo && !imgError) {
+    return (
+      <img
+        src={photo}
+        alt={name}
+        onError={() => setImgError(true)}
+        style={{
+          width: 100,
+          height: 100,
+          borderRadius: 'var(--radius-full)',
+          objectFit: 'cover',
+          margin: '0 auto 16px',
+          border: '3px solid var(--color-primary)',
+        }}
+      />
+    )
+  }
+
+  return (
+    <div style={{
+      width: 100,
+      height: 100,
+      borderRadius: 'var(--radius-full)',
+      background: 'var(--primary-gradient)',
+      margin: '0 auto 16px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      color: 'white',
+      fontSize: '2.5rem',
+      fontWeight: 'bold',
+    }}>
+      {initials}
+    </div>
+  )
+}
 
 export default function AboutPage() {
   const stats = [
@@ -15,9 +56,27 @@ export default function AboutPage() {
   ]
 
   const team = [
-    { name: 'Niwas Kumar', role: 'CEO & Co-founder', bio: 'Software engineer with a passion for education technology' },
-    { name: 'Ratish Raj', role: 'Chief Science Officer', bio: 'Leading AI researcher in learning sciences' },
-    { name: 'Lavit Tyagi', role: 'VP Product', bio: 'Former product lead at EdTech pioneer' },
+    {
+      name: 'Niwas Kumar',
+      role: 'CEO & Co-founder',
+      bio: 'Software engineer with a passion for education technology',
+      photo: '/team/niwas.jpg',
+      initials: 'NK'
+    },
+    {
+      name: 'Ratish Raj',
+      role: 'Chief AI Researcher',
+      bio: 'Leading AI researcher in learning sciences',
+      photo: '/team/ratish.jpg',
+      initials: 'RR'
+    },
+    {
+      name: 'Lavit Tyagi',
+      role: 'VP Product',
+      bio: 'Former product lead at EdTech pioneer',
+      photo: '/team/lavit.jpg',
+      initials: 'LT'
+    },
   ]
 
   const values = [
@@ -287,21 +346,7 @@ export default function AboutPage() {
                 e.currentTarget.style.transform = 'none'
               }}
             >
-              <div style={{
-                width: 100,
-                height: 100,
-                borderRadius: 'var(--radius-full)',
-                background: 'var(--primary-gradient)',
-                margin: '0 auto 16px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'white',
-                fontSize: '2.5rem',
-                fontWeight: 'bold',
-              }}>
-                {member.name[0]}
-              </div>
+              <TeamPhoto photo={member.photo} initials={member.initials} name={member.name} />
               <h3 style={{
                 fontSize: 'var(--text-lg)',
                 fontWeight: 'var(--font-bold)',

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Menu, X } from 'lucide-react'
 import { NeuraScanLogo } from '../shared/Logo.jsx'
@@ -21,15 +21,41 @@ const COLORS = {
 export default function PremiumNavbar() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const location = useLocation()
+  const navigate = useNavigate()
 
   const navLinks = [
-    { label: 'Features', href: '#features' },
+    { label: 'Features', href: '/#features' },
     { label: 'Pricing', href: '/pricing' },
     { label: 'Help', href: '/help' },
     { label: 'About', href: '/about' },
   ]
 
   const isActive = (href) => location.pathname === href
+
+  const handleNavClick = (e, href) => {
+    if (href.startsWith('/#')) {
+      e.preventDefault()
+      const sectionId = href.substring(2)
+
+      if (location.pathname === '/') {
+        // Already on landing page, just scroll
+        const element = document.getElementById(sectionId)
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' })
+        }
+      } else {
+        // Navigate to landing page then scroll
+        navigate('/')
+        setTimeout(() => {
+          const element = document.getElementById(sectionId)
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth' })
+          }
+        }, 100)
+      }
+      setMobileOpen(false)
+    }
+  }
 
   return (
     <nav style={{
@@ -68,6 +94,7 @@ export default function PremiumNavbar() {
             <a
               key={label}
               href={href}
+              onClick={(e) => handleNavClick(e, href)}
               style={{
                 color: isActive(href) ? COLORS.primary : COLORS.textSecondary,
                 textDecoration: 'none',
@@ -176,6 +203,7 @@ export default function PremiumNavbar() {
               <a
                 key={label}
                 href={href}
+                onClick={(e) => handleNavClick(e, href)}
                 style={{
                   color: COLORS.textSecondary,
                   textDecoration: 'none',
@@ -184,7 +212,6 @@ export default function PremiumNavbar() {
                   fontSize: 15,
                   borderBottom: `1px solid ${COLORS.border}`,
                 }}
-                onClick={() => setMobileOpen(false)}
               >
                 {label}
               </a>
