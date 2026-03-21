@@ -142,8 +142,8 @@ export default function LoginPage() {
           flexDirection: 'column',
           justifyContent: 'center',
           padding: '64px 72px',
-          background: '#FFFFFF',
-          color: COLORS.textPrimary,
+          background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryLight} 50%, ${COLORS.secondary} 100%)`,
+          color: 'white',
           position: 'relative',
           overflow: 'hidden',
         }}
@@ -156,7 +156,7 @@ export default function LoginPage() {
           right: '-80px',
           width: '280px',
           height: '280px',
-          background: `radial-gradient(circle, ${COLORS.primaryBg} 0%, transparent 70%)`,
+          background: 'rgba(255, 255, 255, 0.08)',
           borderRadius: '50%',
         }} />
         <div style={{
@@ -165,7 +165,7 @@ export default function LoginPage() {
           left: '-80px',
           width: '220px',
           height: '220px',
-          background: `radial-gradient(circle, ${COLORS.secondaryBg} 0%, transparent 70%)`,
+          background: 'rgba(255, 255, 255, 0.06)',
           borderRadius: '50%',
         }} />
         <div style={{
@@ -174,7 +174,7 @@ export default function LoginPage() {
           left: '30%',
           width: '160px',
           height: '160px',
-          background: `radial-gradient(circle, ${COLORS.primaryBg} 0%, transparent 70%)`,
+          background: 'rgba(255, 255, 255, 0.04)',
           borderRadius: '50%',
         }} />
 
@@ -190,7 +190,7 @@ export default function LoginPage() {
               zIndex: 1,
             }}
           >
-            <NeuraScanLogo size={48} variant="default" />
+            <NeuraScanLogo size={48} variant="light" />
           </motion.div>
         </Link>
 
@@ -208,7 +208,6 @@ export default function LoginPage() {
             fontFamily: "'Plus Jakarta Sans', sans-serif",
             position: 'relative',
             zIndex: 1,
-            color: COLORS.textPrimary,
           }}
         >
           Early Detection,
@@ -225,11 +224,11 @@ export default function LoginPage() {
             fontSize: 17,
             lineHeight: 1.75,
             marginBottom: 48,
+            opacity: 0.92,
             maxWidth: 480,
             fontWeight: 400,
             position: 'relative',
             zIndex: 1,
-            color: COLORS.textSecondary,
           }}
         >
           Our AI-powered handwriting analysis identifies learning disorders like dyslexia and dysgraphia, giving educators and parents the insights needed to support every student.
@@ -250,8 +249,9 @@ export default function LoginPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 + i * 0.08 }}
               style={{
-                background: COLORS.primaryBg,
-                border: `1px solid ${COLORS.border}`,
+                background: 'rgba(255, 255, 255, 0.1)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
                 borderRadius: 14,
                 padding: '18px 20px',
                 display: 'flex',
@@ -263,18 +263,17 @@ export default function LoginPage() {
                 width: 40,
                 height: 40,
                 borderRadius: 10,
-                background: COLORS.primaryBg,
+                background: 'rgba(255, 255, 255, 0.15)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
               }}>
-                <feature.icon size={20} color={COLORS.primary} />
+                <feature.icon size={20} color="white" />
               </div>
               <div style={{
                 fontSize: 14,
                 fontWeight: 500,
                 lineHeight: 1.4,
-                color: COLORS.textPrimary,
               }}>
                 {feature.text}
               </div>
