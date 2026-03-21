@@ -3,6 +3,57 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronDown, Eye, EyeOff, X, Check, AlertCircle, Info, CheckCircle, AlertTriangle } from 'lucide-react'
 
 // ================================================================
+// COLOR CONSTANTS (Deep Indigo + Soft Teal)
+// ================================================================
+const COLORS = {
+  // Primary - Deep Indigo
+  primary: '#312E81',
+  primaryDark: '#1E1B4B',
+  primaryLight: '#4338CA',
+  primaryLighter: '#6366F1',
+  primaryBg: '#EEF2FF',
+
+  // Secondary - Soft Teal
+  secondary: '#14B8A6',
+  secondaryDark: '#0D9488',
+  secondaryLight: '#2DD4BF',
+  secondaryBg: '#CCFBF1',
+
+  // Semantic
+  success: '#059669',
+  successBg: '#D1FAE5',
+  warning: '#D97706',
+  warningBg: '#FEF3C7',
+  danger: '#DC2626',
+  dangerBg: '#FEE2E2',
+
+  // Risk levels (muted, clinical)
+  riskHigh: '#B91C1C',
+  riskHighBg: '#FEE2E2',
+  riskMedium: '#B45309',
+  riskMediumBg: '#FEF3C7',
+  riskLow: '#047857',
+  riskLowBg: '#D1FAE5',
+
+  // Neutrals - Slate
+  textPrimary: '#1E293B',
+  textSecondary: '#334155',
+  textMuted: '#64748B',
+  textLight: '#94A3B8',
+
+  // Backgrounds
+  bgBase: '#F8FAFC',
+  bgSurface: '#FFFFFF',
+  bgSubtle: '#F1F5F9',
+  bgHover: '#F1F5F9',
+
+  // Borders
+  border: '#E2E8F0',
+  borderStrong: '#CBD5E1',
+  borderFocus: '#312E81',
+}
+
+// ================================================================
 // BUTTON
 // ================================================================
 export function Button({
@@ -11,56 +62,63 @@ export function Button({
   className = '', ...props
 }) {
   const sizes = {
-    xs: { padding: '5px 10px',  fontSize: 12, gap: 5 },
-    sm: { padding: '7px 14px',  fontSize: 13, gap: 6 },
-    md: { padding: '10px 20px', fontSize: 14, gap: 8 },
-    lg: { padding: '13px 28px', fontSize: 15, gap: 9 },
-    xl: { padding: '16px 36px', fontSize: 16, gap: 10 },
+    xs: { padding: '6px 12px',  fontSize: 12, gap: 5, radius: 6 },
+    sm: { padding: '8px 16px',  fontSize: 13, gap: 6, radius: 6 },
+    md: { padding: '10px 20px', fontSize: 14, gap: 8, radius: 8 },
+    lg: { padding: '12px 24px', fontSize: 15, gap: 9, radius: 8 },
+    xl: { padding: '14px 32px', fontSize: 16, gap: 10, radius: 10 },
   }
 
   const variants = {
     primary: {
-      background: '#1a73e8',
-      color: '#fff',
+      background: COLORS.primary,
+      color: '#FFFFFF',
       border: 'none',
-      boxShadow: '0 1px 3px rgba(26,115,232,0.3)',
+      boxShadow: '0 1px 3px rgba(49, 46, 129, 0.3)',
     },
     secondary: {
-      background: '#f1f3f4',
-      color: '#202124',
-      border: '1px solid #dadce0',
-    },
-    ghost: {
-      background: 'transparent',
-      color: '#5f6368',
-      border: '1px solid #dadce0',
-    },
-    danger: {
-      background: 'rgba(217,48,37,0.06)',
-      color: '#d93025',
-      border: '1px solid rgba(217,48,37,0.2)',
-    },
-    success: {
-      background: 'rgba(30,142,62,0.06)',
-      color: '#1e8e3e',
-      border: '1px solid rgba(30,142,62,0.2)',
+      background: COLORS.secondary,
+      color: '#FFFFFF',
+      border: 'none',
+      boxShadow: '0 1px 3px rgba(20, 184, 166, 0.3)',
     },
     outline: {
       background: 'transparent',
-      color: '#1a73e8',
-      border: '1px solid #dadce0',
+      color: COLORS.primary,
+      border: `1.5px solid ${COLORS.border}`,
     },
-    cyan: {
-      background: 'rgba(30,142,62,0.06)',
-      color: '#1e8e3e',
-      border: '1px solid rgba(30,142,62,0.2)',
+    ghost: {
+      background: 'transparent',
+      color: COLORS.textSecondary,
+      border: `1px solid ${COLORS.border}`,
+    },
+    danger: {
+      background: COLORS.dangerBg,
+      color: COLORS.danger,
+      border: `1px solid rgba(220, 38, 38, 0.2)`,
+    },
+    success: {
+      background: COLORS.successBg,
+      color: COLORS.success,
+      border: `1px solid rgba(5, 150, 105, 0.2)`,
+    },
+    warning: {
+      background: COLORS.warningBg,
+      color: COLORS.warning,
+      border: `1px solid rgba(217, 119, 6, 0.2)`,
     },
     white: {
-      background: '#ffffff',
-      color: '#3c4043',
-      border: '1px solid #dadce0',
-      boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
-    }
+      background: '#FFFFFF',
+      color: COLORS.textSecondary,
+      border: `1px solid ${COLORS.border}`,
+      boxShadow: '0 1px 2px rgba(15, 23, 42, 0.05)',
+    },
+    // Legacy aliases
+    cyan: {
+      background: COLORS.secondaryBg,
+      color: COLORS.secondaryDark,
+      border: `1px solid rgba(20, 184, 166, 0.2)`,
+    },
   }
 
   const s = sizes[size] || sizes.md
@@ -81,10 +139,10 @@ export function Button({
         fontSize: s.fontSize,
         fontFamily: 'var(--font-body)',
         fontWeight: 600,
-        borderRadius: 8,
+        borderRadius: s.radius,
         cursor: loading || props.disabled ? 'not-allowed' : 'pointer',
-        opacity: props.disabled && !loading ? 0.45 : 1,
-        transition: 'all 0.2s ease',
+        opacity: props.disabled && !loading ? 0.5 : 1,
+        transition: 'all 0.15s ease',
         whiteSpace: 'nowrap',
         width: fullWidth ? '100%' : undefined,
         letterSpacing: '0.01em',
@@ -99,25 +157,56 @@ export function Button({
   )
 }
 
-export function Card({ children, title, subtitle, style, className, ...props }) {
+function ButtonSpinner() {
+  return (
+    <div style={{
+      width: 14,
+      height: 14,
+      border: '2px solid rgba(255,255,255,0.3)',
+      borderTopColor: '#fff',
+      borderRadius: '50%',
+      animation: 'spin 0.6s linear infinite'
+    }} />
+  )
+}
+
+// ================================================================
+// CARD
+// ================================================================
+export function Card({ children, title, subtitle, style, className, padding = true, ...props }) {
   return (
     <div
       {...props}
       className={className}
       style={{
-        background: 'var(--color-surface)',
-        border: '1px solid var(--color-border)',
-        borderRadius: 'var(--radius-lg)',
-        boxShadow: 'var(--shadow-sm)',
-        padding: 'var(--space-lg)',
-        color: 'var(--color-text)',
+        background: COLORS.bgSurface,
+        border: `1px solid ${COLORS.border}`,
+        borderRadius: 12,
+        boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)',
+        padding: padding ? 24 : 0,
         ...style,
       }}
     >
       {title && (
-        <div style={{ marginBottom: '8px' }}>
-          <h3 style={{ margin: 0, fontFamily: 'var(--font-display)', fontSize: 18, color: 'var(--color-text)' }}>{title}</h3>
-          {subtitle && <p style={{ margin: '4px 0 0', color: 'var(--color-text-muted)', fontSize: 13 }}>{subtitle}</p>}
+        <div style={{ marginBottom: 12 }}>
+          <h3 style={{
+            margin: 0,
+            fontFamily: 'var(--font-display)',
+            fontSize: 17,
+            fontWeight: 700,
+            color: COLORS.textPrimary
+          }}>
+            {title}
+          </h3>
+          {subtitle && (
+            <p style={{
+              margin: '4px 0 0',
+              color: COLORS.textMuted,
+              fontSize: 13
+            }}>
+              {subtitle}
+            </p>
+          )}
         </div>
       )}
       {children}
@@ -125,32 +214,53 @@ export function Card({ children, title, subtitle, style, className, ...props }) 
   )
 }
 
+// ================================================================
+// NAV ITEM
+// ================================================================
 export function NavItem({ to, icon: Icon, label, active, onClick, collapsed, badge }) {
   return (
     <button
       onClick={onClick}
       style={{
-        display: 'flex', alignItems: 'center', gap: collapsed ? 0 : 10,
+        display: 'flex',
+        alignItems: 'center',
+        gap: collapsed ? 0 : 12,
         width: '100%',
         padding: collapsed ? '10px 12px' : '10px 14px',
-        borderRadius: 'var(--radius)',
-        border: '1px solid transparent',
-        background: active ? 'linear-gradient(90deg, rgba(59,130,246,0.2), rgba(16,185,129,0.12))' : 'transparent',
-        color: active ? 'var(--color-primary)' : 'var(--color-text-secondary)',
+        borderRadius: 8,
+        border: 'none',
+        background: active
+          ? `linear-gradient(135deg, ${COLORS.primaryBg} 0%, rgba(20, 184, 166, 0.08) 100%)`
+          : 'transparent',
+        color: active ? COLORS.primary : COLORS.textSecondary,
         fontFamily: 'var(--font-body)',
         fontSize: 14,
-        fontWeight: active ? 700 : 500,
+        fontWeight: active ? 600 : 500,
         cursor: 'pointer',
-        transition: 'all 0.25s ease',
+        transition: 'all 0.15s ease',
         textAlign: 'left',
         justifyContent: collapsed ? 'center' : 'flex-start',
-        position: 'relative',
       }}
     >
-      {Icon && <Icon size={18} color={active ? 'var(--color-primary)' : 'var(--color-text-muted)'} />}
+      {Icon && (
+        <Icon
+          size={18}
+          color={active ? COLORS.primary : COLORS.textMuted}
+          strokeWidth={active ? 2 : 1.75}
+        />
+      )}
       {!collapsed && <span style={{ flex: 1 }}>{label}</span>}
       {!collapsed && badge === 'new' && (
-        <span style={{ fontSize: 9, fontWeight: 800, background: 'var(--color-primary)', color: '#fff', padding: '2px 6px', borderRadius: 100, letterSpacing: '0.05em' }}>
+        <span style={{
+          fontSize: 9,
+          fontWeight: 700,
+          background: COLORS.secondary,
+          color: '#fff',
+          padding: '2px 6px',
+          borderRadius: 100,
+          letterSpacing: '0.05em',
+          textTransform: 'uppercase',
+        }}>
           NEW
         </span>
       )}
@@ -158,36 +268,43 @@ export function NavItem({ to, icon: Icon, label, active, onClick, collapsed, bad
   )
 }
 
-function ButtonSpinner() {
-  return (
-    <div style={{ width: 14, height: 14, border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.6s linear infinite' }} />
-  )
-}
-
 // ================================================================
 // SPINNER / LOADER
 // ================================================================
-export function Spinner({ size = 24, color = '#1a73e8', thickness = 2.5 }) {
+export function Spinner({ size = 24, color = COLORS.primary, thickness = 2.5 }) {
   return (
     <div style={{
-      width: size, height: size, flexShrink: 0,
-      border: `${thickness}px solid rgba(26,115,232,0.2)`,
+      width: size,
+      height: size,
+      flexShrink: 0,
+      border: `${thickness}px solid rgba(49, 46, 129, 0.15)`,
       borderTopColor: color,
       borderRadius: '50%',
-      animation: 'spin 0.65s linear infinite',
+      animation: 'spin 0.7s linear infinite',
     }} />
   )
 }
 
-export function FullPageLoader({ message = 'Loading…' }) {
+export function FullPageLoader({ message = 'Loading...' }) {
   return (
     <div style={{
-      position: 'fixed', inset: 0, background: '#fff',
-      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-      gap: 20, zIndex: 9999,
+      position: 'fixed',
+      inset: 0,
+      background: COLORS.bgBase,
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 20,
+      zIndex: 9999,
     }}>
       <Spinner size={40} thickness={3} />
-      <p style={{ fontFamily: 'var(--font-display)', color: '#5f6368', fontSize: 14 }}>
+      <p style={{
+        fontFamily: 'var(--font-display)',
+        color: COLORS.textMuted,
+        fontSize: 14,
+        fontWeight: 500,
+      }}>
         {message}
       </p>
     </div>
@@ -196,10 +313,19 @@ export function FullPageLoader({ message = 'Loading…' }) {
 
 export function SkeletonCard({ rows = 3 }) {
   return (
-    <div style={{ background: '#fff', border: '1px solid #e0e0e0', borderRadius: 16, padding: 24 }}>
+    <div style={{
+      background: COLORS.bgSurface,
+      border: `1px solid ${COLORS.border}`,
+      borderRadius: 12,
+      padding: 24
+    }}>
       <div className="skeleton" style={{ height: 20, width: '60%', marginBottom: 16 }} />
       {Array.from({ length: rows }).map((_, i) => (
-        <div key={i} className="skeleton" style={{ height: 14, width: `${90 - i * 15}%`, marginBottom: 10 }} />
+        <div
+          key={i}
+          className="skeleton"
+          style={{ height: 14, width: `${90 - i * 15}%`, marginBottom: 10 }}
+        />
       ))}
     </div>
   )
@@ -214,27 +340,34 @@ export function Input({
 }) {
   const [showPw, setShowPw] = useState(false)
   const isPassword = type === 'password'
-  const inputType  = isPassword ? (showPw ? 'text' : 'password') : type
+  const inputType = isPassword ? (showPw ? 'text' : 'password') : type
   const [focused, setFocused] = useState(false)
 
   return (
     <div style={{ marginBottom: 18 }}>
       {label && (
         <label style={{
-          display: 'flex', alignItems: 'center', gap: 4,
-          fontSize: 13, fontWeight: 500,
-          color: error ? '#d93025' : focused ? '#1a73e8' : '#5f6368',
-          marginBottom: 7, transition: 'color 0.15s',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 4,
+          fontSize: 13,
+          fontWeight: 500,
+          color: error ? COLORS.danger : focused ? COLORS.primary : COLORS.textMuted,
+          marginBottom: 7,
+          transition: 'color 0.15s',
         }}>
           {label}
-          {required && <span style={{ color: '#d93025', fontSize: 11 }}>*</span>}
+          {required && <span style={{ color: COLORS.danger, fontSize: 11 }}>*</span>}
         </label>
       )}
       <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
         {prefix && (
           <div style={{
-            position: 'absolute', left: 12,
-            color: '#80868b', display: 'flex', alignItems: 'center',
+            position: 'absolute',
+            left: 12,
+            color: COLORS.textLight,
+            display: 'flex',
+            alignItems: 'center',
           }}>
             {prefix}
           </div>
@@ -243,46 +376,73 @@ export function Input({
           {...props}
           type={inputType}
           onFocus={(e) => { setFocused(true); props.onFocus?.(e) }}
-          onBlur={(e)  => { setFocused(false); props.onBlur?.(e)  }}
+          onBlur={(e) => { setFocused(false); props.onBlur?.(e) }}
           style={{
             width: '100%',
             padding: `11px ${isPassword || suffix ? 42 : 14}px 11px ${prefix ? 40 : 14}px`,
-            background: '#fff',
-            border: `1.5px solid ${error ? '#d93025' : focused ? '#1a73e8' : '#dadce0'}`,
+            background: COLORS.bgSurface,
+            border: `1.5px solid ${error ? COLORS.danger : focused ? COLORS.primary : COLORS.border}`,
             borderRadius: 8,
-            color: '#202124',
+            color: COLORS.textPrimary,
             fontFamily: 'var(--font-body)',
             fontSize: 14,
             outline: 'none',
-            transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
-            boxShadow: focused ? `0 0 0 3px ${error ? 'rgba(217,48,37,0.1)' : 'rgba(26,115,232,0.1)'}` : 'none',
+            transition: 'border-color 0.15s ease, box-shadow 0.15s ease',
+            boxShadow: focused
+              ? `0 0 0 3px ${error ? 'rgba(220, 38, 38, 0.1)' : 'rgba(49, 46, 129, 0.1)'}`
+              : 'none',
             ...props.style,
           }}
         />
         {isPassword && (
-          <button type="button" onClick={() => setShowPw(v => !v)} style={{
-            position: 'absolute', right: 12,
-            background: 'none', border: 'none',
-            color: '#80868b', cursor: 'pointer',
-            display: 'flex', alignItems: 'center', padding: 2,
-          }}>
+          <button
+            type="button"
+            onClick={() => setShowPw(v => !v)}
+            style={{
+              position: 'absolute',
+              right: 12,
+              background: 'none',
+              border: 'none',
+              color: COLORS.textLight,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              padding: 2,
+            }}
+          >
             {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
           </button>
         )}
         {suffix && !isPassword && (
-          <div style={{ position: 'absolute', right: 12, color: '#80868b', display: 'flex', alignItems: 'center' }}>
+          <div style={{
+            position: 'absolute',
+            right: 12,
+            color: COLORS.textLight,
+            display: 'flex',
+            alignItems: 'center'
+          }}>
             {suffix}
           </div>
         )}
       </div>
       {error && (
-        <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
-          style={{ color: '#d93025', fontSize: 12, marginTop: 5, display: 'flex', alignItems: 'center', gap: 4 }}>
+        <motion.p
+          initial={{ opacity: 0, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}
+          style={{
+            color: COLORS.danger,
+            fontSize: 12,
+            marginTop: 5,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 4
+          }}
+        >
           <AlertCircle size={11} /> {error}
         </motion.p>
       )}
       {hint && !error && (
-        <p style={{ color: '#80868b', fontSize: 12, marginTop: 5 }}>{hint}</p>
+        <p style={{ color: COLORS.textLight, fontSize: 12, marginTop: 5 }}>{hint}</p>
       )}
     </div>
   )
@@ -296,7 +456,13 @@ export function Select({ label, children, error, ...props }) {
   return (
     <div style={{ marginBottom: 18 }}>
       {label && (
-        <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#5f6368', marginBottom: 7 }}>
+        <label style={{
+          display: 'block',
+          fontSize: 13,
+          fontWeight: 500,
+          color: COLORS.textMuted,
+          marginBottom: 7
+        }}>
           {label}
         </label>
       )}
@@ -306,23 +472,39 @@ export function Select({ label, children, error, ...props }) {
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           style={{
-            width: '100%', padding: '11px 36px 11px 14px',
-            background: '#fff',
-            border: `1.5px solid ${error ? '#d93025' : focused ? '#1a73e8' : '#dadce0'}`,
+            width: '100%',
+            padding: '11px 36px 11px 14px',
+            background: COLORS.bgSurface,
+            border: `1.5px solid ${error ? COLORS.danger : focused ? COLORS.primary : COLORS.border}`,
             borderRadius: 8,
-            color: props.value ? '#202124' : '#bdc1c6',
-            fontFamily: 'var(--font-body)', fontSize: 14,
-            outline: 'none', cursor: 'pointer', appearance: 'none',
-            boxShadow: focused ? '0 0 0 3px rgba(26,115,232,0.1)' : 'none',
-            transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
+            color: props.value ? COLORS.textPrimary : COLORS.textLight,
+            fontFamily: 'var(--font-body)',
+            fontSize: 14,
+            outline: 'none',
+            cursor: 'pointer',
+            appearance: 'none',
+            boxShadow: focused ? '0 0 0 3px rgba(49, 46, 129, 0.1)' : 'none',
+            transition: 'border-color 0.15s ease, box-shadow 0.15s ease',
             ...props.style,
           }}
         >
           {children}
         </select>
-        <ChevronDown size={15} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', color: '#80868b', pointerEvents: 'none' }} />
+        <ChevronDown
+          size={15}
+          style={{
+            position: 'absolute',
+            right: 12,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            color: COLORS.textLight,
+            pointerEvents: 'none'
+          }}
+        />
       </div>
-      {error && <p style={{ color: '#d93025', fontSize: 12, marginTop: 5 }}>{error}</p>}
+      {error && (
+        <p style={{ color: COLORS.danger, fontSize: 12, marginTop: 5 }}>{error}</p>
+      )}
     </div>
   )
 }
@@ -332,30 +514,50 @@ export function Select({ label, children, error, ...props }) {
 // ================================================================
 export function Badge({ children, color = 'default', size = 'sm', dot = false }) {
   const colors = {
-    default: { bg: '#f1f3f4',   text: '#5f6368', border: '#e0e0e0' },
-    violet:  { bg: '#e8f0fe',   text: '#1a73e8', border: 'rgba(26,115,232,0.2)' },
-    cyan:    { bg: '#e6f4ea',   text: '#1e8e3e', border: 'rgba(30,142,62,0.2)' },
-    success: { bg: '#e6f4ea',   text: '#1e8e3e', border: 'rgba(30,142,62,0.2)' },
-    warning: { bg: '#fef7e0',   text: '#e37400', border: 'rgba(249,171,0,0.3)' },
-    danger:  { bg: '#fce8e6',   text: '#d93025', border: 'rgba(217,48,37,0.2)' },
-    new:     { bg: '#e8f0fe',   text: '#1a73e8', border: 'rgba(26,115,232,0.2)' },
+    default: { bg: COLORS.bgSubtle, text: COLORS.textMuted, border: COLORS.border },
+    primary: { bg: COLORS.primaryBg, text: COLORS.primary, border: 'rgba(49, 46, 129, 0.2)' },
+    secondary: { bg: COLORS.secondaryBg, text: COLORS.secondaryDark, border: 'rgba(20, 184, 166, 0.2)' },
+    success: { bg: COLORS.successBg, text: COLORS.success, border: 'rgba(5, 150, 105, 0.2)' },
+    warning: { bg: COLORS.warningBg, text: COLORS.warning, border: 'rgba(217, 119, 6, 0.25)' },
+    danger: { bg: COLORS.dangerBg, text: COLORS.danger, border: 'rgba(220, 38, 38, 0.2)' },
+    // Legacy aliases
+    violet: { bg: COLORS.primaryBg, text: COLORS.primary, border: 'rgba(49, 46, 129, 0.2)' },
+    cyan: { bg: COLORS.secondaryBg, text: COLORS.secondaryDark, border: 'rgba(20, 184, 166, 0.2)' },
+    new: { bg: COLORS.secondaryBg, text: COLORS.secondaryDark, border: 'rgba(20, 184, 166, 0.2)' },
   }
+
   const sizes = {
-    xs: { padding: '2px 7px',  fontSize: 10 },
-    sm: { padding: '3px 9px',  fontSize: 11 },
+    xs: { padding: '2px 7px', fontSize: 10 },
+    sm: { padding: '3px 9px', fontSize: 11 },
     md: { padding: '5px 11px', fontSize: 12 },
   }
+
   const c = colors[color] || colors.default
-  const s = sizes[size] || sizes.sm || sizes.sm
+  const s = sizes[size] || sizes.sm
+
   return (
     <span style={{
-      display: 'inline-flex', alignItems: 'center', gap: 5,
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: 5,
       ...s,
       borderRadius: 100,
-      fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase',
-      background: c.bg, color: c.text, border: `1px solid ${c.border}`,
+      fontWeight: 600,
+      letterSpacing: '0.04em',
+      textTransform: 'uppercase',
+      background: c.bg,
+      color: c.text,
+      border: `1px solid ${c.border}`,
     }}>
-      {dot && <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'currentColor', flexShrink: 0 }} />}
+      {dot && (
+        <span style={{
+          width: 5,
+          height: 5,
+          borderRadius: '50%',
+          background: 'currentColor',
+          flexShrink: 0
+        }} />
+      )}
       {children}
     </span>
   )
@@ -363,62 +565,126 @@ export function Badge({ children, color = 'default', size = 'sm', dot = false })
 
 export function RiskBadge({ level }) {
   const map = {
-    HIGH:   { color: 'danger',  label: 'High Risk',   dot: true },
-    MEDIUM: { color: 'warning', label: 'Medium Risk',  dot: true },
-    LOW:    { color: 'success', label: 'Low Risk',     dot: true },
+    HIGH: {
+      bg: COLORS.riskHighBg,
+      text: COLORS.riskHigh,
+      border: 'rgba(185, 28, 28, 0.25)',
+      label: 'High Risk'
+    },
+    MEDIUM: {
+      bg: COLORS.riskMediumBg,
+      text: COLORS.riskMedium,
+      border: 'rgba(180, 83, 9, 0.25)',
+      label: 'Medium Risk'
+    },
+    LOW: {
+      bg: COLORS.riskLowBg,
+      text: COLORS.riskLow,
+      border: 'rgba(4, 120, 87, 0.25)',
+      label: 'Low Risk'
+    },
   }
   const cfg = map[level] || map.LOW
-  return <Badge color={cfg.color} dot>{cfg.label}</Badge>
+
+  return (
+    <span style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: 5,
+      padding: '3px 9px',
+      borderRadius: 100,
+      fontSize: 11,
+      fontWeight: 600,
+      letterSpacing: '0.04em',
+      textTransform: 'uppercase',
+      background: cfg.bg,
+      color: cfg.text,
+      border: `1px solid ${cfg.border}`,
+    }}>
+      <span style={{
+        width: 5,
+        height: 5,
+        borderRadius: '50%',
+        background: 'currentColor',
+        flexShrink: 0
+      }} />
+      {cfg.label}
+    </span>
+  )
 }
 
 // ================================================================
 // STAT CARD
 // ================================================================
-export function StatCard({ icon: Icon, label, value, sub, color = 'violet', trend, delay = 0 }) {
+export function StatCard({ icon: Icon, label, value, sub, color = 'primary', trend, delay = 0 }) {
   const colors = {
-    violet:  { icon: '#1a73e8', bg: '#e8f0fe' },
-    cyan:    { icon: '#1e8e3e', bg: '#e6f4ea' },
-    success: { icon: '#1e8e3e', bg: '#e6f4ea' },
-    warning: { icon: '#e37400', bg: '#fef7e0' },
-    danger:  { icon: '#d93025', bg: '#fce8e6' },
+    primary: { icon: COLORS.primary, bg: COLORS.primaryBg },
+    secondary: { icon: COLORS.secondary, bg: COLORS.secondaryBg },
+    success: { icon: COLORS.success, bg: COLORS.successBg },
+    warning: { icon: COLORS.warning, bg: COLORS.warningBg },
+    danger: { icon: COLORS.danger, bg: COLORS.dangerBg },
+    // Legacy aliases
+    violet: { icon: COLORS.primary, bg: COLORS.primaryBg },
+    cyan: { icon: COLORS.secondary, bg: COLORS.secondaryBg },
   }
-  const c = colors[color] || colors.violet
+  const c = colors[color] || colors.primary
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: delay * 0.08, duration: 0.35, ease: [0.2,0,0,1] }}
+      transition={{ delay: delay * 0.08, duration: 0.35, ease: [0.2, 0, 0, 1] }}
       className="glass-panel card-lift"
-      style={{
-        padding: '22px 24px',
-        cursor: 'default',
-      }}
+      style={{ padding: '22px 24px', cursor: 'default' }}
     >
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        marginBottom: 16
+      }}>
         <div style={{
-          width: 42, height: 42, borderRadius: 12,
+          width: 44,
+          height: 44,
+          borderRadius: 10,
           background: c.bg,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}>
-          <Icon size={20} color={c.icon} strokeWidth={1.75} />
+          <Icon size={22} color={c.icon} strokeWidth={1.75} />
         </div>
         {trend !== undefined && (
           <span style={{
-            fontSize: 12, fontWeight: 600,
-            color: trend >= 0 ? '#1e8e3e' : '#d93025',
-            background: trend >= 0 ? '#e6f4ea' : '#fce8e6',
-            padding: '3px 8px', borderRadius: 100,
+            fontSize: 12,
+            fontWeight: 600,
+            color: trend >= 0 ? COLORS.success : COLORS.danger,
+            background: trend >= 0 ? COLORS.successBg : COLORS.dangerBg,
+            padding: '3px 8px',
+            borderRadius: 100,
           }}>
             {trend >= 0 ? '↑' : '↓'} {Math.abs(trend)}%
           </span>
         )}
       </div>
-      <div style={{ fontFamily: 'var(--font-display)', fontSize: 30, fontWeight: 700, color: '#202124', lineHeight: 1, marginBottom: 6 }}>
+      <div style={{
+        fontFamily: 'var(--font-display)',
+        fontSize: 32,
+        fontWeight: 700,
+        color: COLORS.textPrimary,
+        lineHeight: 1,
+        marginBottom: 6
+      }}>
         {value}
       </div>
-      <div style={{ fontSize: 13, color: '#5f6368', fontWeight: 500 }}>{label}</div>
-      {sub && <div style={{ fontSize: 12, color: '#80868b', marginTop: 3 }}>{sub}</div>}
+      <div style={{ fontSize: 13, color: COLORS.textMuted, fontWeight: 500 }}>
+        {label}
+      </div>
+      {sub && (
+        <div style={{ fontSize: 12, color: COLORS.textLight, marginTop: 3 }}>
+          {sub}
+        </div>
+      )}
     </motion.div>
   )
 }
@@ -435,16 +701,34 @@ export function PageHeader({ title, subtitle, action, breadcrumb }) {
       style={{ marginBottom: 28 }}
     >
       {breadcrumb && (
-        <div style={{ fontSize: 12, color: '#80868b', marginBottom: 8 }}>
+        <div style={{ fontSize: 12, color: COLORS.textLight, marginBottom: 8 }}>
           {breadcrumb}
         </div>
       )}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
+      <div style={{
+        display: 'flex',
+        alignItems: 'flex-start',
+        justifyContent: 'space-between',
+        gap: 16,
+        flexWrap: 'wrap'
+      }}>
         <div>
-          <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, letterSpacing: '-0.5px', lineHeight: 1.2, marginBottom: subtitle ? 6 : 0, color: '#202124' }}>
+          <h1 style={{
+            fontFamily: 'var(--font-display)',
+            fontSize: 26,
+            fontWeight: 700,
+            letterSpacing: '-0.02em',
+            lineHeight: 1.2,
+            marginBottom: subtitle ? 6 : 0,
+            color: COLORS.textPrimary
+          }}>
             {title}
           </h1>
-          {subtitle && <p style={{ color: '#5f6368', fontSize: 14, fontWeight: 400 }}>{subtitle}</p>}
+          {subtitle && (
+            <p style={{ color: COLORS.textMuted, fontSize: 14, fontWeight: 400 }}>
+              {subtitle}
+            </p>
+          )}
         </div>
         {action && <div style={{ flexShrink: 0 }}>{action}</div>}
       </div>
@@ -463,15 +747,36 @@ export function EmptyState({ icon: Icon, title, description, action }) {
       style={{ textAlign: 'center', padding: '56px 24px' }}
     >
       <div style={{
-        width: 72, height: 72, borderRadius: 20,
-        background: '#f1f3f4', border: '1px solid #e0e0e0',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        width: 72,
+        height: 72,
+        borderRadius: 16,
+        background: COLORS.bgSubtle,
+        border: `1px solid ${COLORS.border}`,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
         margin: '0 auto 20px',
       }}>
-        <Icon size={30} color="#80868b" strokeWidth={1.5} />
+        <Icon size={30} color={COLORS.textLight} strokeWidth={1.5} />
       </div>
-      <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 17, fontWeight: 700, marginBottom: 8, color: '#202124' }}>{title}</h3>
-      <p style={{ color: '#5f6368', fontSize: 14, maxWidth: 320, margin: '0 auto 24px', lineHeight: 1.7 }}>{description}</p>
+      <h3 style={{
+        fontFamily: 'var(--font-display)',
+        fontSize: 17,
+        fontWeight: 700,
+        marginBottom: 8,
+        color: COLORS.textPrimary
+      }}>
+        {title}
+      </h3>
+      <p style={{
+        color: COLORS.textMuted,
+        fontSize: 14,
+        maxWidth: 320,
+        margin: '0 auto 24px',
+        lineHeight: 1.7
+      }}>
+        {description}
+      </p>
       {action}
     </motion.div>
   )
@@ -481,7 +786,7 @@ export function EmptyState({ icon: Icon, title, description, action }) {
 // SCORE BAR
 // ================================================================
 export function ScoreBar({ label, value, showLabel = true }) {
-  const color = value >= 70 ? '#d93025' : value >= 45 ? '#e37400' : '#1e8e3e'
+  const color = value >= 70 ? COLORS.riskHigh : value >= 45 ? COLORS.riskMedium : COLORS.riskLow
   const [animated, setAnimated] = useState(false)
 
   useEffect(() => {
@@ -492,14 +797,28 @@ export function ScoreBar({ label, value, showLabel = true }) {
   return (
     <div style={{ marginBottom: 14 }}>
       {showLabel && (
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 7, fontSize: 13 }}>
-          <span style={{ color: '#5f6368', fontWeight: 500 }}>{label}</span>
-          <span style={{ fontWeight: 700, color, fontFamily: 'var(--font-display)' }}>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          marginBottom: 7,
+          fontSize: 13
+        }}>
+          <span style={{ color: COLORS.textMuted, fontWeight: 500 }}>{label}</span>
+          <span style={{
+            fontWeight: 700,
+            color,
+            fontFamily: 'var(--font-display)'
+          }}>
             {value?.toFixed(1)}%
           </span>
         </div>
       )}
-      <div style={{ height: 6, background: '#f1f3f4', borderRadius: 4, overflow: 'hidden' }}>
+      <div style={{
+        height: 6,
+        background: COLORS.bgSubtle,
+        borderRadius: 4,
+        overflow: 'hidden'
+      }}>
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: animated ? `${Math.min(value || 0, 100)}%` : 0 }}
@@ -516,10 +835,17 @@ export function ScoreBar({ label, value, showLabel = true }) {
 // ================================================================
 export function Modal({ open, onClose, title, children, size = 'md', noPadding = false }) {
   const sizes = { sm: 400, md: 520, lg: 720, xl: 900 }
+
   useEffect(() => {
     const handler = (e) => { if (e.key === 'Escape') onClose?.() }
-    if (open) { document.addEventListener('keydown', handler); document.body.style.overflow = 'hidden' }
-    return () => { document.removeEventListener('keydown', handler); document.body.style.overflow = '' }
+    if (open) {
+      document.addEventListener('keydown', handler)
+      document.body.style.overflow = 'hidden'
+    }
+    return () => {
+      document.removeEventListener('keydown', handler)
+      document.body.style.overflow = ''
+    }
   }, [open, onClose])
 
   return (
@@ -531,10 +857,14 @@ export function Modal({ open, onClose, title, children, size = 'md', noPadding =
           exit={{ opacity: 0 }}
           onClick={onClose}
           style={{
-            position: 'fixed', inset: 0, zIndex: 1000,
-            background: 'rgba(0,0,0,0.4)',
+            position: 'fixed',
+            inset: 0,
+            zIndex: 1000,
+            background: 'rgba(15, 23, 42, 0.5)',
             backdropFilter: 'blur(4px)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
             padding: 20,
           }}
         >
@@ -549,25 +879,44 @@ export function Modal({ open, onClose, title, children, size = 'md', noPadding =
               maxWidth: sizes[size],
               maxHeight: '90vh',
               overflow: 'auto',
-              background: '#fff',
+              background: COLORS.bgSurface,
               borderRadius: 16,
-              border: '1px solid #e0e0e0',
-              boxShadow: '0 8px 28px rgba(0,0,0,0.15)',
+              border: `1px solid ${COLORS.border}`,
+              boxShadow: '0 20px 40px rgba(15, 23, 42, 0.15)',
             }}
           >
             {title && (
               <div style={{
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
                 padding: '20px 24px',
-                borderBottom: '1px solid #e8eaed',
+                borderBottom: `1px solid ${COLORS.border}`,
               }}>
-                <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 700, color: '#202124' }}>{title}</h2>
-                <button onClick={onClose} style={{
-                  width: 32, height: 32, borderRadius: 8,
-                  background: '#f1f3f4', border: '1px solid #e0e0e0',
-                  color: '#5f6368', cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                <h2 style={{
+                  fontFamily: 'var(--font-display)',
+                  fontSize: 18,
+                  fontWeight: 700,
+                  color: COLORS.textPrimary
                 }}>
+                  {title}
+                </h2>
+                <button
+                  onClick={onClose}
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: 8,
+                    background: COLORS.bgSubtle,
+                    border: `1px solid ${COLORS.border}`,
+                    color: COLORS.textMuted,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
                   <X size={16} />
                 </button>
               </div>
@@ -587,30 +936,70 @@ export function Modal({ open, onClose, title, children, size = 'md', noPadding =
 // ================================================================
 export function Alert({ type = 'info', title, children, onClose }) {
   const types = {
-    info:    { icon: Info,          color: '#1a73e8', bg: '#e8f0fe', border: 'rgba(26,115,232,0.2)' },
-    success: { icon: CheckCircle,   color: '#1e8e3e', bg: '#e6f4ea', border: 'rgba(30,142,62,0.2)' },
-    warning: { icon: AlertTriangle, color: '#e37400', bg: '#fef7e0', border: 'rgba(249,171,0,0.25)' },
-    danger:  { icon: AlertCircle,   color: '#d93025', bg: '#fce8e6', border: 'rgba(217,48,37,0.2)' },
+    info: {
+      icon: Info,
+      color: COLORS.primary,
+      bg: COLORS.primaryBg,
+      border: 'rgba(49, 46, 129, 0.2)'
+    },
+    success: {
+      icon: CheckCircle,
+      color: COLORS.success,
+      bg: COLORS.successBg,
+      border: 'rgba(5, 150, 105, 0.2)'
+    },
+    warning: {
+      icon: AlertTriangle,
+      color: COLORS.warning,
+      bg: COLORS.warningBg,
+      border: 'rgba(217, 119, 6, 0.25)'
+    },
+    danger: {
+      icon: AlertCircle,
+      color: COLORS.danger,
+      bg: COLORS.dangerBg,
+      border: 'rgba(220, 38, 38, 0.2)'
+    },
   }
   const t = types[type] || types.info
   const Icon = t.icon
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, y: -6 }}
+      animate={{ opacity: 1, y: 0 }}
       style={{
-        display: 'flex', alignItems: 'flex-start', gap: 12,
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: 12,
         padding: '14px 16px',
-        background: t.bg, border: `1px solid ${t.border}`, borderRadius: 10,
+        background: t.bg,
+        border: `1px solid ${t.border}`,
+        borderRadius: 10,
         marginBottom: 16,
       }}
     >
       <Icon size={16} color={t.color} style={{ marginTop: 1, flexShrink: 0 }} />
       <div style={{ flex: 1, fontSize: 13 }}>
-        {title && <div style={{ fontWeight: 600, color: t.color, marginBottom: 2 }}>{title}</div>}
-        <div style={{ color: '#5f6368', lineHeight: 1.6 }}>{children}</div>
+        {title && (
+          <div style={{ fontWeight: 600, color: t.color, marginBottom: 2 }}>
+            {title}
+          </div>
+        )}
+        <div style={{ color: COLORS.textMuted, lineHeight: 1.6 }}>
+          {children}
+        </div>
       </div>
       {onClose && (
-        <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#80868b', cursor: 'pointer' }}>
+        <button
+          onClick={onClose}
+          style={{
+            background: 'none',
+            border: 'none',
+            color: COLORS.textLight,
+            cursor: 'pointer'
+          }}
+        >
           <X size={14} />
         </button>
       )}
@@ -624,9 +1013,18 @@ export function Alert({ type = 'info', title, children, onClose }) {
 export function Divider({ label }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '8px 0' }}>
-      <div style={{ flex: 1, height: 1, background: '#e8eaed' }} />
-      {label && <span style={{ fontSize: 12, color: '#80868b', whiteSpace: 'nowrap', fontWeight: 500 }}>{label}</span>}
-      <div style={{ flex: 1, height: 1, background: '#e8eaed' }} />
+      <div style={{ flex: 1, height: 1, background: COLORS.border }} />
+      {label && (
+        <span style={{
+          fontSize: 12,
+          color: COLORS.textLight,
+          whiteSpace: 'nowrap',
+          fontWeight: 500
+        }}>
+          {label}
+        </span>
+      )}
+      <div style={{ flex: 1, height: 1, background: COLORS.border }} />
     </div>
   )
 }
@@ -638,29 +1036,63 @@ export function ProgressSteps({ steps, current }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 0, marginBottom: 28 }}>
       {steps.map((step, i) => {
-        const done   = i < current
+        const done = i < current
         const active = i === current
         return (
-          <div key={i} style={{ display: 'flex', alignItems: 'center', flex: i < steps.length - 1 ? 1 : 0 }}>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+          <div
+            key={i}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              flex: i < steps.length - 1 ? 1 : 0
+            }}
+          >
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 6
+            }}>
               <div style={{
-                width: 32, height: 32, borderRadius: '50%',
-                background: done ? '#1a73e8' : active ? '#e8f0fe' : '#f1f3f4',
-                border: `2px solid ${done || active ? '#1a73e8' : '#dadce0'}`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                width: 32,
+                height: 32,
+                borderRadius: '50%',
+                background: done ? COLORS.primary : active ? COLORS.primaryBg : COLORS.bgSubtle,
+                border: `2px solid ${done || active ? COLORS.primary : COLORS.border}`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
                 transition: 'all 0.2s ease',
               }}>
                 {done
                   ? <Check size={14} color="#fff" strokeWidth={2.5} />
-                  : <span style={{ fontSize: 12, fontWeight: 700, color: active ? '#1a73e8' : '#80868b' }}>{i + 1}</span>
+                  : <span style={{
+                      fontSize: 12,
+                      fontWeight: 700,
+                      color: active ? COLORS.primary : COLORS.textLight
+                    }}>
+                      {i + 1}
+                    </span>
                 }
               </div>
-              <span style={{ fontSize: 11, fontWeight: 500, color: active ? '#1a73e8' : done ? '#5f6368' : '#80868b', whiteSpace: 'nowrap' }}>
+              <span style={{
+                fontSize: 11,
+                fontWeight: 500,
+                color: active ? COLORS.primary : done ? COLORS.textMuted : COLORS.textLight,
+                whiteSpace: 'nowrap'
+              }}>
                 {step}
               </span>
             </div>
             {i < steps.length - 1 && (
-              <div style={{ flex: 1, height: 2, background: done ? '#1a73e8' : '#e8eaed', transition: 'background 0.2s', marginBottom: 18, margin: '0 8px 18px' }} />
+              <div style={{
+                flex: 1,
+                height: 2,
+                background: done ? COLORS.primary : COLORS.border,
+                transition: 'background 0.2s',
+                marginBottom: 18,
+                margin: '0 8px 18px'
+              }} />
             )}
           </div>
         )
@@ -676,7 +1108,7 @@ export function Tabs({ tabs, active, onChange }) {
   return (
     <div style={{
       display: 'flex',
-      background: '#f1f3f4',
+      background: COLORS.bgSubtle,
       borderRadius: 8,
       padding: 3,
       gap: 2,
@@ -686,14 +1118,22 @@ export function Tabs({ tabs, active, onChange }) {
           key={tab.id}
           onClick={() => onChange(tab.id)}
           style={{
-            flex: 1, padding: '8px 16px',
-            borderRadius: 6, border: 'none',
-            background: active === tab.id ? '#fff' : 'transparent',
-            color: active === tab.id ? '#202124' : '#80868b',
-            fontFamily: 'var(--font-body)', fontSize: 13, fontWeight: active === tab.id ? 600 : 400,
-            cursor: 'pointer', transition: 'all 0.2s ease',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
-            boxShadow: active === tab.id ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+            flex: 1,
+            padding: '8px 16px',
+            borderRadius: 6,
+            border: 'none',
+            background: active === tab.id ? COLORS.bgSurface : 'transparent',
+            color: active === tab.id ? COLORS.textPrimary : COLORS.textLight,
+            fontFamily: 'var(--font-body)',
+            fontSize: 13,
+            fontWeight: active === tab.id ? 600 : 400,
+            cursor: 'pointer',
+            transition: 'all 0.15s ease',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 7,
+            boxShadow: active === tab.id ? '0 1px 3px rgba(15, 23, 42, 0.08)' : 'none',
             whiteSpace: 'nowrap',
           }}
         >
@@ -701,9 +1141,12 @@ export function Tabs({ tabs, active, onChange }) {
           {tab.label}
           {tab.count !== undefined && (
             <span style={{
-              padding: '1px 6px', borderRadius: 100, fontSize: 10, fontWeight: 700,
-              background: active === tab.id ? '#e8f0fe' : '#e8eaed',
-              color: active === tab.id ? '#1a73e8' : '#80868b',
+              padding: '1px 6px',
+              borderRadius: 100,
+              fontSize: 10,
+              fontWeight: 700,
+              background: active === tab.id ? COLORS.primaryBg : COLORS.bgSubtle,
+              color: active === tab.id ? COLORS.primary : COLORS.textLight,
             }}>
               {tab.count}
             </span>
@@ -720,13 +1163,15 @@ export function Tabs({ tabs, active, onChange }) {
 export function Tooltip({ children, content, placement = 'top' }) {
   const [visible, setVisible] = useState(false)
   const placements = {
-    top:    { bottom: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)' },
-    bottom: { top:    'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)' },
-    left:   { right:  'calc(100% + 8px)', top: '50%',  transform: 'translateY(-50%)' },
-    right:  { left:   'calc(100% + 8px)', top: '50%',  transform: 'translateY(-50%)' },
+    top: { bottom: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)' },
+    bottom: { top: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)' },
+    left: { right: 'calc(100% + 8px)', top: '50%', transform: 'translateY(-50%)' },
+    right: { left: 'calc(100% + 8px)', top: '50%', transform: 'translateY(-50%)' },
   }
+
   return (
-    <div style={{ position: 'relative', display: 'inline-flex' }}
+    <div
+      style={{ position: 'relative', display: 'inline-flex' }}
       onMouseEnter={() => setVisible(true)}
       onMouseLeave={() => setVisible(false)}
     >
@@ -739,15 +1184,18 @@ export function Tooltip({ children, content, placement = 'top' }) {
             exit={{ opacity: 0, scale: 0.92 }}
             transition={{ duration: 0.12 }}
             style={{
-              position: 'absolute', zIndex: 200, pointerEvents: 'none',
+              position: 'absolute',
+              zIndex: 200,
+              pointerEvents: 'none',
               ...placements[placement],
-              background: '#3c4043',
+              background: COLORS.textPrimary,
               borderRadius: 6,
               padding: '6px 10px',
-              fontSize: 12, fontFamily: 'var(--font-body)',
+              fontSize: 12,
+              fontFamily: 'var(--font-body)',
               color: '#fff',
               whiteSpace: 'nowrap',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+              boxShadow: '0 4px 12px rgba(15, 23, 42, 0.15)',
             }}
           >
             {content}
