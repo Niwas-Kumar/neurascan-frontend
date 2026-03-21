@@ -208,6 +208,7 @@ export default function LoginPage() {
             fontFamily: "'Plus Jakarta Sans', sans-serif",
             position: 'relative',
             zIndex: 1,
+            color: '#FFFFFF',
           }}
         >
           Early Detection,
@@ -224,11 +225,11 @@ export default function LoginPage() {
             fontSize: 17,
             lineHeight: 1.75,
             marginBottom: 48,
-            opacity: 0.92,
             maxWidth: 480,
             fontWeight: 400,
             position: 'relative',
             zIndex: 1,
+            color: 'rgba(255, 255, 255, 0.92)',
           }}
         >
           Our AI-powered handwriting analysis identifies learning disorders like dyslexia and dysgraphia, giving educators and parents the insights needed to support every student.
@@ -274,6 +275,7 @@ export default function LoginPage() {
                 fontSize: 14,
                 fontWeight: 500,
                 lineHeight: 1.4,
+                color: '#FFFFFF',
               }}>
                 {feature.text}
               </div>
