@@ -10,6 +10,7 @@ import {
 import { useAuth } from '../../context/AuthContext'
 import { useIsMobile, useClickOutside } from '../../hooks'
 import { Badge, Tooltip, Card, NavItem } from '../shared/UI'
+import { NeuraScanLogo } from '../shared/Logo'
 import toast from 'react-hot-toast'
 
 const teacherNav = [
@@ -119,26 +120,7 @@ function Sidebar({ collapsed, isTeacher, navItems, location, setCollapsed, setMo
         borderBottom: '1px solid #e8eaed',
         gap: 10, overflow: 'hidden',
       }}>
-        <div style={{
-          width: 34, height: 34, borderRadius: 10, flexShrink: 0,
-          background: '#312E81',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <Brain size={18} color="#fff" strokeWidth={2.5} />
-        </div>
-        <AnimatePresence>
-          {!collapsed && (
-            <motion.div
-              initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -6 }}
-              transition={{ duration: 0.15 }}
-              style={{ overflow: 'hidden' }}
-            >
-              <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, color: '#202124', whiteSpace: 'nowrap' }}>
-                NeuraScan
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <NeuraScanLogo size={34} showText={!collapsed} variant="default" />
       </div>
 
       {/* Nav */}
