@@ -1,165 +1,178 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Upload, FileImage, X, CheckCircle, AlertCircle, Zap, FileText, RefreshCw, ImageOff } from 'lucide-react'
+import {
+  Upload, FileImage, X, CheckCircle, AlertCircle, Brain,
+  FileText, RefreshCw, ImageOff, ChevronRight, Sparkles
+} from 'lucide-react'
 import { optimizedStudentAPI, optimizedAnalysisAPI } from '../../services/optimizedApi'
 import toast from 'react-hot-toast'
 import { useAuth } from '../../context/AuthContext'
+import { Button, RiskBadge, Alert, ScoreBar } from '../../components/shared/UI'
 
-// ── Inline PageHeader Component ────────────────────────────
-const PageHeader = ({ title, subtitle, breadcrumb }) => (
-  <div style={{ marginBottom: 32 }}>
-    {breadcrumb && <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 12 }}>{breadcrumb}</div>}
-    <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 32, fontWeight: 800, marginBottom: 6, color: 'var(--text-primary)' }}>{title}</h1>
-    {subtitle && <p style={{ fontSize: 15, color: 'var(--text-secondary)', lineHeight: 1.6 }}>{subtitle}</p>}
-  </div>
-)
+// ════════════════════════════════════════════════════════════════
+// DESIGN SYSTEM COLORS
+// ════════════════════════════════════════════════════════════════
+const COLORS = {
+  primary: '#312E81',
+  primaryLight: '#4338CA',
+  primaryLighter: '#6366F1',
+  primaryBg: '#EEF2FF',
 
-// ── Inline Button Component ────────────────────────────
-const Button = ({ children, type = 'button', fullWidth = false, size = 'md', loading = false, disabled = false, variant = 'primary', onClick, icon, style = {}, ...props }) => {
-  const heights = { sm: 36, md: 40, lg: 44 }
-  const paddings = { sm: '8px 16px', md: '12px 20px', lg: '14px 24px' }
-  const [isHovering, setIsHovering] = useState(false)
+  secondary: '#14B8A6',
+  secondaryDark: '#0D9488',
+  secondaryBg: '#CCFBF1',
 
-  const bgColor = variant === 'ghost' ? 'transparent' : isHovering && !disabled ? 'var(--primary-hover)' : 'var(--primary)'
-  const textColor = variant === 'ghost' ? 'var(--primary)' : 'white'
-  const borderStyle = variant === 'ghost' ? { border: '1px solid var(--border)' } : {}
+  success: '#059669',
+  successBg: '#D1FAE5',
+  warning: '#D97706',
+  warningBg: '#FEF3C7',
+  danger: '#B91C1C',
+  dangerBg: '#FEE2E2',
 
-  return (
-    <button
-      type={type}
-      disabled={loading || disabled}
-      onClick={onClick}
-      style={{
-        width: fullWidth ? '100%' : 'auto',
-        height: heights[size],
-        padding: paddings[size],
-        background: bgColor,
-        color: textColor,
-        border: variant === 'ghost' ? '1px solid var(--border)' : 'none',
-        borderRadius: 'var(--radius-lg)',
-        fontSize: size === 'sm' ? 13 : size === 'lg' ? 15 : 14,
-        fontWeight: 600,
-        cursor: loading || disabled ? 'not-allowed' : 'pointer',
-        opacity: loading || disabled ? 0.6 : 1,
-        transition: 'all 0.3s cubic-bezier(0.2, 0, 0, 1)',
-        boxShadow: isHovering && variant !== 'ghost' && !disabled ? '0 4px 16px rgba(26, 115, 232, 0.3)' : 'none',
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: icon ? 8 : 0,
-        ...style,
-      }}
-      onMouseEnter={() => setIsHovering(true)}
-      onMouseLeave={() => setIsHovering(false)}
-      {...props}
-    >
-      {icon && <span>{icon}</span>}
-      {loading ? '...' : children}
-    </button>
-  )
+  textPrimary: '#1E293B',
+  textSecondary: '#334155',
+  textMuted: '#64748B',
+  textLight: '#94A3B8',
+
+  bgBase: '#F8FAFC',
+  bgSurface: '#FFFFFF',
+  bgSubtle: '#F1F5F9',
+  border: '#E2E8F0',
+  borderStrong: '#CBD5E1',
 }
 
-// ── Inline RiskBadge Component ────────────────────────────
-const RiskBadge = ({ level }) => {
-  const colors = { LOW: { bg: '#d1fae5', text: '#065f46' }, MEDIUM: { bg: '#fef3c7', text: '#92400e' }, HIGH: { bg: '#fee2e2', text: '#7f1d1d' } }
-  const color = colors[level] || colors.LOW
-  return (
-    <span style={{
-      display: 'inline-block',
-      padding: '4px 10px',
-      borderRadius: '12px',
-      fontSize: 12,
-      fontWeight: 600,
-      background: color.bg,
-      color: color.text,
-    }}>
-      {level}
-    </span>
-  )
-}
+const STEPS = ['Select Student', 'Upload Sample', 'AI Analysis', 'View Results']
 
-// ── Inline ScoreBar Component ────────────────────────────
-const ScoreBar = ({ label, value }) => {
-  const color = value >= 70 ? 'var(--danger)' : value >= 45 ? 'var(--warning)' : 'var(--success)'
-  return (
-    <div style={{ marginBottom: 20 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>{label}</span>
-        <span style={{ fontSize: 14, fontWeight: 700, color }}>{value?.toFixed(1)}%</span>
-      </div>
-      <div style={{ height: 6, background: 'var(--bg-elevated)', borderRadius: 3, overflow: 'hidden' }}>
-        <motion.div
-          initial={{ width: 0 }}
-          animate={{ width: `${value}%` }}
-          transition={{ duration: 1, ease: 'easeOut' }}
-          style={{ height: '100%', background: color, borderRadius: 3 }}
-        />
-      </div>
-    </div>
-  )
-}
-
-// ── Inline Alert Component ────────────────────────────
-const Alert = ({ type = 'info', children, onClose, style = {} }) => {
-  const colors = {
-    danger: { bg: 'var(--danger-dim)', border: 'var(--danger-glow)', text: 'var(--danger)' },
-    warning: { bg: 'var(--warning-dim)', border: 'var(--warning-glow)', text: 'var(--warning)' },
-    success: { bg: 'var(--success-dim)', border: 'var(--success-glow)', text: 'var(--success)' },
-    info: { bg: 'var(--primary-dim)', border: 'var(--primary-glow)', text: 'var(--primary)' },
-  }
-  const color = colors[type] || colors.info
-
+// ════════════════════════════════════════════════════════════════
+// PROGRESS STEPS COMPONENT
+// ════════════════════════════════════════════════════════════════
+function ProgressSteps({ steps, current }) {
   return (
     <div style={{
-      background: color.bg,
-      border: `1px solid ${color.border}`,
-      borderRadius: 'var(--radius)',
-      padding: '12px 14px',
-      fontSize: 13,
-      color: color.text,
       display: 'flex',
-      justifyContent: 'space-between',
       alignItems: 'center',
-      ...style,
+      marginBottom: 32,
+      background: COLORS.bgSurface,
+      border: `1px solid ${COLORS.border}`,
+      borderRadius: 12,
+      padding: '16px 24px',
     }}>
-      <span>{children}</span>
-      {onClose && (
-        <button
-          onClick={onClose}
-          style={{ background: 'none', border: 'none', color: color.text, cursor: 'pointer', fontSize: 18, padding: 0, marginLeft: 12 }}
-        >
-          ×
-        </button>
-      )}
+      {steps.map((step, i) => {
+        const isCompleted = current > i
+        const isActive = current === i
+        const isLast = i === steps.length - 1
+
+        return (
+          <div
+            key={step}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              flex: isLast ? 0 : 1,
+            }}
+          >
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+            }}>
+              <motion.div
+                initial={false}
+                animate={{
+                  backgroundColor: isCompleted
+                    ? COLORS.primary
+                    : isActive
+                    ? COLORS.primaryBg
+                    : COLORS.bgSubtle,
+                  borderColor: isCompleted || isActive
+                    ? COLORS.primary
+                    : COLORS.border,
+                }}
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: '50%',
+                  border: '2px solid',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontFamily: 'var(--font-display)',
+                  fontSize: 13,
+                  fontWeight: 700,
+                  color: isCompleted
+                    ? '#FFFFFF'
+                    : isActive
+                    ? COLORS.primary
+                    : COLORS.textLight,
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                {isCompleted ? (
+                  <CheckCircle size={16} />
+                ) : (
+                  i + 1
+                )}
+              </motion.div>
+              <span style={{
+                fontSize: 13,
+                fontWeight: isActive ? 600 : 500,
+                color: isActive
+                  ? COLORS.primary
+                  : isCompleted
+                  ? COLORS.textSecondary
+                  : COLORS.textMuted,
+                whiteSpace: 'nowrap',
+              }}>
+                {step}
+              </span>
+            </div>
+            {!isLast && (
+              <div style={{
+                flex: 1,
+                height: 2,
+                background: isCompleted ? COLORS.primary : COLORS.border,
+                margin: '0 16px',
+                borderRadius: 1,
+                transition: 'background 0.3s ease',
+              }} />
+            )}
+          </div>
+        )
+      })}
     </div>
   )
 }
 
-const STEPS = ['Select Student', 'Upload Paper', 'AI Analysis', 'Results']
-
+// ════════════════════════════════════════════════════════════════
+// MAIN UPLOAD PAGE
+// ════════════════════════════════════════════════════════════════
 export default function UploadPage() {
   const { addNotification } = useAuth()
   const [students, setStudents] = useState([])
   const [studentId, setStudentId] = useState('')
-  const [file, setFile]           = useState(null)
+  const [file, setFile] = useState(null)
   const [uploading, setUploading] = useState(false)
-  const [progress, setProgress]   = useState(0)
+  const [progress, setProgress] = useState(0)
   const [analyzing, setAnalyzing] = useState(false)
-  const [result, setResult]       = useState(null)
-  const [step, setStep]           = useState(0)
+  const [result, setResult] = useState(null)
+  const [step, setStep] = useState(0)
   const [validationError, setValidationError] = useState(null)
 
   useEffect(() => {
     optimizedStudentAPI.getAll()
       .then(r => setStudents(r.data.data || []))
-      .catch(() => toast.error('Failed to load students. Please refresh or try again.'))
+      .catch(() => toast.error('Unable to load student roster'))
   }, [])
 
   const onDrop = useCallback((accepted, rejected) => {
     if (rejected.length > 0) {
       const err = rejected[0]?.errors?.[0]
-      toast.error(err?.code === 'file-too-large' ? 'File too large (max 20 MB)' : 'Invalid file type — use JPG, PNG, or PDF')
+      toast.error(
+        err?.code === 'file-too-large'
+          ? 'File exceeds 20 MB limit'
+          : 'Invalid file format. Use JPG, PNG, or PDF.'
+      )
       return
     }
     if (accepted[0]) {
@@ -172,7 +185,10 @@ export default function UploadPage() {
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    accept: { 'image/*': ['.jpg','.jpeg','.png','.gif','.tiff'], 'application/pdf': ['.pdf'] },
+    accept: {
+      'image/*': ['.jpg', '.jpeg', '.png', '.gif', '.tiff'],
+      'application/pdf': ['.pdf']
+    },
     maxSize: 20 * 1024 * 1024,
     multiple: false,
   })
@@ -191,10 +207,12 @@ export default function UploadPage() {
     setStep(2)
 
     try {
-      // Simulate upload progress
       const progressInterval = setInterval(() => {
-        setProgress(p => { if (p >= 85) { clearInterval(progressInterval); return 85 } return p + 15 })
-      }, 200)
+        setProgress(p => {
+          if (p >= 85) { clearInterval(progressInterval); return 85 }
+          return p + 12
+        })
+      }, 180)
 
       const res = await optimizedAnalysisAPI.upload(studentId, file, (event) => {
         if (event.total) setProgress(Math.round((event.loaded / event.total) * 85))
@@ -205,254 +223,451 @@ export default function UploadPage() {
       setUploading(false)
       setAnalyzing(true)
 
-      // Brief analyzing animation
-      await new Promise(r => setTimeout(r, 800))
+      await new Promise(r => setTimeout(r, 900))
       setAnalyzing(false)
       setResult(res.data.data)
       setStep(3)
 
       const isAtRisk = res.data.data.riskLevel !== 'LOW'
-      toast.success('Analysis complete!')
+      toast.success('Analysis complete')
       addNotification({
         type: isAtRisk ? 'warning' : 'success',
-        title: 'Analysis complete',
-        body: `${students.find(s => String(s.id) === String(studentId))?.name || 'Student'} — ${res.data.data.riskLevel} risk`,
+        title: 'Analysis Complete',
+        body: `${students.find(s => String(s.id) === String(studentId))?.name || 'Student'} — ${res.data.data.riskLevel} risk level`,
       })
     } catch (err) {
       setUploading(false)
       setAnalyzing(false)
       setStep(file ? 1 : 0)
 
-      // Check for validation error (invalid image - not handwriting on paper)
       const errorData = err.response?.data
       if (errorData?.validation_error) {
         setValidationError({
           reason: errorData.reason || 'Invalid image',
-          message: errorData.message || 'Please upload a clear image of handwriting on paper.',
+          message: errorData.message || 'Upload a clear image of handwriting on paper.',
           confidence: errorData.confidence || 0
         })
-        toast.error('Invalid image: ' + (errorData.reason || 'Not a handwriting paper'))
+        toast.error(errorData.reason || 'Invalid image detected')
       } else {
         setValidationError(null)
-        toast.error(errorData?.message || 'Upload failed. Ensure the AI service is running.')
+        toast.error(errorData?.message || 'Analysis failed. Please try again.')
       }
     }
   }
 
-  const reset = () => { setFile(null); setResult(null); setProgress(0); setStudentId(''); setStep(0); setValidationError(null) }
+  const reset = () => {
+    setFile(null)
+    setResult(null)
+    setProgress(0)
+    setStudentId('')
+    setStep(0)
+    setValidationError(null)
+  }
+
   const selectedStudent = students.find(s => String(s.id) === String(studentId))
 
   return (
-    <div>
-      <PageHeader
-        title="Upload Test Paper"
-        subtitle="Upload a student's handwritten test paper for AI-powered learning disorder analysis."
-        breadcrumb="NeuraScan / Upload"
-      />
+    <div style={{
+      minHeight: '100vh',
+      background: COLORS.bgBase,
+      padding: '32px 40px',
+    }}>
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -16 }}
+        animate={{ opacity: 1, y: 0 }}
+        style={{ marginBottom: 32 }}
+      >
+        <div style={{
+          fontSize: 12,
+          color: COLORS.textMuted,
+          marginBottom: 12,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 6,
+        }}>
+          Dashboard <ChevronRight size={14} /> Upload Sample
+        </div>
+        <h1 style={{
+          fontSize: 28,
+          fontWeight: 700,
+          color: COLORS.textPrimary,
+          letterSpacing: '-0.02em',
+          marginBottom: 8,
+          fontFamily: 'var(--font-display)',
+        }}>
+          Upload Handwriting Sample
+        </h1>
+        <p style={{
+          fontSize: 15,
+          color: COLORS.textMuted,
+          maxWidth: 560,
+        }}>
+          Upload a student's handwritten test paper or worksheet for AI-powered
+          dyslexia and dysgraphia screening.
+        </p>
+      </motion.div>
 
-      <div className={result ? "grid-2" : ""} style={{ gap: 24, maxWidth: result ? '100%' : 680 }}>
+      {/* Progress Steps */}
+      <ProgressSteps steps={STEPS} current={step} />
 
-        {/* Upload panel */}
-        <div>
-          {/* Progress steps */}
-          <div style={{ display: 'flex', gap: 0, marginBottom: 24 }}>
-            {STEPS.map((s, i) => (
-              <div key={s} style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 5, flex: 1 }}>
-                  <div style={{
-                    width: 28, height: 28, borderRadius: '50%', fontSize: 12, fontWeight: 700,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    background: step > i ? 'var(--primary)' : step === i ? 'var(--primary-dim)' : 'var(--bg-elevated)',
-                    border: `2px solid ${step >= i ? 'var(--primary)' : 'var(--border)'}`,
-                    color: step > i ? '#fff' : step === i ? 'var(--primary)' : 'var(--text-muted)',
-                    transition: 'all var(--duration)',
-                    boxShadow: step === i ? '0 0 12px var(--primary-glow)' : 'none',
-                  }}>
-                    {step > i ? '✓' : i + 1}
-                  </div>
-                  <span style={{ fontSize: 10, color: step >= i ? 'var(--text-secondary)' : 'var(--text-muted)', whiteSpace: 'nowrap', fontWeight: step === i ? 600 : 400, letterSpacing: '0.03em' }}>{s}</span>
-                </div>
-                {i < STEPS.length - 1 && (
-                  <div style={{ flex: 1, height: 2, background: step > i ? 'var(--primary)' : 'var(--border)', transition: 'background var(--duration-slow)', margin: '0 4px', marginBottom: 16 }} />
-                )}
-              </div>
-            ))}
-          </div>
-
-          <div className="glass-panel" style={{ padding: '28px' }}>
-            {/* Student selector */}
-            <div style={{ marginBottom: 20 }}>
-              <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 8, letterSpacing: '0.02em' }}>
-                Select Student <span style={{ color: 'var(--danger)' }}>*</span>
-              </label>
-              <select
-                value={studentId}
-                onChange={handleStudentChange}
-                style={{
-                  width: '100%', padding: '11px 14px',
-                  background: 'var(--bg-input)', border: `1px solid ${studentId ? 'var(--primary)' : 'var(--border)'}`,
-                  borderRadius: 'var(--radius)', color: studentId ? 'var(--text-primary)' : 'var(--text-muted)',
-                  fontFamily: 'var(--font-body)', fontSize: 14, cursor: 'pointer',
-                  outline: 'none', transition: 'border-color var(--duration)',
-                  boxShadow: studentId ? '0 0 0 3px rgba(26,115,232,0.12)' : 'none',
-                }}
-              >
-                <option value="">— Choose a student —</option>
-                {students.map(s => (
-                  <option key={s.id} value={s.id}>{s.name} · {s.className}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Dropzone */}
-            <motion.div
-              {...getRootProps()}
-              animate={{
-                borderColor: isDragActive ? 'var(--primary)' : file ? 'var(--secondary)' : 'var(--border-strong)',
-                background:  isDragActive ? 'rgba(26,115,232,0.08)' : file ? 'rgba(8,145,178,0.06)' : 'var(--bg-elevated)',
-              }}
-              transition={{ duration: 0.15 }}
+      {/* Main Content */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: result ? '1fr 1fr' : '1fr',
+        gap: 28,
+        maxWidth: result ? '100%' : 640,
+      }}>
+        {/* Upload Panel */}
+        <motion.div
+          layout
+          style={{
+            background: COLORS.bgSurface,
+            border: `1px solid ${COLORS.border}`,
+            borderRadius: 16,
+            padding: 28,
+          }}
+        >
+          {/* Student Selector */}
+          <div style={{ marginBottom: 24 }}>
+            <label style={{
+              display: 'block',
+              fontSize: 13,
+              fontWeight: 600,
+              color: COLORS.textSecondary,
+              marginBottom: 8,
+            }}>
+              Select Student <span style={{ color: COLORS.danger }}>*</span>
+            </label>
+            <select
+              value={studentId}
+              onChange={handleStudentChange}
               style={{
-                border: '2px dashed',
-                borderRadius: 'var(--radius-lg)',
-                padding: '40px 24px',
-                textAlign: 'center',
-                cursor: uploading || analyzing ? 'not-allowed' : 'pointer',
-                marginBottom: 20,
+                width: '100%',
+                padding: '12px 16px',
+                background: COLORS.bgSurface,
+                border: `1.5px solid ${studentId ? COLORS.primary : COLORS.border}`,
+                borderRadius: 10,
+                color: studentId ? COLORS.textPrimary : COLORS.textMuted,
+                fontFamily: 'var(--font-body)',
+                fontSize: 14,
+                cursor: 'pointer',
+                outline: 'none',
+                transition: 'all 0.15s ease',
+                boxShadow: studentId ? '0 0 0 3px rgba(49, 46, 129, 0.1)' : 'none',
               }}
             >
-              <input {...getInputProps()} disabled={uploading || analyzing} />
+              <option value="">Choose a student from your roster</option>
+              {students.map(s => (
+                <option key={s.id} value={s.id}>
+                  {s.name} — {s.className}
+                </option>
+              ))}
+            </select>
+          </div>
 
-              {uploading || analyzing ? (
-                <div>
-                  <div style={{ width: 52, height: 52, borderRadius: 13, background: 'var(--primary-dim)', border: '1px solid rgba(26,115,232,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-                    <Zap size={24} color="var(--primary)" />
-                  </div>
-                  <div style={{ fontWeight: 600, marginBottom: 8 }}>
-                    {uploading ? 'Uploading…' : 'AI analyzing…'}
-                  </div>
-                  {uploading && (
-                    <div>
-                      <div style={{ height: 4, background: 'var(--bg-card)', borderRadius: 2, overflow: 'hidden', maxWidth: 200, margin: '0 auto 8px' }}>
-                        <motion.div
-                          animate={{ width: `${progress}%` }}
-                          transition={{ duration: 0.3 }}
-                          style={{ height: '100%', background: 'linear-gradient(90deg, var(--primary), var(--secondary))', borderRadius: 2 }}
-                        />
-                      </div>
-                      <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>{progress}%</span>
-                    </div>
-                  )}
-                  {analyzing && (
-                    <div style={{ display: 'flex', justifyContent: 'center', gap: 6 }}>
-                      {[0,1,2].map(i => (
-                        <motion.div key={i}
-                          animate={{ scale: [0, 1, 0], opacity: [0, 1, 0] }}
-                          transition={{ duration: 0.8, repeat: Infinity, delay: i * 0.2 }}
-                          style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--primary)' }}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ) : file ? (
-                <div>
-                  <div style={{ width: 52, height: 52, borderRadius: 13, background: 'var(--secondary-dim)', border: '1px solid rgba(8,145,178,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
-                    <FileImage size={24} color="var(--secondary)" />
-                  </div>
-                  <div style={{ fontWeight: 600, color: 'var(--secondary)', marginBottom: 4 }}>{file.name}</div>
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 10 }}>
-                    {(file.size / 1024).toFixed(0)} KB · {file.type.split('/')[1]?.toUpperCase()}
-                  </div>
-                  <button onClick={e => { e.stopPropagation(); setFile(null); setStep(studentId ? 1 : 0) }} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 12, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                    <X size={12} /> Change file
-                  </button>
-                </div>
-              ) : (
-                <div>
-                  <div style={{ width: 52, height: 52, borderRadius: 13, background: isDragActive ? 'var(--primary-dim)' : 'var(--bg-card)', border: `1px solid ${isDragActive ? 'rgba(26,115,232,0.3)' : 'var(--border)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', transition: 'all 0.15s' }}>
-                    <Upload size={22} color={isDragActive ? 'var(--primary)' : 'var(--text-muted)'} />
-                  </div>
-                  <p style={{ fontWeight: 600, marginBottom: 6, color: isDragActive ? 'var(--primary)' : 'var(--text-primary)' }}>
-                    {isDragActive ? 'Drop the file here' : 'Drag & drop or click to browse'}
-                  </p>
-                  <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>JPG, PNG, PDF, TIFF — up to 20 MB</p>
-                </div>
-              )}
-            </motion.div>
+          {/* Dropzone */}
+          <motion.div
+            {...getRootProps()}
+            animate={{
+              borderColor: isDragActive
+                ? COLORS.primary
+                : file
+                ? COLORS.secondary
+                : COLORS.borderStrong,
+              background: isDragActive
+                ? COLORS.primaryBg
+                : file
+                ? 'rgba(20, 184, 166, 0.04)'
+                : COLORS.bgSubtle,
+            }}
+            whileHover={{
+              borderColor: file ? COLORS.secondary : COLORS.primary,
+            }}
+            style={{
+              border: '2px dashed',
+              borderRadius: 12,
+              padding: '48px 24px',
+              textAlign: 'center',
+              cursor: uploading || analyzing ? 'not-allowed' : 'pointer',
+              marginBottom: 24,
+              transition: 'all 0.15s ease',
+            }}
+          >
+            <input {...getInputProps()} disabled={uploading || analyzing} />
 
-            {/* Validation Error Display */}
+            {uploading || analyzing ? (
+              <div>
+                <div style={{
+                  width: 56,
+                  height: 56,
+                  borderRadius: 14,
+                  background: COLORS.primaryBg,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 16px',
+                }}>
+                  <Brain size={28} color={COLORS.primary} />
+                </div>
+                <div style={{
+                  fontWeight: 600,
+                  color: COLORS.textPrimary,
+                  marginBottom: 12,
+                  fontSize: 15,
+                }}>
+                  {uploading ? 'Uploading sample...' : 'Running AI analysis...'}
+                </div>
+                {uploading && (
+                  <div>
+                    <div style={{
+                      height: 6,
+                      background: COLORS.bgSubtle,
+                      borderRadius: 3,
+                      overflow: 'hidden',
+                      maxWidth: 240,
+                      margin: '0 auto 10px',
+                    }}>
+                      <motion.div
+                        animate={{ width: `${progress}%` }}
+                        transition={{ duration: 0.2 }}
+                        style={{
+                          height: '100%',
+                          background: `linear-gradient(90deg, ${COLORS.primary}, ${COLORS.secondary})`,
+                          borderRadius: 3,
+                        }}
+                      />
+                    </div>
+                    <span style={{
+                      fontSize: 13,
+                      color: COLORS.textMuted,
+                      fontWeight: 500,
+                    }}>
+                      {progress}%
+                    </span>
+                  </div>
+                )}
+                {analyzing && (
+                  <div style={{ display: 'flex', justifyContent: 'center', gap: 8 }}>
+                    {[0, 1, 2].map(i => (
+                      <motion.div
+                        key={i}
+                        animate={{ scale: [1, 1.3, 1], opacity: [0.5, 1, 0.5] }}
+                        transition={{ duration: 0.8, repeat: Infinity, delay: i * 0.15 }}
+                        style={{
+                          width: 10,
+                          height: 10,
+                          borderRadius: '50%',
+                          background: COLORS.primary,
+                        }}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : file ? (
+              <div>
+                <div style={{
+                  width: 56,
+                  height: 56,
+                  borderRadius: 14,
+                  background: COLORS.secondaryBg,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 12px',
+                }}>
+                  <FileImage size={28} color={COLORS.secondary} />
+                </div>
+                <div style={{
+                  fontWeight: 600,
+                  color: COLORS.secondary,
+                  marginBottom: 4,
+                  fontSize: 15,
+                }}>
+                  {file.name}
+                </div>
+                <div style={{
+                  fontSize: 13,
+                  color: COLORS.textMuted,
+                  marginBottom: 12,
+                }}>
+                  {(file.size / 1024).toFixed(0)} KB • {file.type.split('/')[1]?.toUpperCase()}
+                </div>
+                <button
+                  onClick={e => {
+                    e.stopPropagation()
+                    setFile(null)
+                    setStep(studentId ? 1 : 0)
+                  }}
+                  style={{
+                    background: COLORS.bgSubtle,
+                    border: `1px solid ${COLORS.border}`,
+                    borderRadius: 6,
+                    padding: '6px 12px',
+                    color: COLORS.textMuted,
+                    cursor: 'pointer',
+                    fontSize: 12,
+                    fontWeight: 500,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 4,
+                  }}
+                >
+                  <X size={14} /> Change file
+                </button>
+              </div>
+            ) : (
+              <div>
+                <div style={{
+                  width: 56,
+                  height: 56,
+                  borderRadius: 14,
+                  background: isDragActive ? COLORS.primaryBg : COLORS.bgSurface,
+                  border: `1px solid ${isDragActive ? COLORS.primary : COLORS.border}`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 16px',
+                  transition: 'all 0.15s ease',
+                }}>
+                  <Upload
+                    size={24}
+                    color={isDragActive ? COLORS.primary : COLORS.textMuted}
+                  />
+                </div>
+                <p style={{
+                  fontWeight: 600,
+                  marginBottom: 6,
+                  color: isDragActive ? COLORS.primary : COLORS.textPrimary,
+                  fontSize: 15,
+                }}>
+                  {isDragActive ? 'Drop file here' : 'Drag & drop or click to browse'}
+                </p>
+                <p style={{ fontSize: 13, color: COLORS.textMuted }}>
+                  Supports JPG, PNG, PDF up to 20 MB
+                </p>
+              </div>
+            )}
+          </motion.div>
+
+          {/* Validation Error */}
+          <AnimatePresence>
             {validationError && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
                 style={{
-                  background: 'linear-gradient(135deg, rgba(239,68,68,0.08) 0%, rgba(239,68,68,0.02) 100%)',
-                  border: '1px solid rgba(239,68,68,0.3)',
-                  borderRadius: 'var(--radius-lg)',
-                  padding: '18px 20px',
-                  marginBottom: 16,
+                  background: COLORS.dangerBg,
+                  border: `1px solid rgba(185, 28, 28, 0.2)`,
+                  borderRadius: 12,
+                  padding: 20,
+                  marginBottom: 20,
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: 14,
+                }}>
                   <div style={{
-                    width: 42, height: 42, borderRadius: 11,
-                    background: 'var(--danger-dim)',
-                    border: '1px solid rgba(239,68,68,0.3)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    flexShrink: 0
+                    width: 44,
+                    height: 44,
+                    borderRadius: 10,
+                    background: 'rgba(185, 28, 28, 0.1)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
                   }}>
-                    <ImageOff size={20} color="var(--danger)" />
+                    <ImageOff size={22} color={COLORS.danger} />
                   </div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 700, color: 'var(--danger)', marginBottom: 6, fontSize: 14 }}>
-                      Invalid Image Detected
+                    <div style={{
+                      fontWeight: 700,
+                      color: COLORS.danger,
+                      marginBottom: 6,
+                      fontSize: 14,
+                    }}>
+                      Image Validation Failed
                     </div>
-                    <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 10 }}>
+                    <div style={{
+                      fontSize: 13,
+                      color: COLORS.textSecondary,
+                      lineHeight: 1.6,
+                      marginBottom: 12,
+                    }}>
                       {validationError.reason}
                     </div>
                     <div style={{
-                      fontSize: 12, color: 'var(--text-muted)',
-                      background: 'var(--bg-elevated)',
+                      fontSize: 12,
+                      color: COLORS.textMuted,
+                      background: COLORS.bgSurface,
                       padding: '10px 12px',
-                      borderRadius: 'var(--radius)',
-                      border: '1px solid var(--border)'
+                      borderRadius: 8,
+                      border: `1px solid ${COLORS.border}`,
                     }}>
-                      <strong style={{ color: 'var(--text-secondary)' }}>Tip:</strong> {validationError.message}
+                      <strong style={{ color: COLORS.textSecondary }}>Tip:</strong>{' '}
+                      {validationError.message}
                     </div>
                   </div>
                   <button
                     onClick={() => setValidationError(null)}
-                    style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 4 }}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: COLORS.textMuted,
+                      cursor: 'pointer',
+                      padding: 4,
+                    }}
                   >
-                    <X size={16} />
+                    <X size={18} />
                   </button>
                 </div>
               </motion.div>
             )}
+          </AnimatePresence>
 
-            {selectedStudent && file && !uploading && !analyzing && !result && !validationError && (
-              <Alert type="info" style={{ marginBottom: 16 }}>
-                Ready to analyze <strong>{selectedStudent.name}</strong>'s paper ({selectedStudent.className}).
-              </Alert>
-            )}
+          {/* Ready message */}
+          {selectedStudent && file && !uploading && !analyzing && !result && !validationError && (
+            <Alert type="info" style={{ marginBottom: 20 }}>
+              Ready to analyze <strong>{selectedStudent.name}</strong>'s handwriting sample.
+            </Alert>
+          )}
 
-            <div style={{ display: 'flex', gap: 10 }}>
-              {result && <Button variant="ghost" onClick={reset} icon={<RefreshCw size={14} />}>New Analysis</Button>}
+          {/* Action Buttons */}
+          <div style={{ display: 'flex', gap: 12 }}>
+            {result && (
               <Button
-                fullWidth
-                onClick={handleSubmit}
-                loading={uploading || analyzing}
-                disabled={!studentId || !file}
-                icon={<Zap size={15} />}
+                variant="outline"
+                onClick={reset}
+                icon={<RefreshCw size={16} />}
               >
-                {uploading ? 'Uploading…' : analyzing ? 'Analyzing…' : 'Run AI Analysis'}
+                New Analysis
               </Button>
-            </div>
+            )}
+            <Button
+              fullWidth
+              onClick={handleSubmit}
+              loading={uploading || analyzing}
+              disabled={!studentId || !file}
+              icon={<Sparkles size={18} />}
+              style={{
+                background: (!studentId || !file)
+                  ? undefined
+                  : `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryLight} 100%)`,
+                boxShadow: (!studentId || !file)
+                  ? undefined
+                  : '0 4px 16px rgba(49, 46, 129, 0.25)',
+              }}
+            >
+              {uploading ? 'Uploading...' : analyzing ? 'Analyzing...' : 'Run AI Analysis'}
+            </Button>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Results panel */}
+        {/* Results Panel */}
         <AnimatePresence>
           {result && (
             <motion.div
@@ -460,55 +675,165 @@ export default function UploadPage() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 24 }}
               transition={{ type: 'spring', damping: 24, stiffness: 300 }}
+              style={{
+                background: COLORS.bgSurface,
+                border: `1px solid ${COLORS.border}`,
+                borderRadius: 16,
+                overflow: 'hidden',
+              }}
             >
-              <div className="glass-panel" style={{ overflow: 'hidden' }}>
-                {/* Result header */}
+              {/* Result Header */}
+              <div style={{
+                padding: '20px 24px',
+                background: result.riskLevel === 'LOW'
+                  ? 'linear-gradient(135deg, rgba(5, 150, 105, 0.08) 0%, transparent 60%)'
+                  : result.riskLevel === 'MEDIUM'
+                  ? 'linear-gradient(135deg, rgba(217, 119, 6, 0.08) 0%, transparent 60%)'
+                  : 'linear-gradient(135deg, rgba(185, 28, 28, 0.08) 0%, transparent 60%)',
+                borderBottom: `1px solid ${COLORS.border}`,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 14,
+              }}>
                 <div style={{
-                  padding: '20px 24px',
-                  background: result.riskLevel === 'LOW' ? 'linear-gradient(135deg, rgba(16,185,129,0.08) 0%, transparent 60%)' : result.riskLevel === 'MEDIUM' ? 'linear-gradient(135deg, rgba(245,158,11,0.08) 0%, transparent 60%)' : 'linear-gradient(135deg, rgba(239,68,68,0.08) 0%, transparent 60%)',
-                  borderBottom: '1px solid var(--border)',
-                  display: 'flex', alignItems: 'center', gap: 14,
+                  width: 48,
+                  height: 48,
+                  borderRadius: 12,
+                  background: result.riskLevel === 'LOW'
+                    ? COLORS.successBg
+                    : result.riskLevel === 'MEDIUM'
+                    ? COLORS.warningBg
+                    : COLORS.dangerBg,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                 }}>
-                  <div style={{ width: 42, height: 42, borderRadius: 11, background: result.riskLevel === 'LOW' ? 'var(--success-dim)' : result.riskLevel === 'MEDIUM' ? 'var(--warning-dim)' : 'var(--danger-dim)', border: `1px solid ${result.riskLevel === 'LOW' ? 'rgba(16,185,129,0.3)' : result.riskLevel === 'MEDIUM' ? 'rgba(245,158,11,0.3)' : 'rgba(239,68,68,0.3)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {result.riskLevel === 'LOW'
-                      ? <CheckCircle size={20} color="var(--success)" />
-                      : <AlertCircle size={20} color={result.riskLevel === 'MEDIUM' ? 'var(--warning)' : 'var(--danger)'} />
-                    }
+                  {result.riskLevel === 'LOW' ? (
+                    <CheckCircle size={24} color={COLORS.success} />
+                  ) : (
+                    <AlertCircle
+                      size={24}
+                      color={result.riskLevel === 'MEDIUM' ? COLORS.warning : COLORS.danger}
+                    />
+                  )}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{
+                    fontFamily: 'var(--font-display)',
+                    fontWeight: 700,
+                    fontSize: 17,
+                    color: COLORS.textPrimary,
+                    marginBottom: 2,
+                  }}>
+                    Analysis Complete
                   </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 16, marginBottom: 2 }}>
-                      Analysis Complete
+                  <div style={{ fontSize: 13, color: COLORS.textMuted }}>
+                    Report #{result.reportId} • {selectedStudent?.name}
+                  </div>
+                </div>
+                <RiskBadge level={result.riskLevel} />
+              </div>
+
+              <div style={{ padding: '24px' }}>
+                {/* Score Bars */}
+                <ScoreBar label="Dyslexia Indicator" value={result.dyslexiaScore} />
+                <ScoreBar label="Dysgraphia Indicator" value={result.dysgraphiaScore} />
+
+                {/* Score Tiles */}
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: 12,
+                  margin: '24px 0',
+                }}>
+                  {[
+                    {
+                      label: 'Dyslexia',
+                      value: result.dyslexiaScore,
+                      color: result.dyslexiaScore >= 70
+                        ? COLORS.danger
+                        : result.dyslexiaScore >= 45
+                        ? COLORS.warning
+                        : COLORS.success,
+                      bg: result.dyslexiaScore >= 70
+                        ? COLORS.dangerBg
+                        : result.dyslexiaScore >= 45
+                        ? COLORS.warningBg
+                        : COLORS.successBg,
+                    },
+                    {
+                      label: 'Dysgraphia',
+                      value: result.dysgraphiaScore,
+                      color: result.dysgraphiaScore >= 70
+                        ? COLORS.danger
+                        : result.dysgraphiaScore >= 45
+                        ? COLORS.warning
+                        : COLORS.success,
+                      bg: result.dysgraphiaScore >= 70
+                        ? COLORS.dangerBg
+                        : result.dysgraphiaScore >= 45
+                        ? COLORS.warningBg
+                        : COLORS.successBg,
+                    },
+                  ].map(({ label, value, color, bg }) => (
+                    <div
+                      key={label}
+                      style={{
+                        background: bg,
+                        borderRadius: 10,
+                        padding: '16px',
+                        textAlign: 'center',
+                      }}
+                    >
+                      <div style={{
+                        fontFamily: 'var(--font-display)',
+                        fontSize: 28,
+                        fontWeight: 800,
+                        color,
+                        marginBottom: 4,
+                      }}>
+                        {value?.toFixed(1)}%
+                      </div>
+                      <div style={{
+                        fontSize: 11,
+                        color: COLORS.textMuted,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.06em',
+                        fontWeight: 600,
+                      }}>
+                        {label}
+                      </div>
                     </div>
-                    <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Report #{result.reportId} · {selectedStudent?.name}</div>
-                  </div>
-                  <RiskBadge level={result.riskLevel} />
+                  ))}
                 </div>
 
-                <div style={{ padding: '22px 24px' }}>
-                  <ScoreBar label="Dyslexia Score"   value={result.dyslexiaScore} />
-                  <ScoreBar label="Dysgraphia Score" value={result.dysgraphiaScore} />
-
-                  {/* Score pills */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, margin: '20px 0' }}>
-                    {[
-                      { label: 'Dyslexia',   value: result.dyslexiaScore,   color: result.dyslexiaScore >= 70 ? 'var(--danger)' : result.dyslexiaScore >= 45 ? 'var(--warning)' : 'var(--success)' },
-                      { label: 'Dysgraphia', value: result.dysgraphiaScore, color: result.dysgraphiaScore >= 70 ? 'var(--danger)' : result.dysgraphiaScore >= 45 ? 'var(--warning)' : 'var(--success)' },
-                    ].map(({ label, value, color }) => (
-                      <div key={label} style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '12px', textAlign: 'center' }}>
-                        <div style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 800, color, marginBottom: 2 }}>{value?.toFixed(1)}%</div>
-                        <div style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</div>
-                      </div>
-                    ))}
+                {/* AI Commentary */}
+                <div style={{
+                  background: COLORS.bgSubtle,
+                  border: `1px solid ${COLORS.border}`,
+                  borderRadius: 10,
+                  padding: '18px',
+                }}>
+                  <div style={{
+                    fontSize: 11,
+                    fontWeight: 700,
+                    color: COLORS.textMuted,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.08em',
+                    marginBottom: 12,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                  }}>
+                    <Brain size={14} color={COLORS.primary} /> AI Assessment
                   </div>
-
-                  <div style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '16px' }}>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <Zap size={11} /> AI Commentary
-                    </div>
-                    <p style={{ fontSize: 13.5, color: 'var(--text-secondary)', lineHeight: 1.75 }}>
-                      {result.aiComment}
-                    </p>
-                  </div>
+                  <p style={{
+                    fontSize: 14,
+                    color: COLORS.textSecondary,
+                    lineHeight: 1.7,
+                  }}>
+                    {result.aiComment}
+                  </p>
                 </div>
               </div>
             </motion.div>

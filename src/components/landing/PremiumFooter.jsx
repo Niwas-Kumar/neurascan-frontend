@@ -1,7 +1,21 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { Mail, MapPin, Phone, Twitter, Linkedin, Github } from 'lucide-react'
-import { BrandLogo } from '../shared/PremiumUI.jsx'
+import { NeuraScanLogo } from '../shared/Logo.jsx'
+
+// ════════════════════════════════════════════════════════════════
+// DESIGN SYSTEM COLORS
+// ════════════════════════════════════════════════════════════════
+const COLORS = {
+  primary: '#312E81',
+  primaryLight: '#4338CA',
+  secondary: '#14B8A6',
+  textPrimary: '#1E293B',
+  textSecondary: '#475569',
+  textMuted: '#64748B',
+  bgDark: '#0F172A',
+  bgDarkSubtle: '#1E293B',
+}
 
 export default function PremiumFooter() {
   const currentYear = new Date().getFullYear()
@@ -11,7 +25,7 @@ export default function PremiumFooter() {
       { label: 'Features', href: '#features' },
       { label: 'Pricing', href: '/pricing' },
       { label: 'Security', href: '/security' },
-      { label: 'Roadmap', href: '/roadmap' },
+      { label: 'Integrations', href: '/integrations' },
     ],
     company: [
       { label: 'About', href: '/about' },
@@ -22,73 +36,81 @@ export default function PremiumFooter() {
     resources: [
       { label: 'Help Center', href: '/help' },
       { label: 'Documentation', href: '/docs' },
-      { label: 'API Reference', href: '/api' },
-      { label: 'Community', href: '/community' },
+      { label: 'Research', href: '/research' },
+      { label: 'Case Studies', href: '/case-studies' },
     ],
     legal: [
       { label: 'Privacy', href: '/privacy' },
       { label: 'Terms', href: '/terms' },
-      { label: 'Cookie Policy', href: '/cookies' },
       { label: 'FERPA', href: '/ferpa' },
+      { label: 'Accessibility', href: '/accessibility' },
     ],
   }
 
+  const socialLinks = [
+    { icon: Twitter, href: '#', label: 'Twitter' },
+    { icon: Linkedin, href: '#', label: 'LinkedIn' },
+    { icon: Github, href: '#', label: 'GitHub' },
+  ]
+
   return (
     <footer style={{
-      background: 'var(--color-text-primary)',
+      background: COLORS.bgDark,
       color: 'white',
-      paddingTop: 'var(--space-16)',
-      paddingBottom: 'var(--space-8)',
-      borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+      paddingTop: 80,
+      paddingBottom: 32,
     }}>
-      <div style={{ maxWidth: 1400, margin: '0 auto', padding: '0 40px' }}>
+      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '0 40px' }}>
         {/* Main footer content */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-          gap: 40,
-          marginBottom: 60,
+          gridTemplateColumns: '2fr repeat(4, 1fr)',
+          gap: 48,
+          marginBottom: 64,
         }}>
           {/* Brand section */}
           <div>
             <div style={{ marginBottom: 24 }}>
-              <BrandLogo size={40} variant="icon" />
+              <NeuraScanLogo size={42} variant="light" />
             </div>
-            <h3 style={{
-              fontSize: 'var(--text-lg)',
-              fontWeight: 'var(--font-bold)',
-              marginBottom: 12,
-              color: 'white',
-            }}>
-              NeuroScan
-            </h3>
             <p style={{
-              fontSize: 'var(--text-sm)',
-              color: 'rgba(255, 255, 255, 0.7)',
-              lineHeight: 1.7,
-              marginBottom: 20,
+              fontSize: 14,
+              color: 'rgba(255, 255, 255, 0.65)',
+              lineHeight: 1.75,
+              marginBottom: 24,
+              maxWidth: 280,
             }}>
-              AI-powered learning disorder detection for educators and parents.
+              AI-powered learning disorder detection helping educators and parents identify and support students with learning differences.
             </p>
             <div style={{ display: 'flex', gap: 12 }}>
-              <a href="#" style={{ color: 'rgba(255, 255, 255, 0.6)', transition: 'color var(--duration-fast) var(--easing-out)' }}
-                onMouseEnter={(e) => e.target.style.color = 'white'}
-                onMouseLeave={(e) => e.target.style.color = 'rgba(255, 255, 255, 0.6)'}
-              >
-                <Twitter size={18} />
-              </a>
-              <a href="#" style={{ color: 'rgba(255, 255, 255, 0.6)', transition: 'color var(--duration-fast) var(--easing-out)' }}
-                onMouseEnter={(e) => e.target.style.color = 'white'}
-                onMouseLeave={(e) => e.target.style.color = 'rgba(255, 255, 255, 0.6)'}
-              >
-                <Linkedin size={18} />
-              </a>
-              <a href="#" style={{ color: 'rgba(255, 255, 255, 0.6)', transition: 'color var(--duration-fast) var(--easing-out)' }}
-                onMouseEnter={(e) => e.target.style.color = 'white'}
-                onMouseLeave={(e) => e.target.style.color = 'rgba(255, 255, 255, 0.6)'}
-              >
-                <Github size={18} />
-              </a>
+              {socialLinks.map(({ icon: Icon, href, label }) => (
+                <a
+                  key={label}
+                  href={href}
+                  aria-label={label}
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 10,
+                    background: 'rgba(255, 255, 255, 0.08)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'rgba(255, 255, 255, 0.6)',
+                    transition: 'all 0.2s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = COLORS.primary
+                    e.currentTarget.style.color = 'white'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'
+                    e.currentTarget.style.color = 'rgba(255, 255, 255, 0.6)'
+                  }}
+                >
+                  <Icon size={18} />
+                </a>
+              ))}
             </div>
           </div>
 
@@ -96,102 +118,162 @@ export default function PremiumFooter() {
           {Object.entries(footerLinks).map(([category, links]) => (
             <div key={category}>
               <h4 style={{
-                fontSize: 'var(--text-sm)',
-                fontWeight: 'var(--font-bold)',
+                fontSize: 13,
+                fontWeight: 700,
                 textTransform: 'uppercase',
-                letterSpacing: 'var(--letter-spacing-wide)',
-                marginBottom: 16,
-                color: 'white',
+                letterSpacing: '0.08em',
+                marginBottom: 20,
+                color: 'rgba(255, 255, 255, 0.9)',
+                fontFamily: "'Inter', sans-serif",
               }}>
-                {category.charAt(0).toUpperCase() + category.slice(1)}
+                {category}
               </h4>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                 {links.map(({ label, href }) => (
-                  <a
+                  <Link
                     key={label}
-                    href={href}
+                    to={href}
                     style={{
-                      fontSize: 'var(--text-sm)',
-                      color: 'rgba(255, 255, 255, 0.7)',
+                      fontSize: 14,
+                      color: 'rgba(255, 255, 255, 0.55)',
                       textDecoration: 'none',
-                      transition: 'color var(--duration-fast) var(--easing-out)',
+                      transition: 'color 0.2s ease',
+                      fontFamily: "'Inter', sans-serif",
                     }}
                     onMouseEnter={(e) => e.target.style.color = 'white'}
-                    onMouseLeave={(e) => e.target.style.color = 'rgba(255, 255, 255, 0.7)'}
+                    onMouseLeave={(e) => e.target.style.color = 'rgba(255, 255, 255, 0.55)'}
                   >
                     {label}
-                  </a>
+                  </Link>
                 ))}
               </div>
             </div>
           ))}
+        </div>
 
-          {/* Contact section */}
-          <div>
-            <h4 style={{
-              fontSize: 'var(--text-sm)',
-              fontWeight: 'var(--font-bold)',
-              textTransform: 'uppercase',
-              letterSpacing: 'var(--letter-spacing-wide)',
-              marginBottom: 16,
-              color: 'white',
-            }}>
-              Contact
-            </h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <a href="mailto:hello@neurascan.ai" style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                fontSize: 'var(--text-sm)',
-                color: 'rgba(255, 255, 255, 0.7)',
-                textDecoration: 'none',
-                transition: 'color var(--duration-fast) var(--easing-out)',
-              }}
-                onMouseEnter={(e) => e.target.style.color = 'white'}
-                onMouseLeave={(e) => e.target.style.color = 'rgba(255, 255, 255, 0.7)'}
-              >
-                <Mail size={16} />
-                hello@neurascan.ai
-              </a>
-              <a href="tel:+1234567890" style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                fontSize: 'var(--text-sm)',
-                color: 'rgba(255, 255, 255, 0.7)',
-                textDecoration: 'none',
-                transition: 'color var(--duration-fast) var(--easing-out)',
-              }}
-                onMouseEnter={(e) => e.target.style.color = 'white'}
-                onMouseLeave={(e) => e.target.style.color = 'rgba(255, 255, 255, 0.7)'}
-              >
-                <Phone size={16} />
-                +1 (234) 567-8900
-              </a>
-            </div>
+        {/* Contact info */}
+        <div style={{
+          display: 'flex',
+          gap: 48,
+          paddingBottom: 40,
+          borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+          marginBottom: 32,
+          flexWrap: 'wrap',
+        }}>
+          <a
+            href="mailto:support@neurascan.ai"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              fontSize: 14,
+              color: 'rgba(255, 255, 255, 0.6)',
+              textDecoration: 'none',
+              transition: 'color 0.2s ease',
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.color = COLORS.secondary}
+            onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.6)'}
+          >
+            <Mail size={16} />
+            support@neurascan.ai
+          </a>
+          <a
+            href="tel:+18001234567"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              fontSize: 14,
+              color: 'rgba(255, 255, 255, 0.6)',
+              textDecoration: 'none',
+              transition: 'color 0.2s ease',
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.color = COLORS.secondary}
+            onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.6)'}
+          >
+            <Phone size={16} />
+            1-800-123-4567
+          </a>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
+            fontSize: 14,
+            color: 'rgba(255, 255, 255, 0.6)',
+          }}>
+            <MapPin size={16} />
+            San Francisco, CA
           </div>
         </div>
 
         {/* Bottom bar */}
         <div style={{
-          paddingTop: 24,
-          borderTop: '1px solid rgba(255, 255, 255, 0.1)',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          fontSize: 'var(--text-sm)',
-          color: 'rgba(255, 255, 255, 0.6)',
+          fontSize: 13,
+          color: 'rgba(255, 255, 255, 0.45)',
           flexWrap: 'wrap',
           gap: 16,
         }}>
-          <div>© {currentYear} NeuroScan. All rights reserved.</div>
-          <div style={{ display: 'flex', gap: 24 }}>
-            <a href="/privacy" style={{ color: 'rgba(255, 255, 255, 0.6)', textDecoration: 'none' }}>Privacy Policy</a>
-            <a href="/terms" style={{ color: 'rgba(255, 255, 255, 0.6)', textDecoration: 'none' }}>Terms of Service</a>
+          <div style={{ fontFamily: "'Inter', sans-serif" }}>
+            {currentYear} NeuraScan. All rights reserved.
+          </div>
+          <div style={{ display: 'flex', gap: 28 }}>
+            <Link
+              to="/privacy"
+              style={{
+                color: 'rgba(255, 255, 255, 0.45)',
+                textDecoration: 'none',
+                transition: 'color 0.2s ease',
+              }}
+              onMouseEnter={(e) => e.target.style.color = 'white'}
+              onMouseLeave={(e) => e.target.style.color = 'rgba(255, 255, 255, 0.45)'}
+            >
+              Privacy Policy
+            </Link>
+            <Link
+              to="/terms"
+              style={{
+                color: 'rgba(255, 255, 255, 0.45)',
+                textDecoration: 'none',
+                transition: 'color 0.2s ease',
+              }}
+              onMouseEnter={(e) => e.target.style.color = 'white'}
+              onMouseLeave={(e) => e.target.style.color = 'rgba(255, 255, 255, 0.45)'}
+            >
+              Terms of Service
+            </Link>
+            <Link
+              to="/accessibility"
+              style={{
+                color: 'rgba(255, 255, 255, 0.45)',
+                textDecoration: 'none',
+                transition: 'color 0.2s ease',
+              }}
+              onMouseEnter={(e) => e.target.style.color = 'white'}
+              onMouseLeave={(e) => e.target.style.color = 'rgba(255, 255, 255, 0.45)'}
+            >
+              Accessibility
+            </Link>
           </div>
         </div>
       </div>
+
+      {/* Responsive styles */}
+      <style>{`
+        @media (max-width: 1024px) {
+          footer > div > div:first-child {
+            grid-template-columns: repeat(2, 1fr) !important;
+          }
+        }
+        @media (max-width: 640px) {
+          footer > div > div:first-child {
+            grid-template-columns: 1fr !important;
+            gap: 32px !important;
+          }
+        }
+      `}</style>
     </footer>
   )
 }

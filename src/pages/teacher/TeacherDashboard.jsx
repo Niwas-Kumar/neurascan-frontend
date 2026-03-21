@@ -3,72 +3,241 @@ import { useNavigate, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
   Users, FileText, AlertTriangle, TrendingUp, Upload,
-  ArrowRight, Brain, Activity, Clock, ChevronRight
+  Brain, Activity, Clock, ChevronRight, BarChart3, PieChart as PieChartIcon
 } from 'lucide-react'
 import { optimizedAnalysisAPI } from '../../services/optimizedApi'
 import { useAuth } from '../../context/AuthContext'
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as ReTooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts'
+import {
+  AreaChart, Area, XAxis, YAxis, CartesianGrid,
+  Tooltip as ReTooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend
+} from 'recharts'
 import { format, formatDistanceToNow } from 'date-fns'
 import toast from 'react-hot-toast'
+import { Button, RiskBadge, Card } from '../../components/shared/UI'
+import { NeuraScanLogo } from '../../components/shared/Logo'
 
-// Add CSS for pulse animation
-const pulseStyle = `
-  @keyframes pulse {
-    0%, 100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.5;
-    }
-  }
-`
+// ════════════════════════════════════════════════════════════════
+// DESIGN SYSTEM COLORS - Deep Indigo + Soft Teal
+// ════════════════════════════════════════════════════════════════
+const COLORS = {
+  primary: '#312E81',
+  primaryLight: '#4338CA',
+  primaryLighter: '#6366F1',
+  primaryBg: '#EEF2FF',
 
+  secondary: '#14B8A6',
+  secondaryDark: '#0D9488',
+  secondaryLight: '#2DD4BF',
+  secondaryBg: '#CCFBF1',
+
+  success: '#059669',
+  successBg: '#D1FAE5',
+  warning: '#D97706',
+  warningBg: '#FEF3C7',
+  danger: '#B91C1C',
+  dangerBg: '#FEE2E2',
+
+  textPrimary: '#1E293B',
+  textSecondary: '#334155',
+  textMuted: '#64748B',
+  textLight: '#94A3B8',
+
+  bgBase: '#F8FAFC',
+  bgSurface: '#FFFFFF',
+  bgSubtle: '#F1F5F9',
+  border: '#E2E8F0',
+  borderStrong: '#CBD5E1',
+}
+
+// ════════════════════════════════════════════════════════════════
+// CUSTOM TOOLTIP - Bespoke styled
+// ════════════════════════════════════════════════════════════════
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null
   return (
-    <div style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 10, padding: '10px 14px', fontSize: 12, boxShadow: 'var(--shadow)' }}>
-      <p style={{ color: 'var(--text-muted)', marginBottom: 6 }}>{label}</p>
+    <div style={{
+      background: COLORS.bgSurface,
+      border: `1px solid ${COLORS.border}`,
+      borderRadius: 10,
+      padding: '12px 16px',
+      fontSize: 13,
+      boxShadow: '0 4px 16px rgba(15, 23, 42, 0.1)',
+    }}>
+      <p style={{
+        color: COLORS.textMuted,
+        marginBottom: 8,
+        fontWeight: 500,
+        fontSize: 12,
+      }}>{label}</p>
       {payload.map(p => (
-        <div key={p.name} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
-          <div style={{ width: 8, height: 8, borderRadius: '50%', background: p.color }} />
-          <span style={{ color: 'var(--text-secondary)' }}>{p.name}:</span>
-          <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{p.value?.toFixed(1)}%</span>
+        <div key={p.name} style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          marginBottom: 4,
+        }}>
+          <div style={{
+            width: 10,
+            height: 10,
+            borderRadius: 3,
+            background: p.color
+          }} />
+          <span style={{ color: COLORS.textSecondary, fontWeight: 500 }}>
+            {p.name}:
+          </span>
+          <span style={{
+            fontWeight: 700,
+            color: COLORS.textPrimary,
+            fontFamily: 'var(--font-display)'
+          }}>
+            {p.value?.toFixed(1)}%
+          </span>
         </div>
       ))}
     </div>
   )
 }
 
+// ════════════════════════════════════════════════════════════════
+// SKELETON LOADER - Shimmer effect
+// ════════════════════════════════════════════════════════════════
+const SkeletonBox = ({ height = 140, style = {} }) => (
+  <div
+    className="skeleton"
+    style={{
+      height,
+      borderRadius: 12,
+      ...style,
+    }}
+  />
+)
+
+const StatCardSkeleton = () => (
+  <div style={{
+    background: COLORS.bgSurface,
+    border: `1px solid ${COLORS.border}`,
+    borderRadius: 12,
+    padding: 24,
+  }}>
+    <div className="skeleton" style={{ width: 48, height: 48, borderRadius: 10, marginBottom: 16 }} />
+    <div className="skeleton" style={{ width: '40%', height: 12, marginBottom: 12 }} />
+    <div className="skeleton" style={{ width: '60%', height: 28 }} />
+  </div>
+)
+
+// ════════════════════════════════════════════════════════════════
+// STAT CARD COMPONENT - Bespoke Design
+// ════════════════════════════════════════════════════════════════
+const DashboardStatCard = ({ icon: Icon, label, value, color, delay = 0, subtitle }) => {
+  const colorMap = {
+    primary: { icon: COLORS.primary, bg: COLORS.primaryBg },
+    secondary: { icon: COLORS.secondary, bg: COLORS.secondaryBg },
+    warning: { icon: COLORS.warning, bg: COLORS.warningBg },
+    danger: { icon: COLORS.danger, bg: COLORS.dangerBg },
+    success: { icon: COLORS.success, bg: COLORS.successBg },
+  }
+  const c = colorMap[color] || colorMap.primary
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: delay * 0.08, duration: 0.4, ease: [0.2, 0, 0, 1] }}
+      style={{
+        background: COLORS.bgSurface,
+        border: `1px solid ${COLORS.border}`,
+        borderRadius: 12,
+        padding: 24,
+        transition: 'all 0.2s ease',
+        cursor: 'default',
+      }}
+      whileHover={{
+        y: -4,
+        boxShadow: '0 8px 24px rgba(15, 23, 42, 0.08)',
+        borderColor: COLORS.borderStrong,
+      }}
+    >
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        marginBottom: 16,
+      }}>
+        <div style={{
+          width: 48,
+          height: 48,
+          borderRadius: 10,
+          background: c.bg,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+          <Icon size={24} color={c.icon} strokeWidth={1.75} />
+        </div>
+      </div>
+      <p style={{
+        fontSize: 12,
+        color: COLORS.textMuted,
+        fontWeight: 600,
+        textTransform: 'uppercase',
+        letterSpacing: '0.05em',
+        marginBottom: 8,
+      }}>
+        {label}
+      </p>
+      <p style={{
+        fontSize: 32,
+        fontWeight: 700,
+        color: COLORS.textPrimary,
+        fontFamily: 'var(--font-display)',
+        lineHeight: 1,
+      }}>
+        {value}
+      </p>
+      {subtitle && (
+        <p style={{
+          fontSize: 12,
+          color: COLORS.textLight,
+          marginTop: 6,
+        }}>
+          {subtitle}
+        </p>
+      )}
+    </motion.div>
+  )
+}
+
+// ════════════════════════════════════════════════════════════════
+// MAIN DASHBOARD COMPONENT
+// ════════════════════════════════════════════════════════════════
 export default function TeacherDashboard() {
   const { user, addNotification } = useAuth()
   const navigate = useNavigate()
-  const [dash, setDash]         = useState(null)
-  const [reports, setReports]   = useState([])
-  const [loading, setLoading]   = useState(true)
+  const [dash, setDash] = useState(null)
+  const [reports, setReports] = useState([])
+  const [loading, setLoading] = useState(true)
   const [dashLoading, setDashLoading] = useState(true)
   const [reportsLoading, setReportsLoading] = useState(true)
 
   useEffect(() => {
-    // OPTIMIZATION: Fetch dashboard and reports in parallel instead of waiting for both
-    // Show data as soon as each request completes
     setLoading(true)
-    
+
     // Fetch dashboard data
     optimizedAnalysisAPI.getDashboard()
       .then(d => {
         setDash(d.data.data)
         if ((d.data.data?.studentsAtRisk || 0) > 0) {
-          addNotification({ 
-            type: 'warning', 
-            title: 'Students at risk', 
-            body: `${d.data.data.studentsAtRisk} student(s) need attention.` 
+          addNotification({
+            type: 'warning',
+            title: 'Attention Required',
+            body: `${d.data.data.studentsAtRisk} student(s) flagged for follow-up assessment.`
           })
         }
         setDashLoading(false)
       })
       .catch(err => {
         console.error('Dashboard error:', err)
-        toast.error('Failed to load dashboard data')
+        toast.error('Unable to load dashboard metrics')
         setDashLoading(false)
       })
 
@@ -80,11 +249,10 @@ export default function TeacherDashboard() {
       })
       .catch(err => {
         console.error('Reports error:', err)
-        toast.error('Failed to load reports')
+        toast.error('Unable to load recent reports')
         setReportsLoading(false)
       })
       .finally(() => {
-        // Overall loading complete when both finish
         setLoading(false)
       })
 
@@ -98,416 +266,184 @@ export default function TeacherDashboard() {
   // Chart data — last 8 reports reversed for chronological order
   const chartData = [...reports].reverse().slice(-8).map(r => ({
     date: format(new Date(r.uploadDate || r.createdAt), 'MMM d'),
-    Dyslexia:   +r.dyslexiaScore?.toFixed(1),
+    Dyslexia: +r.dyslexiaScore?.toFixed(1),
     Dysgraphia: +r.dysgraphiaScore?.toFixed(1),
   }))
 
-  // Pie: risk distribution
-  const riskCounts = reports.reduce((acc, r) => { acc[r.riskLevel] = (acc[r.riskLevel] || 0) + 1; return acc }, {})
+  // Pie: risk distribution with realistic percentages
+  const riskCounts = reports.reduce((acc, r) => {
+    acc[r.riskLevel] = (acc[r.riskLevel] || 0) + 1
+    return acc
+  }, {})
+  const totalReports = reports.length
+
   const pieData = [
-    { name: 'Low',    value: riskCounts.LOW    || 0, color: 'var(--success)' },
-    { name: 'Medium', value: riskCounts.MEDIUM || 0, color: 'var(--warning)' },
-    { name: 'High',   value: riskCounts.HIGH   || 0, color: 'var(--danger)'  },
+    {
+      name: 'Low Risk',
+      value: riskCounts.LOW || 0,
+      color: COLORS.success,
+      percentage: totalReports ? ((riskCounts.LOW || 0) / totalReports * 100).toFixed(1) : 0
+    },
+    {
+      name: 'Medium Risk',
+      value: riskCounts.MEDIUM || 0,
+      color: COLORS.warning,
+      percentage: totalReports ? ((riskCounts.MEDIUM || 0) / totalReports * 100).toFixed(1) : 0
+    },
+    {
+      name: 'High Risk',
+      value: riskCounts.HIGH || 0,
+      color: COLORS.danger,
+      percentage: totalReports ? ((riskCounts.HIGH || 0) / totalReports * 100).toFixed(1) : 0
+    },
   ].filter(d => d.value > 0)
 
-  // Show loading only if both are still loading
+  // ════════════════════════════════════════════════════════════════
+  // FULL LOADING STATE
+  // ════════════════════════════════════════════════════════════════
   if (loading && dashLoading && reportsLoading) return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #f8fafb 0%, #f3f7fc 100%)',
+      background: COLORS.bgBase,
       padding: '32px 40px',
     }}>
-      <div style={{
-        marginBottom: 48,
-      }}>
-        <h1 style={{
-          fontSize: 32,
-          fontWeight: 700,
-          color: '#202124',
-          letterSpacing: '-0.5px',
-          marginBottom: 8,
-          fontFamily: 'system-ui, -apple-system, sans-serif',
-        }}>
-          Loading Dashboard
-        </h1>
-        <p style={{
-          fontSize: 16,
-          color: '#5f6368',
-          lineHeight: 1.5,
-        }}>
-          Fetching your data...
-        </p>
+      {/* Header Skeleton */}
+      <div style={{ marginBottom: 40 }}>
+        <div className="skeleton" style={{ width: 280, height: 32, marginBottom: 12 }} />
+        <div className="skeleton" style={{ width: 360, height: 18 }} />
       </div>
 
-      <style>{pulseStyle}</style>
+      {/* Stats Skeleton */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
         gap: 20,
-        marginBottom: 48,
+        marginBottom: 40,
       }}>
-        {[0, 1, 2, 3].map(i => (
-          <div
-            key={i}
-            style={{
-              height: 140,
-              background: 'white',
-              borderRadius: 12,
-              border: '1px solid #dadce0',
-              animation: 'pulse 2s infinite',
-            }}
-          />
-        ))}
+        {[0, 1, 2, 3].map(i => <StatCardSkeleton key={i} />)}
       </div>
 
+      {/* Charts Skeleton */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(500px, 1fr))',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(480px, 1fr))',
         gap: 24,
       }}>
-        <div
-          style={{
-            height: 400,
-            background: 'white',
-            border: '1px solid #dadce0',
-            borderRadius: 12,
-            animation: 'pulse 2s infinite',
-          }}
-        />
-        <div
-          style={{
-            height: 400,
-            background: 'white',
-            border: '1px solid #dadce0',
-            borderRadius: 12,
-            animation: 'pulse 2s infinite',
-          }}
-        />
+        <SkeletonBox height={380} />
+        <SkeletonBox height={380} />
       </div>
     </div>
   )
 
+  // ════════════════════════════════════════════════════════════════
+  // MAIN RENDER
+  // ════════════════════════════════════════════════════════════════
   return (
-    <>
-      <style>{pulseStyle}</style>
-      <div style={{
-        minHeight: '100vh',
-        background: 'linear-gradient(135deg, #f8fafb 0%, #f3f7fc 100%)',
-        padding: '32px 40px',
-      }}>
+    <div style={{
+      minHeight: '100vh',
+      background: COLORS.bgBase,
+      padding: '32px 40px',
+    }}>
       {/* ─── HEADER SECTION ─── */}
       <motion.div
-        initial={{ opacity: 0, y: -20 }}
+        initial={{ opacity: 0, y: -16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        style={{
-          marginBottom: 48,
-        }}
+        style={{ marginBottom: 40 }}
       >
         <div style={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'flex-start',
-          marginBottom: 24,
+          marginBottom: 32,
+          flexWrap: 'wrap',
+          gap: 20,
         }}>
           <div>
             <h1 style={{
-              fontSize: 32,
+              fontSize: 28,
               fontWeight: 700,
-              color: '#202124',
-              letterSpacing: '-0.5px',
+              color: COLORS.textPrimary,
+              letterSpacing: '-0.02em',
               marginBottom: 8,
-              fontFamily: 'system-ui, -apple-system, sans-serif',
+              fontFamily: 'var(--font-display)',
             }}>
-              {greeting}, <span style={{ color: '#1a73e8' }}>
-                {user?.name?.split(' ')[0]}
-              </span> 👋
+              {greeting}, <span style={{ color: COLORS.primary }}>
+                {user?.name?.split(' ')[0] || 'Teacher'}
+              </span>
             </h1>
             <p style={{
-              fontSize: 16,
-              color: '#5f6368',
+              fontSize: 15,
+              color: COLORS.textMuted,
               lineHeight: 1.5,
             }}>
-              Here's what's happening with your students — {format(new Date(), 'EEEE, MMMM d')}
+              Classroom risk overview for {format(new Date(), 'EEEE, MMMM d, yyyy')}
             </p>
           </div>
-          <motion.div
-            whileHover={{ scale: 1.04 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <Link to="/teacher/upload" style={{ textDecoration: 'none' }}>
-              <button
-                style={{
-                  background: 'linear-gradient(135deg, #1a73e8 0%, #1557b0 100%)',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: 10,
-                  padding: '14px 28px',
-                  fontSize: 15,
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 10,
-                  transition: 'all 0.3s cubic-bezier(0.2, 0, 0, 1)',
-                  boxShadow: '0 4px 16px rgba(26, 115, 232, 0.3)',
-                  fontFamily: 'system-ui, -apple-system, sans-serif',
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.boxShadow = '0 8px 24px rgba(26, 115, 232, 0.4)'
-                  e.currentTarget.style.transform = 'translateY(-2px)'
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.boxShadow = '0 4px 16px rgba(26, 115, 232, 0.3)'
-                  e.currentTarget.style.transform = 'translateY(0)'
-                }}
-              >
-                <Upload size={18} />
-                Upload Paper
-              </button>
-            </Link>
-          </motion.div>
+
+          <Link to="/teacher/upload" style={{ textDecoration: 'none' }}>
+            <Button
+              variant="primary"
+              size="lg"
+              icon={<Upload size={18} />}
+              style={{
+                background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryLight} 100%)`,
+                boxShadow: '0 4px 16px rgba(49, 46, 129, 0.25)',
+              }}
+            >
+              Upload Handwriting Sample
+            </Button>
+          </Link>
         </div>
 
-        {/* Stats Cards Grid */}
+        {/* ─── STATS CARDS ─── */}
         {dashLoading ? (
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
             gap: 20,
           }}>
-            {[0, 1, 2, 3].map(i => (
-              <div
-                key={i}
-                style={{
-                  height: 140,
-                  background: 'white',
-                  borderRadius: 12,
-                  border: '1px solid #dadce0',
-                  animation: 'pulse 2s infinite',
-                }}
-              />
-            ))}
+            {[0, 1, 2, 3].map(i => <StatCardSkeleton key={i} />)}
           </div>
         ) : (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-              gap: 20,
-            }}
-          >
-            {/* Students Card */}
-            <div
-              style={{
-                background: 'white',
-                border: '1px solid #dadce0',
-                borderRadius: 12,
-                padding: 24,
-                transition: 'all 0.3s ease-out',
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.08)'
-                e.currentTarget.style.transform = 'translateY(-4px)'
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.boxShadow = 'none'
-                e.currentTarget.style.transform = 'translateY(0)'
-              }}
-            >
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'start',
-                marginBottom: 16,
-              }}>
-                <div style={{
-                  width: 50,
-                  height: 50,
-                  background: '#e8f0fe',
-                  borderRadius: 10,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}>
-                  <Users size={24} color="#1a73e8" strokeWidth={2} />
-                </div>
-              </div>
-              <p style={{
-                fontSize: 12,
-                color: '#80868b',
-                fontWeight: 600,
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px',
-                marginBottom: 8,
-              }}>Total Students</p>
-              <p style={{
-                fontSize: 32,
-                fontWeight: 700,
-                color: '#202124',
-                fontFamily: 'system-ui, -apple-system, sans-serif',
-              }}>{dash?.totalStudents ?? 0}</p>
-            </div>
-
-            {/* Papers Card */}
-            <div
-              style={{
-                background: 'white',
-                border: '1px solid #dadce0',
-                borderRadius: 12,
-                padding: 24,
-                transition: 'all 0.3s ease-out',
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.08)'
-                e.currentTarget.style.transform = 'translateY(-4px)'
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.boxShadow = 'none'
-                e.currentTarget.style.transform = 'translateY(0)'
-              }}
-            >
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'start',
-                marginBottom: 16,
-              }}>
-                <div style={{
-                  width: 50,
-                  height: 50,
-                  background: '#fef3c7',
-                  borderRadius: 10,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}>
-                  <FileText size={24} color="#f59e0b" strokeWidth={2} />
-                </div>
-              </div>
-              <p style={{
-                fontSize: 12,
-                color: '#80868b',
-                fontWeight: 600,
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px',
-                marginBottom: 8,
-              }}>Papers Uploaded</p>
-              <p style={{
-                fontSize: 32,
-                fontWeight: 700,
-                color: '#202124',
-                fontFamily: 'system-ui, -apple-system, sans-serif',
-              }}>{dash?.totalPapersUploaded ?? 0}</p>
-            </div>
-
-            {/* At Risk Card */}
-            <div
-              style={{
-                background: 'white',
-                border: '1px solid #dadce0',
-                borderRadius: 12,
-                padding: 24,
-                transition: 'all 0.3s ease-out',
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.08)'
-                e.currentTarget.style.transform = 'translateY(-4px)'
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.boxShadow = 'none'
-                e.currentTarget.style.transform = 'translateY(0)'
-              }}
-            >
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'start',
-                marginBottom: 16,
-              }}>
-                <div style={{
-                  width: 50,
-                  height: 50,
-                  background: '#fee2e2',
-                  borderRadius: 10,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}>
-                  <AlertTriangle size={24} color="#ef4444" strokeWidth={2} />
-                </div>
-              </div>
-              <p style={{
-                fontSize: 12,
-                color: '#80868b',
-                fontWeight: 600,
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px',
-                marginBottom: 8,
-              }}>Students at Risk</p>
-              <p style={{
-                fontSize: 32,
-                fontWeight: 700,
-                color: '#202124',
-                fontFamily: 'system-ui, -apple-system, sans-serif',
-              }}>{dash?.studentsAtRisk ?? 0}</p>
-            </div>
-
-            {/* Avg Dyslexia Card */}
-            <div
-              style={{
-                background: 'white',
-                border: '1px solid #dadce0',
-                borderRadius: 12,
-                padding: 24,
-                transition: 'all 0.3s ease-out',
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.08)'
-                e.currentTarget.style.transform = 'translateY(-4px)'
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.boxShadow = 'none'
-                e.currentTarget.style.transform = 'translateY(0)'
-              }}
-            >
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'start',
-                marginBottom: 16,
-              }}>
-                <div style={{
-                  width: 50,
-                  height: 50,
-                  background: '#ede9fe',
-                  borderRadius: 10,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}>
-                  <Brain size={24} color="#a855f7" strokeWidth={2} />
-                </div>
-              </div>
-              <p style={{
-                fontSize: 12,
-                color: '#80868b',
-                fontWeight: 600,
-                textTransform: 'uppercase',
-                letterSpacing: '0.5px',
-                marginBottom: 8,
-              }}>Avg. Dyslexia Score</p>
-              <p style={{
-                fontSize: 32,
-                fontWeight: 700,
-                color: '#202124',
-                fontFamily: 'system-ui, -apple-system, sans-serif',
-              }}>{dash?.averageDyslexiaScore?.toFixed(1) ?? 0}%</p>
-            </div>
-          </motion.div>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+            gap: 20,
+          }}>
+            <DashboardStatCard
+              icon={Users}
+              label="Total Students"
+              value={dash?.totalStudents ?? 0}
+              color="primary"
+              delay={1}
+              subtitle="Active in classroom"
+            />
+            <DashboardStatCard
+              icon={FileText}
+              label="Samples Analyzed"
+              value={dash?.totalPapersUploaded ?? 0}
+              color="secondary"
+              delay={2}
+              subtitle="Handwriting assessments"
+            />
+            <DashboardStatCard
+              icon={AlertTriangle}
+              label="Requires Attention"
+              value={dash?.studentsAtRisk ?? 0}
+              color="danger"
+              delay={3}
+              subtitle="Flagged for follow-up"
+            />
+            <DashboardStatCard
+              icon={Brain}
+              label="Avg. Dyslexia Score"
+              value={`${dash?.averageDyslexiaScore?.toFixed(1) ?? 0}%`}
+              color="primary"
+              delay={4}
+              subtitle="Classroom average"
+            />
+          </div>
         )}
       </motion.div>
 
@@ -515,98 +451,270 @@ export default function TeacherDashboard() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
+        transition={{ delay: 0.15, duration: 0.4 }}
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(500px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(480px, 1fr))',
           gap: 24,
           marginBottom: 40,
         }}
       >
         {/* Trend Chart */}
-        <div
-          style={{
-            background: 'white',
-            border: '1px solid #dadce0',
-            borderRadius: 12,
-            padding: 28,
-          }}
-        >
-          <h3 style={{
-            fontSize: 16,
-            fontWeight: 600,
-            color: '#202124',
+        <div style={{
+          background: COLORS.bgSurface,
+          border: `1px solid ${COLORS.border}`,
+          borderRadius: 12,
+          padding: 28,
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
             marginBottom: 24,
-            fontFamily: 'system-ui, -apple-system, sans-serif',
-          }}>Recent Analysis Trend</h3>
+          }}>
+            <div style={{
+              width: 36,
+              height: 36,
+              borderRadius: 8,
+              background: COLORS.primaryBg,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              <TrendingUp size={18} color={COLORS.primary} />
+            </div>
+            <div>
+              <h3 style={{
+                fontSize: 16,
+                fontWeight: 600,
+                color: COLORS.textPrimary,
+                fontFamily: 'var(--font-display)',
+              }}>
+                Analysis Trend
+              </h3>
+              <p style={{ fontSize: 12, color: COLORS.textMuted }}>
+                Recent assessment scores
+              </p>
+            </div>
+          </div>
+
           {reportsLoading ? (
-            <div style={{ height: 300, background: '#f8f9fa', borderRadius: 8, animation: 'pulse 2s infinite' }} />
+            <SkeletonBox height={280} />
           ) : chartData.length === 0 ? (
-            <p style={{
-              color: '#5f6368',
-              textAlign: 'center',
-              padding: '60px 20px',
-              fontSize: 14,
-            }}>Upload a paper to see trends</p>
+            <div style={{
+              height: 280,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: COLORS.textMuted,
+              background: COLORS.bgSubtle,
+              borderRadius: 8,
+            }}>
+              <BarChart3 size={40} strokeWidth={1.5} style={{ marginBottom: 12, opacity: 0.5 }} />
+              <p style={{ fontSize: 14, fontWeight: 500 }}>No data yet</p>
+              <p style={{ fontSize: 13 }}>Upload samples to see trends</p>
+            </div>
           ) : (
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={280}>
               <AreaChart data={chartData} margin={{ top: 10, right: 20, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="dyslexiaGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#a855f7" stopOpacity={0.3} />
-                    <stop offset="100%" stopColor="#a855f7" stopOpacity={0} />
+                    <stop offset="0%" stopColor={COLORS.primary} stopOpacity={0.25} />
+                    <stop offset="100%" stopColor={COLORS.primary} stopOpacity={0} />
                   </linearGradient>
                   <linearGradient id="dysgraphiaGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#06b6d4" stopOpacity={0.3} />
-                    <stop offset="100%" stopColor="#06b6d4" stopOpacity={0} />
+                    <stop offset="0%" stopColor={COLORS.secondary} stopOpacity={0.25} />
+                    <stop offset="100%" stopColor={COLORS.secondary} stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#dadce0" />
-                <XAxis dataKey="date" stroke="#80868b" style={{ fontSize: 12 }} />
-                <YAxis stroke="#80868b" style={{ fontSize: 12 }} />
+                <CartesianGrid strokeDasharray="3 3" stroke={COLORS.border} vertical={false} />
+                <XAxis
+                  dataKey="date"
+                  stroke={COLORS.textLight}
+                  style={{ fontSize: 12 }}
+                  tickLine={false}
+                  axisLine={{ stroke: COLORS.border }}
+                />
+                <YAxis
+                  stroke={COLORS.textLight}
+                  style={{ fontSize: 12 }}
+                  tickLine={false}
+                  axisLine={false}
+                  tickFormatter={(v) => `${v}%`}
+                />
                 <ReTooltip content={<CustomTooltip />} />
-                <Area type="monotone" name="Dyslexia" dataKey="Dyslexia" stroke="#a855f7" strokeWidth={2} fillOpacity={1} fill="url(#dyslexiaGrad)" />
-                <Area type="monotone" name="Dysgraphia" dataKey="Dysgraphia" stroke="#06b6d4" strokeWidth={2} fillOpacity={1} fill="url(#dysgraphiaGrad)" />
+                <Area
+                  type="monotone"
+                  name="Dyslexia"
+                  dataKey="Dyslexia"
+                  stroke={COLORS.primary}
+                  strokeWidth={2.5}
+                  fillOpacity={1}
+                  fill="url(#dyslexiaGrad)"
+                  dot={{ fill: COLORS.primary, strokeWidth: 0, r: 4 }}
+                  activeDot={{ r: 6, stroke: COLORS.bgSurface, strokeWidth: 2 }}
+                />
+                <Area
+                  type="monotone"
+                  name="Dysgraphia"
+                  dataKey="Dysgraphia"
+                  stroke={COLORS.secondary}
+                  strokeWidth={2.5}
+                  fillOpacity={1}
+                  fill="url(#dysgraphiaGrad)"
+                  dot={{ fill: COLORS.secondary, strokeWidth: 0, r: 4 }}
+                  activeDot={{ r: 6, stroke: COLORS.bgSurface, strokeWidth: 2 }}
+                />
               </AreaChart>
             </ResponsiveContainer>
+          )}
+
+          {/* Legend */}
+          {chartData.length > 0 && (
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              gap: 24,
+              marginTop: 16,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ width: 12, height: 12, borderRadius: 3, background: COLORS.primary }} />
+                <span style={{ fontSize: 13, color: COLORS.textMuted, fontWeight: 500 }}>Dyslexia</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{ width: 12, height: 12, borderRadius: 3, background: COLORS.secondary }} />
+                <span style={{ fontSize: 13, color: COLORS.textMuted, fontWeight: 500 }}>Dysgraphia</span>
+              </div>
+            </div>
           )}
         </div>
 
         {/* Risk Distribution */}
-        <div
-          style={{
-            background: 'white',
-            border: '1px solid #dadce0',
-            borderRadius: 12,
-            padding: 28,
-          }}
-        >
-          <h3 style={{
-            fontSize: 16,
-            fontWeight: 600,
-            color: '#202124',
+        <div style={{
+          background: COLORS.bgSurface,
+          border: `1px solid ${COLORS.border}`,
+          borderRadius: 12,
+          padding: 28,
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 10,
             marginBottom: 24,
-            fontFamily: 'system-ui, -apple-system, sans-serif',
-          }}>Risk Distribution</h3>
+          }}>
+            <div style={{
+              width: 36,
+              height: 36,
+              borderRadius: 8,
+              background: COLORS.secondaryBg,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              <PieChartIcon size={18} color={COLORS.secondary} />
+            </div>
+            <div>
+              <h3 style={{
+                fontSize: 16,
+                fontWeight: 600,
+                color: COLORS.textPrimary,
+                fontFamily: 'var(--font-display)',
+              }}>
+                Risk Distribution
+              </h3>
+              <p style={{ fontSize: 12, color: COLORS.textMuted }}>
+                Classroom breakdown
+              </p>
+            </div>
+          </div>
+
           {dashLoading ? (
-            <div style={{ height: 300, background: '#f8f9fa', borderRadius: 8, animation: 'pulse 2s infinite' }} />
+            <SkeletonBox height={280} />
           ) : pieData.length === 0 ? (
-            <p style={{
-              color: '#5f6368',
-              textAlign: 'center',
-              padding: '60px 20px',
-              fontSize: 14,
-            }}>No reports yet</p>
+            <div style={{
+              height: 280,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: COLORS.textMuted,
+              background: COLORS.bgSubtle,
+              borderRadius: 8,
+            }}>
+              <PieChartIcon size={40} strokeWidth={1.5} style={{ marginBottom: 12, opacity: 0.5 }} />
+              <p style={{ fontSize: 14, fontWeight: 500 }}>No assessments</p>
+              <p style={{ fontSize: 13 }}>Data will appear here</p>
+            </div>
           ) : (
-            <ResponsiveContainer width="100%" height={280}>
-              <PieChart>
-                <Pie data={pieData} cx="50%" cy="50%" labelLine={false} label={e => `${e.name} (${e.value})`} outerRadius={80} fill="#8884d8" dataKey="value">
-                  {pieData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-              </PieChart>
-            </ResponsiveContainer>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
+              <ResponsiveContainer width="50%" height={250}>
+                <PieChart>
+                  <Pie
+                    data={pieData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={50}
+                    outerRadius={85}
+                    paddingAngle={4}
+                    dataKey="value"
+                  >
+                    {pieData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
+                    ))}
+                  </Pie>
+                </PieChart>
+              </ResponsiveContainer>
+
+              {/* Custom Legend */}
+              <div style={{ flex: 1 }}>
+                {pieData.map((item, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '12px 0',
+                      borderBottom: i < pieData.length - 1 ? `1px solid ${COLORS.border}` : 'none',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div style={{
+                        width: 12,
+                        height: 12,
+                        borderRadius: 3,
+                        background: item.color,
+                      }} />
+                      <span style={{
+                        fontSize: 14,
+                        color: COLORS.textSecondary,
+                        fontWeight: 500,
+                      }}>
+                        {item.name}
+                      </span>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <span style={{
+                        fontSize: 16,
+                        fontWeight: 700,
+                        color: COLORS.textPrimary,
+                        fontFamily: 'var(--font-display)',
+                      }}>
+                        {item.value}
+                      </span>
+                      <span style={{
+                        fontSize: 12,
+                        color: COLORS.textMuted,
+                        marginLeft: 6,
+                      }}>
+                        ({item.percentage}%)
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
         </div>
       </motion.div>
@@ -616,7 +724,7 @@ export default function TeacherDashboard() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
+          transition={{ delay: 0.25, duration: 0.4 }}
         >
           <div style={{
             display: 'flex',
@@ -627,40 +735,19 @@ export default function TeacherDashboard() {
             <h3 style={{
               fontSize: 18,
               fontWeight: 600,
-              color: '#202124',
-              fontFamily: 'system-ui, -apple-system, sans-serif',
-            }}>Recent Reports</h3>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.98 }}
+              color: COLORS.textPrimary,
+              fontFamily: 'var(--font-display)',
+            }}>
+              Recent Assessments
+            </h3>
+            <Button
+              variant="outline"
+              size="sm"
+              iconRight={<ChevronRight size={16} />}
               onClick={() => navigate('/teacher/reports')}
-              style={{
-                background: 'transparent',
-                border: '1px solid #dadce0',
-                borderRadius: 8,
-                padding: '10px 16px',
-                fontSize: 14,
-                fontWeight: 600,
-                color: '#1a73e8',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                transition: 'all 0.3s ease-out',
-                fontFamily: 'system-ui, -apple-system, sans-serif',
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.background = '#e8f0fe'
-                e.currentTarget.style.borderColor = '#1a73e8'
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.background = 'transparent'
-                e.currentTarget.style.borderColor = '#dadce0'
-              }}
             >
-              View All
-              <ChevronRight size={16} />
-            </motion.button>
+              View All Reports
+            </Button>
           </div>
 
           <div style={{
@@ -668,41 +755,42 @@ export default function TeacherDashboard() {
             flexDirection: 'column',
             gap: 12,
           }}>
-            {reports.slice(0, 5).map(r => (
+            {reports.slice(0, 5).map((r, index) => (
               <motion.div
                 key={r.reportId}
-                whileHover={{ y: -2 }}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 + index * 0.05 }}
                 onClick={() => navigate(`/teacher/reports?id=${r.reportId}`)}
                 style={{
-                  background: 'white',
-                  border: '1px solid #dadce0',
+                  background: COLORS.bgSurface,
+                  border: `1px solid ${COLORS.border}`,
                   borderRadius: 10,
                   padding: '16px 20px',
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
                   cursor: 'pointer',
-                  transition: 'all 0.3s ease-out',
+                  transition: 'all 0.15s ease',
                 }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.08)'
-                  e.currentTarget.style.borderColor = '#1a73e8'
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.boxShadow = 'none'
-                  e.currentTarget.style.borderColor = '#dadce0'
+                whileHover={{
+                  y: -2,
+                  boxShadow: '0 4px 12px rgba(15, 23, 42, 0.06)',
+                  borderColor: COLORS.primary,
                 }}
               >
                 <div>
                   <p style={{
-                    fontWeight: 700,
+                    fontWeight: 600,
                     fontSize: 15,
-                    color: '#202124',
+                    color: COLORS.textPrimary,
                     marginBottom: 4,
-                  }}>{r.studentName}</p>
+                  }}>
+                    {r.studentName}
+                  </p>
                   <p style={{
                     fontSize: 13,
-                    color: '#5f6368',
+                    color: COLORS.textMuted,
                     display: 'flex',
                     alignItems: 'center',
                     gap: 6,
@@ -713,7 +801,7 @@ export default function TeacherDashboard() {
                 </div>
                 <div style={{
                   display: 'flex',
-                  gap: 16,
+                  gap: 12,
                   alignItems: 'center',
                 }}>
                   <div style={{
@@ -723,38 +811,29 @@ export default function TeacherDashboard() {
                     gap: 4,
                   }}>
                     <div style={{
-                      background: '#ede9fe',
-                      color: '#a855f7',
-                      padding: '4px 12px',
+                      background: COLORS.primaryBg,
+                      color: COLORS.primary,
+                      padding: '4px 10px',
                       borderRadius: 6,
                       fontSize: 12,
                       fontWeight: 700,
-                    }}>D: {r.dyslexiaScore.toFixed(1)}%</div>
+                      fontFamily: 'var(--font-display)',
+                    }}>
+                      D: {r.dyslexiaScore.toFixed(1)}%
+                    </div>
                     <div style={{
-                      background: '#cffafe',
-                      color: '#0891b2',
-                      padding: '4px 12px',
+                      background: COLORS.secondaryBg,
+                      color: COLORS.secondaryDark,
+                      padding: '4px 10px',
                       borderRadius: 6,
                       fontSize: 12,
                       fontWeight: 700,
-                    }}>G: {r.dysgraphiaScore.toFixed(1)}%</div>
+                      fontFamily: 'var(--font-display)',
+                    }}>
+                      G: {r.dysgraphiaScore.toFixed(1)}%
+                    </div>
                   </div>
-                  <div style={{
-                    padding: '6px 12px',
-                    borderRadius: 6,
-                    fontWeight: 700,
-                    fontSize: 12,
-                    background:
-                      r.riskLevel === 'HIGH' ? '#fee2e2' :
-                      r.riskLevel === 'MEDIUM' ? '#fef3c7' :
-                      '#dcfce7',
-                    color:
-                      r.riskLevel === 'HIGH' ? '#991b1b' :
-                      r.riskLevel === 'MEDIUM' ? '#9a3412' :
-                      '#166534',
-                  }}>
-                    {r.riskLevel}
-                  </div>
+                  <RiskBadge level={r.riskLevel} />
                 </div>
               </motion.div>
             ))}
@@ -762,6 +841,5 @@ export default function TeacherDashboard() {
         </motion.div>
       )}
     </div>
-    </>
   )
 }

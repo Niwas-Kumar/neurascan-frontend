@@ -46,13 +46,25 @@ const SkeletonCard = ({ rows = 4 }) => (
 
 // ── Inline Badge Component ────────────────────────────
 const Badge = ({ children, icon: Icon, variant = 'primary' }) => {
-  const colors = { primary: '#e8f0fe', secondary: '#f3f4f6', success: '#d1fae5', warning: '#fef3c7', danger: '#fee2e2' }
-  const textColors = { primary: '#1a73e8', secondary: '#374151', success: '#10b981', warning: '#d97706', danger: '#ef4444' }
+  const colors = {
+    primary: 'var(--color-primary-bg)',
+    secondary: 'var(--color-bg-subtle)',
+    success: 'var(--risk-low-bg)',
+    warning: 'var(--risk-medium-bg)',
+    danger: 'var(--risk-high-bg)'
+  }
+  const textColors = {
+    primary: 'var(--color-primary)',
+    secondary: 'var(--color-text-secondary)',
+    success: 'var(--risk-low)',
+    warning: 'var(--risk-medium)',
+    danger: 'var(--risk-high)'
+  }
   return (
     <span style={{
       display: 'inline-flex', alignItems: 'center', gap: 6,
       padding: '6px 12px',
-      borderRadius: '12px',
+      borderRadius: 100,
       fontSize: 12,
       fontWeight: 600,
       background: colors[variant],
@@ -172,7 +184,7 @@ const QuizAttemptCard = ({ attempt, expanded, onToggle }) => {
         >
           {/* Learning Insights */}
           {attempt.learningGapSummary && (
-            <div style={{ padding: '16px 20px', background: 'rgba(139, 92, 246, 0.05)' }}>
+            <div style={{ padding: '16px 20px', background: 'var(--color-primary-dim)' }}>
               <h4 style={{ fontSize: 13, fontWeight: 700, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8, color: 'var(--primary)' }}>
                 <Brain size={16} /> Learning Insights
               </h4>

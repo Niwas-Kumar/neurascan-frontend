@@ -1,3 +1,7 @@
+// ============================================================
+// QUIZ ATTEMPT PAGE - NeuraScan Design System v3.0
+// Public-facing page for students/parents to take quizzes
+// ============================================================
 import { useEffect, useState, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -8,26 +12,55 @@ import {
 import { quizAttemptAPI } from '../services/api'
 import toast from 'react-hot-toast'
 
-// ── Styles ────────────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════════
+// DESIGN SYSTEM COLORS
+// ════════════════════════════════════════════════════════════════
+const COLORS = {
+  primary: '#312E81',
+  primaryLight: '#4338CA',
+  primaryLighter: '#6366F1',
+  primaryBg: '#EEF2FF',
+  secondary: '#14B8A6',
+  secondaryDark: '#0D9488',
+  secondaryBg: '#CCFBF1',
+  riskHigh: '#B91C1C',
+  riskHighBg: '#FEF2F2',
+  riskMedium: '#B45309',
+  riskMediumBg: '#FFFBEB',
+  riskLow: '#047857',
+  riskLowBg: '#ECFDF5',
+  textPrimary: '#1E293B',
+  textSecondary: '#475569',
+  textMuted: '#64748B',
+  textLight: '#94A3B8',
+  bgBase: '#F8FAFC',
+  bgSurface: '#FFFFFF',
+  bgSubtle: '#F1F5F9',
+  border: '#E2E8F0',
+}
+
+// ════════════════════════════════════════════════════════════════
+// STYLES
+// ════════════════════════════════════════════════════════════════
 const styles = {
   container: {
     minHeight: '100vh',
-    background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%)',
+    background: `linear-gradient(135deg, ${COLORS.primary} 0%, #1E1B4B 50%, ${COLORS.primary} 100%)`,
     padding: '40px 20px',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+    fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
   },
   card: {
     maxWidth: 800,
     margin: '0 auto',
-    background: 'rgba(255, 255, 255, 0.03)',
-    backdropFilter: 'blur(20px)',
+    background: 'rgba(255, 255, 255, 0.04)',
+    backdropFilter: 'blur(24px)',
     border: '1px solid rgba(255, 255, 255, 0.1)',
-    borderRadius: 20,
+    borderRadius: 24,
     overflow: 'hidden',
   },
   header: {
-    background: 'linear-gradient(135deg, #1a73e8 0%, #8b5cf6 100%)',
-    padding: '32px 24px',
+    background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.secondary} 100%)`,
+    padding: '36px 24px',
     textAlign: 'center',
   },
   logo: {
@@ -38,14 +71,16 @@ const styles = {
     marginBottom: 16,
   },
   logoText: {
+    fontFamily: "'Plus Jakarta Sans', sans-serif",
     fontSize: 28,
     fontWeight: 800,
     color: 'white',
-    letterSpacing: -0.5,
+    letterSpacing: '-0.02em',
   },
   title: {
+    fontFamily: "'Plus Jakarta Sans', sans-serif",
     fontSize: 20,
-    fontWeight: 600,
+    fontWeight: 700,
     color: 'rgba(255, 255, 255, 0.95)',
     margin: 0,
   },
@@ -63,8 +98,9 @@ const styles = {
     gap: 12,
     marginBottom: 24,
     padding: '16px 20px',
-    background: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 12,
+    background: 'rgba(255, 255, 255, 0.06)',
+    borderRadius: 14,
+    border: '1px solid rgba(255, 255, 255, 0.08)',
   },
   progressTrack: {
     flex: 1,
@@ -75,123 +111,128 @@ const styles = {
   },
   progressFill: {
     height: '100%',
-    background: 'linear-gradient(90deg, #1a73e8, #8b5cf6)',
+    background: `linear-gradient(90deg, ${COLORS.primary}, ${COLORS.secondary})`,
     borderRadius: 4,
     transition: 'width 0.3s ease',
   },
   progressText: {
+    fontFamily: "'Plus Jakarta Sans', sans-serif",
     fontSize: 14,
-    fontWeight: 600,
-    color: 'rgba(255, 255, 255, 0.8)',
+    fontWeight: 700,
+    color: 'rgba(255, 255, 255, 0.9)',
     minWidth: 80,
     textAlign: 'right',
   },
   questionCard: {
-    background: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 16,
-    padding: 24,
-    marginBottom: 20,
+    background: 'rgba(255, 255, 255, 0.06)',
+    border: '1px solid rgba(255, 255, 255, 0.08)',
+    borderRadius: 18,
+    padding: 28,
+    marginBottom: 24,
   },
   questionNumber: {
     fontSize: 12,
     fontWeight: 700,
-    color: '#8b5cf6',
+    color: COLORS.secondary,
     textTransform: 'uppercase',
-    letterSpacing: 1,
-    marginBottom: 12,
+    letterSpacing: 1.5,
+    marginBottom: 14,
   },
   questionText: {
+    fontFamily: "'Plus Jakarta Sans', sans-serif",
     fontSize: 18,
     fontWeight: 600,
     color: 'white',
-    lineHeight: 1.5,
-    marginBottom: 24,
+    lineHeight: 1.6,
+    marginBottom: 28,
   },
   optionsGrid: {
     display: 'grid',
-    gap: 12,
+    gap: 14,
   },
   option: (selected, correct, showResult) => ({
     display: 'flex',
     alignItems: 'center',
     gap: 14,
-    padding: '16px 18px',
+    padding: '18px 20px',
     background: showResult
       ? correct
-        ? 'rgba(16, 185, 129, 0.15)'
+        ? 'rgba(4, 120, 87, 0.2)'
         : selected
-          ? 'rgba(239, 68, 68, 0.15)'
-          : 'rgba(255, 255, 255, 0.03)'
+          ? 'rgba(185, 28, 28, 0.2)'
+          : 'rgba(255, 255, 255, 0.04)'
       : selected
-        ? 'rgba(139, 92, 246, 0.2)'
-        : 'rgba(255, 255, 255, 0.03)',
+        ? 'rgba(20, 184, 166, 0.15)'
+        : 'rgba(255, 255, 255, 0.04)',
     border: showResult
       ? correct
-        ? '2px solid rgba(16, 185, 129, 0.5)'
+        ? `2px solid ${COLORS.riskLow}`
         : selected
-          ? '2px solid rgba(239, 68, 68, 0.5)'
+          ? `2px solid ${COLORS.riskHigh}`
           : '1px solid rgba(255, 255, 255, 0.1)'
       : selected
-        ? '2px solid rgba(139, 92, 246, 0.5)'
+        ? `2px solid ${COLORS.secondary}`
         : '1px solid rgba(255, 255, 255, 0.1)',
-    borderRadius: 12,
+    borderRadius: 14,
     cursor: showResult ? 'default' : 'pointer',
     transition: 'all 0.2s ease',
   }),
   optionLetter: (selected, correct, showResult) => ({
-    width: 32,
-    height: 32,
+    width: 36,
+    height: 36,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 8,
+    borderRadius: 10,
     fontSize: 14,
     fontWeight: 700,
     background: showResult
       ? correct
-        ? 'rgba(16, 185, 129, 0.3)'
+        ? 'rgba(4, 120, 87, 0.3)'
         : selected
-          ? 'rgba(239, 68, 68, 0.3)'
+          ? 'rgba(185, 28, 28, 0.3)'
           : 'rgba(255, 255, 255, 0.1)'
       : selected
-        ? 'rgba(139, 92, 246, 0.3)'
+        ? 'rgba(20, 184, 166, 0.3)'
         : 'rgba(255, 255, 255, 0.1)',
     color: showResult
       ? correct
-        ? '#10b981'
+        ? COLORS.riskLow
         : selected
-          ? '#ef4444'
+          ? '#FCA5A5'
           : 'rgba(255, 255, 255, 0.6)'
       : selected
-        ? '#8b5cf6'
+        ? COLORS.secondary
         : 'rgba(255, 255, 255, 0.6)',
   }),
   optionText: {
     flex: 1,
     fontSize: 15,
     color: 'rgba(255, 255, 255, 0.9)',
+    lineHeight: 1.5,
   },
   timer: {
     display: 'flex',
     alignItems: 'center',
     gap: 8,
     fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.7)',
+    fontWeight: 600,
+    color: 'rgba(255, 255, 255, 0.8)',
     padding: '8px 14px',
-    background: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 8,
+    background: 'rgba(255, 255, 255, 0.08)',
+    borderRadius: 10,
   },
   buttonRow: {
     display: 'flex',
     justifyContent: 'flex-end',
     alignItems: 'center',
-    marginTop: 24,
+    marginTop: 8,
   },
   button: (primary, disabled) => ({
     display: 'inline-flex',
     alignItems: 'center',
     gap: 8,
-    padding: '14px 24px',
+    padding: '14px 28px',
     borderRadius: 12,
     fontSize: 15,
     fontWeight: 600,
@@ -199,28 +240,31 @@ const styles = {
     cursor: disabled ? 'not-allowed' : 'pointer',
     opacity: disabled ? 0.5 : 1,
     background: primary
-      ? 'linear-gradient(135deg, #1a73e8 0%, #8b5cf6 100%)'
+      ? `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.secondary} 100%)`
       : 'rgba(255, 255, 255, 0.1)',
     color: 'white',
     transition: 'transform 0.2s ease, opacity 0.2s ease',
+    fontFamily: "'Inter', sans-serif",
+    boxShadow: primary ? '0 8px 24px rgba(49, 46, 129, 0.4)' : 'none',
   }),
   resultCard: {
     textAlign: 'center',
-    padding: '40px 24px',
+    padding: '48px 24px',
   },
   scoreCircle: {
     width: 160,
     height: 160,
-    margin: '0 auto 24px',
+    margin: '0 auto 28px',
     borderRadius: '50%',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    background: 'rgba(255, 255, 255, 0.05)',
+    background: 'rgba(255, 255, 255, 0.06)',
     border: '4px solid',
   },
   scoreValue: {
+    fontFamily: "'Plus Jakarta Sans', sans-serif",
     fontSize: 48,
     fontWeight: 800,
     color: 'white',
@@ -234,19 +278,25 @@ const styles = {
     display: 'grid',
     gridTemplateColumns: 'repeat(3, 1fr)',
     gap: 16,
-    marginTop: 32,
+    marginTop: 36,
   },
   statCard: {
-    background: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 12,
+    background: 'rgba(255, 255, 255, 0.06)',
+    border: '1px solid rgba(255, 255, 255, 0.08)',
+    borderRadius: 14,
     padding: 20,
     textAlign: 'center',
   },
   statValue: {
+    fontFamily: "'Plus Jakarta Sans', sans-serif",
     fontSize: 24,
     fontWeight: 700,
     color: 'white',
     marginBottom: 4,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
   },
   statLabel: {
     fontSize: 12,
@@ -261,7 +311,7 @@ const styles = {
     textAlign: 'center',
   },
   errorContainer: {
-    padding: '60px 24px',
+    padding: '64px 24px',
     textAlign: 'center',
   },
   errorIcon: {
@@ -269,14 +319,17 @@ const styles = {
     height: 80,
     margin: '0 auto 24px',
     borderRadius: '50%',
-    background: 'rgba(239, 68, 68, 0.1)',
+    background: 'rgba(185, 28, 28, 0.15)',
+    border: `1px solid ${COLORS.riskHigh}40`,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
   },
 }
 
-// ── Helper to format time ─────────────────────────────────────
+// ════════════════════════════════════════════════════════════════
+// HELPER FUNCTIONS
+// ════════════════════════════════════════════════════════════════
 const formatTime = (ms) => {
   const seconds = Math.floor(ms / 1000)
   const minutes = Math.floor(seconds / 60)
@@ -284,7 +337,9 @@ const formatTime = (ms) => {
   return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
 }
 
-// ── Main Component ────────────────────────────────────────────
+// ════════════════════════════════════════════════════════════════
+// MAIN COMPONENT
+// ════════════════════════════════════════════════════════════════
 export default function QuizAttemptPage() {
   const [searchParams] = useSearchParams()
 
@@ -299,7 +354,7 @@ export default function QuizAttemptPage() {
   const [attemptId, setAttemptId] = useState(null)
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [selectedAnswer, setSelectedAnswer] = useState(null)
-  const [answers, setAnswers] = useState({}) // { questionId: { answer, timeMs, correct } }
+  const [answers, setAnswers] = useState({})
   const [questionStartTime, setQuestionStartTime] = useState(Date.now())
   const [totalTime, setTotalTime] = useState(0)
   const [showResult, setShowResult] = useState(false)
@@ -373,7 +428,6 @@ export default function QuizAttemptPage() {
     setSubmitting(true)
 
     try {
-      // Submit the answer to backend
       const res = await quizAttemptAPI.submitAnswer(
         attemptId,
         currentQuestion.id,
@@ -383,7 +437,6 @@ export default function QuizAttemptPage() {
 
       const responseData = res.data?.data
 
-      // Store answer locally
       setAnswers(prev => ({
         ...prev,
         [currentQuestion.id]: {
@@ -394,10 +447,8 @@ export default function QuizAttemptPage() {
         }
       }))
 
-      // Show result briefly
       setShowResult(true)
 
-      // Move to next question after delay
       setTimeout(() => {
         if (currentQuestionIndex < quiz.questions.length - 1) {
           setCurrentQuestionIndex(prev => prev + 1)
@@ -405,7 +456,6 @@ export default function QuizAttemptPage() {
           setShowResult(false)
           setQuestionStartTime(Date.now())
         } else {
-          // Quiz complete - get final results
           completeQuiz()
         }
       }, 1500)
@@ -433,9 +483,9 @@ export default function QuizAttemptPage() {
   }
 
   const getScoreColor = (score) => {
-    if (score >= 80) return '#10b981'
-    if (score >= 60) return '#f59e0b'
-    return '#ef4444'
+    if (score >= 80) return COLORS.riskLow
+    if (score >= 60) return COLORS.riskMedium
+    return COLORS.riskHigh
   }
 
   const getPerformanceLevel = (score) => {
@@ -458,8 +508,8 @@ export default function QuizAttemptPage() {
             </div>
           </div>
           <div style={styles.loadingContainer}>
-            <Loader2 size={48} color="#8b5cf6" style={{ animation: 'spin 1s linear infinite' }} />
-            <p style={{ color: 'rgba(255, 255, 255, 0.7)', marginTop: 20 }}>Loading quiz...</p>
+            <Loader2 size={48} color={COLORS.secondary} style={{ animation: 'spin 1s linear infinite' }} />
+            <p style={{ color: 'rgba(255, 255, 255, 0.7)', marginTop: 20, fontSize: 15 }}>Loading quiz...</p>
             <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
           </div>
         </div>
@@ -480,16 +530,18 @@ export default function QuizAttemptPage() {
           </div>
           <div style={styles.errorContainer}>
             <div style={styles.errorIcon}>
-              <AlertCircle size={40} color="#ef4444" />
+              <AlertCircle size={40} color={COLORS.riskHigh} />
             </div>
-            <h2 style={{ color: 'white', marginBottom: 12 }}>Quiz Link Error</h2>
-            <p style={{ color: 'rgba(255, 255, 255, 0.7)', marginBottom: 24 }}>{error}</p>
-            <button
+            <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", color: 'white', marginBottom: 12, fontSize: 22, fontWeight: 700 }}>Quiz Link Error</h2>
+            <p style={{ color: 'rgba(255, 255, 255, 0.7)', marginBottom: 28, fontSize: 15, lineHeight: 1.6 }}>{error}</p>
+            <motion.button
+              whileHover={{ y: -2 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => window.location.reload()}
               style={styles.button(true, false)}
             >
               <RefreshCw size={18} /> Try Again
-            </button>
+            </motion.button>
           </div>
         </div>
       </div>
@@ -522,31 +574,31 @@ export default function QuizAttemptPage() {
               <span style={styles.scoreLabel}>Score</span>
             </motion.div>
 
-            <h2 style={{ color: scoreColor, fontSize: 24, fontWeight: 700, marginBottom: 8 }}>
+            <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", color: scoreColor, fontSize: 26, fontWeight: 800, marginBottom: 8 }}>
               {getPerformanceLevel(score)}
             </h2>
-            <p style={{ color: 'rgba(255, 255, 255, 0.6)', marginBottom: 8 }}>
+            <p style={{ color: 'rgba(255, 255, 255, 0.6)', marginBottom: 8, fontSize: 15 }}>
               You answered {finalResult.correctAnswers} out of {finalResult.totalQuestions} questions correctly.
             </p>
 
             <div style={styles.statGrid}>
               <div style={styles.statCard}>
-                <div style={{ ...styles.statValue, color: '#10b981' }}>
-                  <CheckCircle size={20} style={{ display: 'inline', marginRight: 6 }} />
+                <div style={{ ...styles.statValue, color: COLORS.riskLow }}>
+                  <CheckCircle size={20} />
                   {finalResult.correctAnswers}
                 </div>
                 <div style={styles.statLabel}>Correct</div>
               </div>
               <div style={styles.statCard}>
-                <div style={{ ...styles.statValue, color: '#ef4444' }}>
-                  <XCircle size={20} style={{ display: 'inline', marginRight: 6 }} />
+                <div style={{ ...styles.statValue, color: '#FCA5A5' }}>
+                  <XCircle size={20} />
                   {finalResult.totalQuestions - finalResult.correctAnswers}
                 </div>
                 <div style={styles.statLabel}>Incorrect</div>
               </div>
               <div style={styles.statCard}>
                 <div style={styles.statValue}>
-                  <Clock size={20} style={{ display: 'inline', marginRight: 6 }} />
+                  <Clock size={20} />
                   {formatTime(finalResult.totalTimeSpentMs || 0)}
                 </div>
                 <div style={styles.statLabel}>Time Spent</div>
@@ -554,23 +606,29 @@ export default function QuizAttemptPage() {
             </div>
 
             {finalResult.learningGapSummary && (
-              <div style={{
-                marginTop: 24,
-                padding: 20,
-                background: 'rgba(139, 92, 246, 0.1)',
-                borderRadius: 12,
-                textAlign: 'left'
-              }}>
-                <h4 style={{ color: '#8b5cf6', marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                style={{
+                  marginTop: 28,
+                  padding: 24,
+                  background: `${COLORS.secondary}15`,
+                  border: `1px solid ${COLORS.secondary}30`,
+                  borderRadius: 16,
+                  textAlign: 'left'
+                }}
+              >
+                <h4 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", color: COLORS.secondary, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8, fontWeight: 700 }}>
                   <Target size={18} /> Learning Insights
                 </h4>
-                <p style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: 14, lineHeight: 1.6 }}>
+                <p style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: 14, lineHeight: 1.7 }}>
                   {finalResult.learningGapSummary}
                 </p>
-              </div>
+              </motion.div>
             )}
 
-            <div style={{ marginTop: 32 }}>
+            <div style={{ marginTop: 36 }}>
               <p style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: 13 }}>
                 Your results have been saved. Your teacher and parent can view your progress.
               </p>
@@ -638,7 +696,7 @@ export default function QuizAttemptPage() {
                   return (
                     <motion.div
                       key={idx}
-                      whileHover={!showResult ? { scale: 1.01 } : {}}
+                      whileHover={!showResult ? { scale: 1.01, background: 'rgba(255, 255, 255, 0.08)' } : {}}
                       whileTap={!showResult ? { scale: 0.99 } : {}}
                       style={styles.option(isSelected, isCorrect, showResult)}
                       onClick={() => handleSelectAnswer(option)}
@@ -657,7 +715,9 @@ export default function QuizAttemptPage() {
 
           {/* Navigation Buttons */}
           <div style={styles.buttonRow}>
-            <button
+            <motion.button
+              whileHover={!(!selectedAnswer || submitting || showResult) ? { y: -2 } : {}}
+              whileTap={!(!selectedAnswer || submitting || showResult) ? { scale: 0.98 } : {}}
               disabled={!selectedAnswer || submitting || showResult}
               style={styles.button(true, !selectedAnswer || submitting || showResult)}
               onClick={handleSubmitAnswer}
@@ -676,10 +736,11 @@ export default function QuizAttemptPage() {
                   Submit & Next <ArrowRight size={18} />
                 </>
               )}
-            </button>
+            </motion.button>
           </div>
         </div>
       </div>
+      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
     </div>
   )
 }

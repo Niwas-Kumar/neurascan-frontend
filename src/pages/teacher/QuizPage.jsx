@@ -1,33 +1,72 @@
+// ============================================================
+// TEACHER QUIZ PAGE - NeuraScan Design System v3.0
+// ============================================================
 import { useEffect, useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { PlusCircle, Send, BookOpen, CheckCircle, XCircle, Mail, Users, Loader2, BarChart3, X } from 'lucide-react'
 import { quizAPI, studentAPI } from '../../services/api'
 import toast from 'react-hot-toast'
 import { useAuth } from '../../context/AuthContext'
 
-// ── Inline PageHeader Component ────────────────────────────
+// ════════════════════════════════════════════════════════════════
+// DESIGN SYSTEM COLORS
+// ════════════════════════════════════════════════════════════════
+const COLORS = {
+  primary: '#312E81',
+  primaryLight: '#4338CA',
+  primaryLighter: '#6366F1',
+  primaryBg: '#EEF2FF',
+  secondary: '#14B8A6',
+  secondaryDark: '#0D9488',
+  secondaryBg: '#CCFBF1',
+  riskHigh: '#B91C1C',
+  riskHighBg: '#FEF2F2',
+  riskMedium: '#B45309',
+  riskMediumBg: '#FFFBEB',
+  riskLow: '#047857',
+  riskLowBg: '#ECFDF5',
+  textPrimary: '#1E293B',
+  textSecondary: '#475569',
+  textMuted: '#64748B',
+  textLight: '#94A3B8',
+  bgBase: '#F8FAFC',
+  bgSurface: '#FFFFFF',
+  bgSubtle: '#F1F5F9',
+  border: '#E2E8F0',
+  borderLight: '#F1F5F9',
+}
+
+// ════════════════════════════════════════════════════════════════
+// REUSABLE COMPONENTS
+// ════════════════════════════════════════════════════════════════
+
 const PageHeader = ({ title, subtitle, action }) => (
   <div style={{ marginBottom: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
     <div>
-      <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 32, fontWeight: 800, marginBottom: 6, color: 'var(--text-primary)' }}>{title}</h1>
-      {subtitle && <p style={{ fontSize: 15, color: 'var(--text-secondary)', lineHeight: 1.6 }}>{subtitle}</p>}
+      <h1 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 28, fontWeight: 800, marginBottom: 8, color: COLORS.textPrimary, letterSpacing: '-0.02em' }}>{title}</h1>
+      {subtitle && <p style={{ fontSize: 15, color: COLORS.textSecondary, lineHeight: 1.6 }}>{subtitle}</p>}
     </div>
     {action && <div>{action}</div>}
   </div>
 )
 
-// ── Inline Badge Component ────────────────────────────
 const Badge = ({ children, icon: Icon, variant = 'primary' }) => {
-  const colors = { primary: '#e8f0fe', secondary: '#f3f4f6', success: '#d1fae5', warning: '#fef3c7' }
-  const textColors = { primary: '#1a73e8', secondary: '#374151', success: '#10b981', warning: '#d97706' }
+  const colors = {
+    primary: { bg: COLORS.primaryBg, text: COLORS.primary },
+    secondary: { bg: COLORS.bgSubtle, text: COLORS.textSecondary },
+    success: { bg: COLORS.riskLowBg, text: COLORS.riskLow },
+    warning: { bg: COLORS.riskMediumBg, text: COLORS.riskMedium },
+  }
+  const c = colors[variant] || colors.primary
   return (
     <span style={{
       display: 'inline-flex', alignItems: 'center', gap: 6,
       padding: '6px 12px',
-      borderRadius: '12px',
+      borderRadius: 100,
       fontSize: 12,
       fontWeight: 600,
-      background: colors[variant],
-      color: textColors[variant],
+      background: c.bg,
+      color: c.text,
     }}>
       {Icon && <Icon size={14} />}
       {children}
@@ -35,16 +74,15 @@ const Badge = ({ children, icon: Icon, variant = 'primary' }) => {
   )
 }
 
-// ── Inline SkeletonCard Component ────────────────────────────
 const SkeletonCard = ({ rows = 4 }) => (
-  <div style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '20px 24px' }}>
+  <div style={{ border: `1px solid ${COLORS.border}`, borderRadius: 16, padding: '20px 24px', background: COLORS.bgSurface }}>
     {Array(rows).fill(0).map((_, i) => (
       <div key={i} style={{
         height: i === 0 ? 24 : 14,
-        background: 'linear-gradient(90deg, var(--bg-hover) 25%, var(--bg-elevated) 50%, var(--bg-hover) 75%)',
+        background: `linear-gradient(90deg, ${COLORS.bgSubtle} 25%, ${COLORS.bgSurface} 50%, ${COLORS.bgSubtle} 75%)`,
         backgroundSize: '200% 100%',
         animation: 'shimmer 1.5s infinite',
-        borderRadius: 6,
+        borderRadius: 8,
         marginBottom: i < rows - 1 ? 12 : 0,
       }} />
     ))}
@@ -52,16 +90,18 @@ const SkeletonCard = ({ rows = 4 }) => (
   </div>
 )
 
-// ── Inline EmptyState Component ────────────────────────────
 const EmptyState = ({ icon: Icon, title, description }) => (
-  <div style={{border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '48px 32px', textAlign: 'center' }}>
-    {Icon && <Icon size={40} color="var(--text-muted)" strokeWidth={1.25} style={{ marginBottom: 16 }} />}
-    <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 800, marginBottom: 8 }}>{title}</h3>
-    {description && <p style={{ color: 'var(--text-secondary)', fontSize: 14, lineHeight: 1.75 }}>{description}</p>}
+  <div style={{ border: `1px solid ${COLORS.border}`, borderRadius: 16, padding: '56px 32px', textAlign: 'center', background: COLORS.bgSurface }}>
+    {Icon && <Icon size={48} color={COLORS.textLight} strokeWidth={1.25} style={{ marginBottom: 20 }} />}
+    <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 20, fontWeight: 700, marginBottom: 10, color: COLORS.textPrimary }}>{title}</h3>
+    {description && <p style={{ color: COLORS.textSecondary, fontSize: 14, lineHeight: 1.75, maxWidth: 360, margin: '0 auto' }}>{description}</p>}
   </div>
 )
 
-// ── Distribute Quiz Modal ────────────────────────────
+// ════════════════════════════════════════════════════════════════
+// DISTRIBUTE QUIZ MODAL
+// ════════════════════════════════════════════════════════════════
+
 const DistributeModal = ({ quiz, students, onClose, onDistribute }) => {
   const [selectedStudents, setSelectedStudents] = useState([])
   const [customEmails, setCustomEmails] = useState('')
@@ -112,22 +152,28 @@ const DistributeModal = ({ quiz, students, onClose, onDistribute }) => {
   return (
     <div style={{
       position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-      background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(4px)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
       zIndex: 1000, padding: 20
     }}>
-      <div style={{
-        background: 'var(--bg-card)', borderRadius: 16, width: '100%', maxWidth: 560,
-        maxHeight: '80vh', overflow: 'hidden', display: 'flex', flexDirection: 'column',
-        border: '1px solid var(--border)', boxShadow: 'var(--shadow-xl)'
-      }}>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        style={{
+          background: COLORS.bgSurface, borderRadius: 20, width: '100%', maxWidth: 560,
+          maxHeight: '80vh', overflow: 'hidden', display: 'flex', flexDirection: 'column',
+          border: `1px solid ${COLORS.border}`, boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+        }}
+      >
         {/* Header */}
-        <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ padding: '20px 24px', borderBottom: `1px solid ${COLORS.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4 }}>Distribute Quiz</h2>
-            <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>{quiz.topic}</p>
+            <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 18, fontWeight: 700, marginBottom: 4, color: COLORS.textPrimary }}>Distribute Quiz</h2>
+            <p style={{ fontSize: 13, color: COLORS.textMuted }}>{quiz.topic}</p>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 8 }}>
-            <X size={20} color="var(--text-muted)" />
+          <button onClick={onClose} style={{ background: COLORS.bgSubtle, border: 'none', cursor: 'pointer', padding: 8, borderRadius: 8 }}>
+            <X size={18} color={COLORS.textMuted} />
           </button>
         </div>
 
@@ -136,40 +182,41 @@ const DistributeModal = ({ quiz, students, onClose, onDistribute }) => {
           {/* Select Students */}
           <div style={{ marginBottom: 20 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-              <label style={{ fontSize: 14, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Users size={16} /> Select Students
+              <label style={{ fontSize: 14, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8, color: COLORS.textPrimary }}>
+                <Users size={16} color={COLORS.primary} /> Select Students
               </label>
               <button onClick={selectAll} style={{
-                fontSize: 12, color: 'var(--primary)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600
+                fontSize: 12, color: COLORS.primary, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600
               }}>
                 {selectedStudents.length === students.length ? 'Deselect All' : 'Select All'}
               </button>
             </div>
 
             <div style={{
-              border: '1px solid var(--border)', borderRadius: 10, maxHeight: 180, overflow: 'auto',
-              background: 'var(--bg-default)'
+              border: `1px solid ${COLORS.border}`, borderRadius: 12, maxHeight: 180, overflow: 'auto',
+              background: COLORS.bgSubtle
             }}>
               {students.length === 0 ? (
-                <div style={{ padding: 20, textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>
+                <div style={{ padding: 20, textAlign: 'center', color: COLORS.textMuted, fontSize: 13 }}>
                   No students found. Add students first.
                 </div>
               ) : students.map(student => (
                 <label key={student.id} style={{
                   display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px',
-                  cursor: 'pointer', borderBottom: '1px solid var(--border)',
-                  background: selectedStudents.includes(student.id) ? 'var(--bg-hover)' : 'transparent'
+                  cursor: 'pointer', borderBottom: `1px solid ${COLORS.border}`,
+                  background: selectedStudents.includes(student.id) ? COLORS.primaryBg : 'transparent',
+                  transition: 'background 0.15s ease'
                 }}>
                   <input
                     type="checkbox"
                     checked={selectedStudents.includes(student.id)}
                     onChange={() => toggleStudent(student.id)}
-                    style={{ width: 16, height: 16, accentColor: 'var(--primary)' }}
+                    style={{ width: 16, height: 16, accentColor: COLORS.primary }}
                   />
                   <div>
-                    <div style={{ fontSize: 14, fontWeight: 500 }}>{student.name}</div>
+                    <div style={{ fontSize: 14, fontWeight: 500, color: COLORS.textPrimary }}>{student.name}</div>
                     {student.parentEmail && (
-                      <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                      <div style={{ fontSize: 12, color: COLORS.textMuted }}>
                         Parent: {student.parentEmail}
                       </div>
                     )}
@@ -177,15 +224,15 @@ const DistributeModal = ({ quiz, students, onClose, onDistribute }) => {
                 </label>
               ))}
             </div>
-            <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 8 }}>
+            <p style={{ fontSize: 11, color: COLORS.textMuted, marginTop: 8 }}>
               Quiz links will be sent to parent emails registered for selected students.
             </p>
           </div>
 
           {/* Additional Emails */}
           <div style={{ marginBottom: 20 }}>
-            <label style={{ fontSize: 14, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-              <Mail size={16} /> Additional Parent Emails (optional)
+            <label style={{ fontSize: 14, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, color: COLORS.textPrimary }}>
+              <Mail size={16} color={COLORS.primary} /> Additional Parent Emails (optional)
             </label>
             <input
               type="text"
@@ -193,18 +240,21 @@ const DistributeModal = ({ quiz, students, onClose, onDistribute }) => {
               onChange={e => setCustomEmails(e.target.value)}
               placeholder="parent1@email.com, parent2@email.com"
               style={{
-                width: '100%', padding: 12, border: '1px solid var(--border)', borderRadius: 8,
-                outline: 'none', background: 'var(--bg-default)', fontSize: 14
+                width: '100%', padding: 12, border: `1px solid ${COLORS.border}`, borderRadius: 10,
+                outline: 'none', background: COLORS.bgSubtle, fontSize: 14, color: COLORS.textPrimary,
+                fontFamily: "'Inter', sans-serif", transition: 'border-color 0.2s ease'
               }}
+              onFocus={e => e.target.style.borderColor = COLORS.primary}
+              onBlur={e => e.target.style.borderColor = COLORS.border}
             />
-            <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 6 }}>
+            <p style={{ fontSize: 11, color: COLORS.textMuted, marginTop: 6 }}>
               Separate multiple emails with commas
             </p>
           </div>
 
           {/* Custom Message */}
           <div>
-            <label style={{ fontSize: 14, fontWeight: 600, marginBottom: 10, display: 'block' }}>
+            <label style={{ fontSize: 14, fontWeight: 600, marginBottom: 10, display: 'block', color: COLORS.textPrimary }}>
               Custom Message (optional)
             </label>
             <textarea
@@ -213,45 +263,62 @@ const DistributeModal = ({ quiz, students, onClose, onDistribute }) => {
               placeholder="Add a personal note to include in the email..."
               rows={3}
               style={{
-                width: '100%', padding: 12, border: '1px solid var(--border)', borderRadius: 8,
-                outline: 'none', background: 'var(--bg-default)', fontSize: 14, resize: 'vertical'
+                width: '100%', padding: 12, border: `1px solid ${COLORS.border}`, borderRadius: 10,
+                outline: 'none', background: COLORS.bgSubtle, fontSize: 14, resize: 'vertical',
+                color: COLORS.textPrimary, fontFamily: "'Inter', sans-serif"
               }}
+              onFocus={e => e.target.style.borderColor = COLORS.primary}
+              onBlur={e => e.target.style.borderColor = COLORS.border}
             />
           </div>
         </div>
 
         {/* Footer */}
         <div style={{
-          padding: '16px 24px', borderTop: '1px solid var(--border)',
-          display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12
+          padding: '16px 24px', borderTop: `1px solid ${COLORS.border}`,
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, background: COLORS.bgSubtle
         }}>
-          <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+          <div style={{ fontSize: 13, color: COLORS.textMuted }}>
             {selectedStudents.length + customEmails.split(',').filter(e => e.includes('@')).length} recipient(s) selected
           </div>
           <div style={{ display: 'flex', gap: 10 }}>
             <button onClick={onClose} style={{
-              padding: '10px 18px', borderRadius: 8, border: '1px solid var(--border)',
-              background: 'var(--bg-elevated)', color: 'var(--text-primary)', fontWeight: 600, cursor: 'pointer'
+              padding: '10px 18px', borderRadius: 10, border: `1px solid ${COLORS.border}`,
+              background: COLORS.bgSurface, color: COLORS.textPrimary, fontWeight: 600, cursor: 'pointer',
+              fontFamily: "'Inter', sans-serif", fontSize: 14
             }}>
               Cancel
             </button>
-            <button onClick={handleDistribute} disabled={sending} style={{
-              padding: '10px 18px', borderRadius: 8, border: 'none',
-              background: 'var(--primary)', color: 'white', fontWeight: 600,
-              cursor: sending ? 'not-allowed' : 'pointer', opacity: sending ? 0.7 : 1,
-              display: 'flex', alignItems: 'center', gap: 8
-            }}>
-              {sending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+            <motion.button
+              whileHover={{ y: -1 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleDistribute}
+              disabled={sending}
+              style={{
+                padding: '10px 18px', borderRadius: 10, border: 'none',
+                background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryLight} 100%)`,
+                color: 'white', fontWeight: 600,
+                cursor: sending ? 'not-allowed' : 'pointer', opacity: sending ? 0.7 : 1,
+                display: 'flex', alignItems: 'center', gap: 8,
+                fontFamily: "'Inter', sans-serif", fontSize: 14,
+                boxShadow: '0 4px 14px rgba(49, 46, 129, 0.25)'
+              }}
+            >
+              {sending ? <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> : <Send size={16} />}
               {sending ? 'Sending...' : 'Send Quiz Links'}
-            </button>
+            </motion.button>
           </div>
         </div>
-      </div>
+      </motion.div>
+      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
     </div>
   )
 }
 
-// ── Quiz Results Modal ────────────────────────────
+// ════════════════════════════════════════════════════════════════
+// QUIZ RESULTS MODAL
+// ════════════════════════════════════════════════════════════════
+
 const QuizResultsModal = ({ quiz, onClose }) => {
   const [progress, setProgress] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -274,22 +341,28 @@ const QuizResultsModal = ({ quiz, onClose }) => {
   return (
     <div style={{
       position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-      background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(4px)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
       zIndex: 1000, padding: 20
     }}>
-      <div style={{
-        background: 'var(--bg-card)', borderRadius: 16, width: '100%', maxWidth: 640,
-        maxHeight: '80vh', overflow: 'hidden', display: 'flex', flexDirection: 'column',
-        border: '1px solid var(--border)', boxShadow: 'var(--shadow-xl)'
-      }}>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        style={{
+          background: COLORS.bgSurface, borderRadius: 20, width: '100%', maxWidth: 640,
+          maxHeight: '80vh', overflow: 'hidden', display: 'flex', flexDirection: 'column',
+          border: `1px solid ${COLORS.border}`, boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+        }}
+      >
         {/* Header */}
-        <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ padding: '20px 24px', borderBottom: `1px solid ${COLORS.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4 }}>Quiz Results</h2>
-            <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>{quiz.topic}</p>
+            <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 18, fontWeight: 700, marginBottom: 4, color: COLORS.textPrimary }}>Quiz Results</h2>
+            <p style={{ fontSize: 13, color: COLORS.textMuted }}>{quiz.topic}</p>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 8 }}>
-            <X size={20} color="var(--text-muted)" />
+          <button onClick={onClose} style={{ background: COLORS.bgSubtle, border: 'none', cursor: 'pointer', padding: 8, borderRadius: 8 }}>
+            <X size={18} color={COLORS.textMuted} />
           </button>
         </div>
 
@@ -297,8 +370,8 @@ const QuizResultsModal = ({ quiz, onClose }) => {
         <div style={{ flex: 1, overflow: 'auto', padding: '20px 24px' }}>
           {loading ? (
             <div style={{ textAlign: 'center', padding: 40 }}>
-              <Loader2 size={32} color="var(--primary)" style={{ animation: 'spin 1s linear infinite' }} />
-              <p style={{ marginTop: 12, color: 'var(--text-muted)' }}>Loading results...</p>
+              <Loader2 size={32} color={COLORS.primary} style={{ animation: 'spin 1s linear infinite' }} />
+              <p style={{ marginTop: 12, color: COLORS.textMuted }}>Loading results...</p>
             </div>
           ) : !progress || progress.totalAttempts === 0 ? (
             <EmptyState
@@ -310,32 +383,32 @@ const QuizResultsModal = ({ quiz, onClose }) => {
             <>
               {/* Summary Stats */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, marginBottom: 24 }}>
-                <div style={{ background: 'var(--bg-default)', borderRadius: 10, padding: 16, textAlign: 'center' }}>
-                  <div style={{ fontSize: 28, fontWeight: 800, color: 'var(--primary)' }}>{progress.totalAttempts}</div>
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>Total Attempts</div>
+                <div style={{ background: COLORS.primaryBg, borderRadius: 12, padding: 16, textAlign: 'center', border: `1px solid ${COLORS.primary}20` }}>
+                  <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 28, fontWeight: 800, color: COLORS.primary }}>{progress.totalAttempts}</div>
+                  <div style={{ fontSize: 12, color: COLORS.textMuted, marginTop: 4 }}>Total Attempts</div>
                 </div>
-                <div style={{ background: 'var(--bg-default)', borderRadius: 10, padding: 16, textAlign: 'center' }}>
-                  <div style={{ fontSize: 28, fontWeight: 800, color: 'var(--success)' }}>{progress.averageScore?.toFixed(1)}%</div>
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>Average Score</div>
+                <div style={{ background: COLORS.riskLowBg, borderRadius: 12, padding: 16, textAlign: 'center', border: `1px solid ${COLORS.riskLow}20` }}>
+                  <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 28, fontWeight: 800, color: COLORS.riskLow }}>{progress.averageScore?.toFixed(1)}%</div>
+                  <div style={{ fontSize: 12, color: COLORS.textMuted, marginTop: 4 }}>Average Score</div>
                 </div>
-                <div style={{ background: 'var(--bg-default)', borderRadius: 10, padding: 16, textAlign: 'center' }}>
-                  <div style={{ fontSize: 28, fontWeight: 800, color: 'var(--warning)' }}>{progress.participationRate}%</div>
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>Participation</div>
+                <div style={{ background: COLORS.secondaryBg, borderRadius: 12, padding: 16, textAlign: 'center', border: `1px solid ${COLORS.secondary}20` }}>
+                  <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 28, fontWeight: 800, color: COLORS.secondary }}>{progress.participationRate}%</div>
+                  <div style={{ fontSize: 12, color: COLORS.textMuted, marginTop: 4 }}>Participation</div>
                 </div>
               </div>
 
               {/* Student Results */}
-              <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 12 }}>Student Performance</h3>
-              <div style={{ border: '1px solid var(--border)', borderRadius: 10, overflow: 'hidden' }}>
+              <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 15, fontWeight: 700, marginBottom: 12, color: COLORS.textPrimary }}>Student Performance</h3>
+              <div style={{ border: `1px solid ${COLORS.border}`, borderRadius: 12, overflow: 'hidden' }}>
                 {progress.studentProgress?.map((sp, idx) => (
                   <div key={sp.studentId} style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    padding: '14px 16px', borderBottom: idx < progress.studentProgress.length - 1 ? '1px solid var(--border)' : 'none',
-                    background: idx % 2 === 0 ? 'var(--bg-default)' : 'transparent'
+                    padding: '14px 16px', borderBottom: idx < progress.studentProgress.length - 1 ? `1px solid ${COLORS.border}` : 'none',
+                    background: idx % 2 === 0 ? COLORS.bgSubtle : COLORS.bgSurface
                   }}>
                     <div>
-                      <div style={{ fontSize: 14, fontWeight: 600 }}>{sp.studentName}</div>
-                      <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: COLORS.textPrimary }}>{sp.studentName}</div>
+                      <div style={{ fontSize: 12, color: COLORS.textMuted }}>
                         {sp.attemptDate ? new Date(sp.attemptDate).toLocaleDateString() : 'Not attempted'}
                       </div>
                     </div>
@@ -343,12 +416,12 @@ const QuizResultsModal = ({ quiz, onClose }) => {
                       {sp.completed ? (
                         <>
                           <div style={{
-                            fontSize: 16, fontWeight: 700,
-                            color: sp.score >= 70 ? 'var(--success)' : sp.score >= 50 ? 'var(--warning)' : 'var(--danger)'
+                            fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 16, fontWeight: 700,
+                            color: sp.score >= 70 ? COLORS.riskLow : sp.score >= 50 ? COLORS.riskMedium : COLORS.riskHigh
                           }}>
                             {sp.score?.toFixed(0)}%
                           </div>
-                          <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                          <div style={{ fontSize: 11, color: COLORS.textMuted }}>
                             {Math.floor(sp.timeSpentMs / 60000)}m {Math.floor((sp.timeSpentMs % 60000) / 1000)}s
                           </div>
                         </>
@@ -364,19 +437,24 @@ const QuizResultsModal = ({ quiz, onClose }) => {
         </div>
 
         {/* Footer */}
-        <div style={{ padding: '16px 24px', borderTop: '1px solid var(--border)', textAlign: 'right' }}>
+        <div style={{ padding: '16px 24px', borderTop: `1px solid ${COLORS.border}`, textAlign: 'right', background: COLORS.bgSubtle }}>
           <button onClick={onClose} style={{
-            padding: '10px 20px', borderRadius: 8, border: '1px solid var(--border)',
-            background: 'var(--bg-elevated)', color: 'var(--text-primary)', fontWeight: 600, cursor: 'pointer'
+            padding: '10px 20px', borderRadius: 10, border: `1px solid ${COLORS.border}`,
+            background: COLORS.bgSurface, color: COLORS.textPrimary, fontWeight: 600, cursor: 'pointer',
+            fontFamily: "'Inter', sans-serif", fontSize: 14
           }}>
             Close
           </button>
         </div>
-      </div>
+      </motion.div>
       <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
     </div>
   )
 }
+
+// ════════════════════════════════════════════════════════════════
+// MAIN QUIZ PAGE
+// ════════════════════════════════════════════════════════════════
 
 export default function QuizPage() {
   const { user } = useAuth()
@@ -433,118 +511,195 @@ export default function QuizPage() {
     await quizAPI.distributeQuiz(data.quizId, data)
   }
 
+  const inputStyle = {
+    width: '100%', padding: 12, border: `1px solid ${COLORS.border}`, borderRadius: 10,
+    outline: 'none', background: COLORS.bgSubtle, fontSize: 14, color: COLORS.textPrimary,
+    fontFamily: "'Inter', sans-serif", transition: 'border-color 0.2s ease'
+  }
+
   return (
     <div>
       <PageHeader
         title="Quiz Builder"
         subtitle="Create and manage class quizzes with AI-suggested questions"
         action={
-          <button onClick={handleCreateQuiz} disabled={creating}
-            style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', fontWeight: 700, borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-elevated)', color: 'var(--text-primary)', cursor: creating ? 'not-allowed' : 'pointer' }}>
-            <PlusCircle size={15} /> Create Quiz
-          </button>
+          <motion.button
+            whileHover={{ y: -1 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={handleCreateQuiz}
+            disabled={creating}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 8, padding: '10px 18px', fontWeight: 600,
+              borderRadius: 10, border: 'none',
+              background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryLight} 100%)`,
+              color: 'white', cursor: creating ? 'not-allowed' : 'pointer', opacity: creating ? 0.7 : 1,
+              fontFamily: "'Inter', sans-serif", fontSize: 14, boxShadow: '0 4px 14px rgba(49, 46, 129, 0.25)'
+            }}
+          >
+            {creating ? <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> : <PlusCircle size={16} />}
+            {creating ? 'Creating...' : 'Create Quiz'}
+          </motion.button>
         }
       />
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
-        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: 14 }}>
-          <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 10 }}>Topic / Module</div>
-          <input value={topic} onChange={e => setTopic(e.target.value)} placeholder="e.g. Grammar correction case" style={{ width: '100%', padding: 10, border: '1px solid var(--border)', borderRadius: 8, outline: 'none', background: 'var(--bg-default)' }} />
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          style={{ background: COLORS.bgSurface, border: `1px solid ${COLORS.border}`, borderRadius: 16, padding: 20 }}
+        >
+          <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 10, color: COLORS.textPrimary }}>Topic / Module</div>
+          <input
+            value={topic} onChange={e => setTopic(e.target.value)} placeholder="e.g. Grammar correction case"
+            style={inputStyle}
+            onFocus={e => e.target.style.borderColor = COLORS.primary}
+            onBlur={e => e.target.style.borderColor = COLORS.border}
+          />
 
-          <div style={{ fontSize: 13, fontWeight: 600, marginTop: 12 }}>Class ID (optional)</div>
-          <input value={classId} onChange={e => setClassId(e.target.value)} placeholder="e.g. class-A" style={{ width: '100%', padding: 10, border: '1px solid var(--border)', borderRadius: 8, outline: 'none', background: 'var(--bg-default)' }} />
+          <div style={{ fontSize: 13, fontWeight: 600, marginTop: 16, color: COLORS.textPrimary }}>Class ID (optional)</div>
+          <input
+            value={classId} onChange={e => setClassId(e.target.value)} placeholder="e.g. class-A"
+            style={{ ...inputStyle, marginTop: 8 }}
+            onFocus={e => e.target.style.borderColor = COLORS.primary}
+            onBlur={e => e.target.style.borderColor = COLORS.border}
+          />
 
-          <div style={{ fontSize: 13, fontWeight: 600, marginTop: 12 }}>Question Count</div>
-          <input type="number" min={1} max={12} value={questionCount} onChange={e => setQuestionCount(e.target.value)} style={{ width: '100%', padding: 10, border: '1px solid var(--border)', borderRadius: 8, outline: 'none', background: 'var(--bg-default)' }} />
-        </div>
+          <div style={{ fontSize: 13, fontWeight: 600, marginTop: 16, color: COLORS.textPrimary }}>Question Count</div>
+          <input
+            type="number" min={1} max={12} value={questionCount} onChange={e => setQuestionCount(e.target.value)}
+            style={{ ...inputStyle, marginTop: 8 }}
+            onFocus={e => e.target.style.borderColor = COLORS.primary}
+            onBlur={e => e.target.style.borderColor = COLORS.border}
+          />
+        </motion.div>
 
-        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: 14 }}>
-          <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 10 }}>Source Text for Quiz Generation</div>
-          <textarea value={text} onChange={e => setText(e.target.value)} rows={9} placeholder="Paste student paper text or topic summary here..." style={{ width: '100%', padding: 10, border: '1px solid var(--border)', borderRadius: 8, outline: 'none', background: 'var(--bg-default)' }} />
-        </div>
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.08 }}
+          style={{ background: COLORS.bgSurface, border: `1px solid ${COLORS.border}`, borderRadius: 16, padding: 20 }}
+        >
+          <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 10, color: COLORS.textPrimary }}>Source Text for Quiz Generation</div>
+          <textarea
+            value={text} onChange={e => setText(e.target.value)} rows={9}
+            placeholder="Paste student paper text or topic summary here..."
+            style={{ ...inputStyle, resize: 'vertical', minHeight: 180 }}
+            onFocus={e => e.target.style.borderColor = COLORS.primary}
+            onBlur={e => e.target.style.borderColor = COLORS.border}
+          />
+        </motion.div>
       </div>
 
-      <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 10 }}>
+      <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 24 }}>
         <Badge icon={BookOpen} variant="secondary">Set topic and source text then click Create Quiz</Badge>
         <Badge icon={CheckCircle} variant="success">AI enriches questions from source</Badge>
       </div>
 
       {loading ? (
         <div style={{ display: 'grid', gap: 12 }}>
-          {[1,2,3].map(i => <SkeletonCard key={i} rows={3} />)}
+          {[1, 2, 3].map(i => <SkeletonCard key={i} rows={3} />)}
         </div>
       ) : quizzes.length === 0 ? (
         <EmptyState icon={BookOpen} title="No quizzes created yet" description="Start by creating a new quiz above." />
       ) : (
-        <div style={{ display: 'grid', gap: 10 }}>
-          {quizzes.map((q) => (
-            <div key={q.id} style={{ border: q.id === activeQuizId ? '2px solid var(--success)' : '1px solid var(--border)', background: 'var(--bg-card)', borderRadius: 12, padding: 12 }}>
+        <div style={{ display: 'grid', gap: 12 }}>
+          {quizzes.map((q, i) => (
+            <motion.div
+              key={q.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.05 }}
+              style={{
+                border: q.id === activeQuizId ? `2px solid ${COLORS.riskLow}` : `1px solid ${COLORS.border}`,
+                background: COLORS.bgSurface, borderRadius: 16, padding: 20, overflow: 'hidden',
+                transition: 'border-color 0.2s ease, box-shadow 0.2s ease'
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = COLORS.primaryLight; e.currentTarget.style.boxShadow = '0 4px 16px rgba(49, 46, 129, 0.08)' }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = q.id === activeQuizId ? COLORS.riskLow : COLORS.border; e.currentTarget.style.boxShadow = 'none' }}
+            >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: 8 }}>
                 <div>
-                  <div style={{ fontSize: 14, fontWeight: 700 }}>{q.topic}</div>
-                  {q.classId && <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>Class {q.classId}</span>}
+                  <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 16, fontWeight: 700, color: COLORS.textPrimary }}>{q.topic}</div>
+                  {q.classId && <span style={{ fontSize: 12, color: COLORS.textMuted }}>Class {q.classId}</span>}
                 </div>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                  <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{new Date(q.createdAt).toLocaleDateString()}</span>
+                  <span style={{ fontSize: 12, color: COLORS.textMuted }}>{new Date(q.createdAt).toLocaleDateString()}</span>
                 </div>
               </div>
-              <div style={{ marginTop: 8, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                <Badge icon={Send}>Questions: {q.questions?.length ?? 0}</Badge>
-                <Badge icon={CheckCircle}>Quiz ID {q.id.slice(0, 6)}</Badge>
+
+              <div style={{ marginTop: 12, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <Badge icon={Send} variant="primary">Questions: {q.questions?.length ?? 0}</Badge>
+                <Badge icon={CheckCircle} variant="secondary">Quiz ID {q.id.slice(0, 6)}</Badge>
                 {q.totalAttempts > 0 && <Badge icon={Users} variant="success">{q.totalAttempts} Attempts</Badge>}
               </div>
-              <div style={{ marginTop: 12, display: 'grid', gap: 6 }}>
+
+              <div style={{ marginTop: 16, display: 'grid', gap: 8 }}>
                 {q.questions?.slice(0, 3).map((qq, idx) => (
-                  <div key={qq.id} style={{ fontSize: 13, color: 'var(--text-secondary)' }}><strong>{idx + 1}.</strong> {qq.question}</div>
+                  <div key={qq.id} style={{ fontSize: 13, color: COLORS.textSecondary, padding: '8px 12px', background: COLORS.bgSubtle, borderRadius: 8 }}>
+                    <strong style={{ color: COLORS.textPrimary }}>{idx + 1}.</strong> {qq.question}
+                  </div>
                 ))}
                 {q.questions?.length > 3 && (
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic' }}>+{q.questions.length - 3} more questions</div>
+                  <div style={{ fontSize: 12, color: COLORS.textMuted, fontStyle: 'italic', paddingLeft: 12 }}>
+                    +{q.questions.length - 3} more questions
+                  </div>
                 )}
               </div>
 
               {/* Action Buttons */}
-              <div style={{ marginTop: 14, paddingTop: 12, borderTop: '1px solid var(--border)', display: 'flex', gap: 10 }}>
-                <button
+              <div style={{ marginTop: 16, paddingTop: 16, borderTop: `1px solid ${COLORS.border}`, display: 'flex', gap: 10 }}>
+                <motion.button
+                  whileHover={{ y: -1 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={() => setDistributeQuiz(q)}
                   style={{
-                    display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px',
-                    borderRadius: 8, border: 'none', background: 'var(--primary)', color: 'white',
-                    fontSize: 13, fontWeight: 600, cursor: 'pointer'
+                    display: 'flex', alignItems: 'center', gap: 6, padding: '10px 16px',
+                    borderRadius: 10, border: 'none',
+                    background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryLight} 100%)`,
+                    color: 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                    fontFamily: "'Inter', sans-serif", boxShadow: '0 4px 14px rgba(49, 46, 129, 0.2)'
                   }}
                 >
                   <Mail size={14} /> Distribute Quiz
-                </button>
-                <button
+                </motion.button>
+                <motion.button
+                  whileHover={{ y: -1 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={() => setViewResultsQuiz(q)}
                   style={{
-                    display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px',
-                    borderRadius: 8, border: '1px solid var(--border)', background: 'var(--bg-elevated)',
-                    color: 'var(--text-primary)', fontSize: 13, fontWeight: 600, cursor: 'pointer'
+                    display: 'flex', alignItems: 'center', gap: 6, padding: '10px 16px',
+                    borderRadius: 10, border: `1px solid ${COLORS.border}`, background: COLORS.bgSurface,
+                    color: COLORS.textPrimary, fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                    fontFamily: "'Inter', sans-serif"
                   }}
                 >
                   <BarChart3 size={14} /> View Results
-                </button>
+                </motion.button>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       )}
 
       {/* Modals */}
-      {distributeQuiz && (
-        <DistributeModal
-          quiz={distributeQuiz}
-          students={students}
-          onClose={() => setDistributeQuiz(null)}
-          onDistribute={handleDistribute}
-        />
-      )}
-      {viewResultsQuiz && (
-        <QuizResultsModal
-          quiz={viewResultsQuiz}
-          onClose={() => setViewResultsQuiz(null)}
-        />
-      )}
+      <AnimatePresence>
+        {distributeQuiz && (
+          <DistributeModal
+            quiz={distributeQuiz}
+            students={students}
+            onClose={() => setDistributeQuiz(null)}
+            onDistribute={handleDistribute}
+          />
+        )}
+        {viewResultsQuiz && (
+          <QuizResultsModal
+            quiz={viewResultsQuiz}
+            onClose={() => setViewResultsQuiz(null)}
+          />
+        )}
+      </AnimatePresence>
+
+      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
     </div>
   )
 }

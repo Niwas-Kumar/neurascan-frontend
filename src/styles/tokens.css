@@ -258,6 +258,7 @@
   --primary-soft: var(--color-primary-bg);
   --primary-dim: var(--color-primary-dim);
   --primary-glow: var(--color-primary-glow);
+  --primary-hover: var(--color-primary-light);
 
   --secondary: var(--color-secondary);
   --secondary-light: var(--color-secondary-light);
@@ -314,4 +315,19 @@
   --cyan-light: var(--color-secondary-light);
   --cyan-dim: var(--color-secondary-dim);
   --cyan-glow: var(--color-secondary-glow);
+
+  /* ══════════════════════════════════════════════════════════════
+     PAGE-LEVEL ALIASES (For landing/public pages)
+     ══════════════════════════════════════════════════════════════ */
+  --color-background: var(--color-bg-base);
+  --color-surface: var(--color-bg-surface);
+  --color-surface-medium: var(--color-bg-subtle);
+  --color-text-tertiary: var(--color-text-muted);
+  --color-primary-background: var(--color-primary-bg);
+  --color-accent: var(--color-secondary);
+  --color-accent-light: var(--color-secondary-light);
+  --letter-spacing-wide: var(--tracking-wide);
+  --letter-spacing-widest: var(--tracking-wider);
+  --letter-spacing-tight: var(--tracking-tight);
+  --easing-out: var(--ease-out);
 }

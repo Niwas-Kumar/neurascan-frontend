@@ -1,223 +1,92 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Users, Plus, Pencil, Trash2, Search, GraduationCap, FileText, X, Check, UserPlus } from 'lucide-react'
+import {
+  Users, Plus, Pencil, Trash2, Search, GraduationCap,
+  FileText, X, Check, UserPlus, AlertCircle
+} from 'lucide-react'
 import { optimizedStudentAPI } from '../../services/optimizedApi'
 import toast from 'react-hot-toast'
 import { useDebounce } from '../../hooks'
+import {
+  Button, Input, Modal, Badge, PageHeader, EmptyState
+} from '../../components/shared/UI'
 
-// ── Inline PageHeader Component ────────────────────────────
-const PageHeader = ({ title, subtitle, breadcrumb, action }) => (
-  <div style={{ marginBottom: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-    <div>
-      <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 32, fontWeight: 800, marginBottom: 6, color: 'var(--text-primary)' }}>{title}</h1>
-      {subtitle && <p style={{ fontSize: 15, color: 'var(--text-secondary)', lineHeight: 1.6 }}>{subtitle}</p>}
+// ════════════════════════════════════════════════════════════════
+// DESIGN SYSTEM COLORS
+// ════════════════════════════════════════════════════════════════
+const COLORS = {
+  primary: '#312E81',
+  primaryLight: '#4338CA',
+  primaryBg: '#EEF2FF',
+
+  secondary: '#14B8A6',
+  secondaryDark: '#0D9488',
+  secondaryBg: '#CCFBF1',
+
+  success: '#059669',
+  successBg: '#D1FAE5',
+  warning: '#D97706',
+  warningBg: '#FEF3C7',
+  danger: '#B91C1C',
+  dangerBg: '#FEE2E2',
+
+  textPrimary: '#1E293B',
+  textSecondary: '#334155',
+  textMuted: '#64748B',
+  textLight: '#94A3B8',
+
+  bgBase: '#F8FAFC',
+  bgSurface: '#FFFFFF',
+  bgSubtle: '#F1F5F9',
+  border: '#E2E8F0',
+  borderStrong: '#CBD5E1',
+}
+
+// ════════════════════════════════════════════════════════════════
+// SKELETON CARD
+// ════════════════════════════════════════════════════════════════
+const StudentCardSkeleton = () => (
+  <div style={{
+    background: COLORS.bgSurface,
+    border: `1px solid ${COLORS.border}`,
+    borderRadius: 12,
+    padding: 22,
+  }}>
+    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+      <div className="skeleton" style={{ width: 48, height: 48, borderRadius: 12 }} />
+      <div style={{ display: 'flex', gap: 6 }}>
+        <div className="skeleton" style={{ width: 32, height: 32, borderRadius: 8 }} />
+        <div className="skeleton" style={{ width: 32, height: 32, borderRadius: 8 }} />
+      </div>
     </div>
-    {action && <div>{action}</div>}
-  </div>
-)
-
-// ── Inline Button Component ────────────────────────────
-const Button = ({ children, type = 'button', fullWidth = false, size = 'md', loading = false, disabled = false, variant = 'primary', onClick, icon, style = {}, ...props }) => {
-  const heights = { sm: 36, md: 40, lg: 44 }
-  const paddings = { sm: '8px 16px', md: '12px 20px', lg: '14px 24px' }
-  const [isHovering, setIsHovering] = useState(false)
-
-  const bgColor = variant === 'ghost' ? 'transparent' : isHovering && !disabled ? 'var(--primary-hover)' : 'var(--primary)'
-  const textColor = variant === 'ghost' ? 'var(--primary)' : 'white'
-
-  return (
-    <button
-      type={type}
-      disabled={loading || disabled}
-      onClick={onClick}
-      style={{
-        width: fullWidth ? '100%' : 'auto',
-        height: heights[size],
-        padding: paddings[size],
-        background: bgColor,
-        color: textColor,
-        border: variant === 'ghost' ? '1px solid var(--border)' : 'none',
-        borderRadius: 'var(--radius-lg)',
-        fontSize: size === 'sm' ? 13 : size === 'lg' ? 15 : 14,
-        fontWeight: 600,
-        cursor: loading || disabled ? 'not-allowed' : 'pointer',
-        opacity: loading || disabled ? 0.6 : 1,
-        transition: 'all 0.3s cubic-bezier(0.2, 0, 0, 1)',
-        boxShadow: isHovering && variant !== 'ghost' && !disabled ? '0 4px 16px rgba(26, 115, 232, 0.3)' : 'none',
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: icon ? 8 : 0,
-        ...style,
-      }}
-      onMouseEnter={() => setIsHovering(true)}
-      onMouseLeave={() => setIsHovering(false)}
-      {...props}
-    >
-      {icon && <span>{icon}</span>}
-      {loading ? '...' : children}
-    </button>
-  )
-}
-
-// ── Inline Input Component ────────────────────────────
-const Input = ({ label, type = 'text', placeholder, value, onChange, required = false, error, style = {} }) => {
-  const [isFocused, setIsFocused] = useState(false)
-  
-  return (
-    <div style={{ marginBottom: 16 }}>
-      {label && (
-        <label style={{
-          display: 'block',
-          fontSize: 13,
-          fontWeight: 600,
-          color: 'var(--text-primary)',
-          marginBottom: 8,
-        }}>
-          {label}
-        </label>
-      )}
-      <input
-        type={type}
-        placeholder={placeholder}
-        value={value}
-        onChange={onChange}
-        required={required}
-        style={{
-          width: '100%',
-          padding: '12px 14px',
-          fontSize: 14,
-          border: error ? '1.5px solid var(--danger)' : isFocused ? '2px solid var(--primary)' : '1px solid var(--border)',
-          borderRadius: 'var(--radius)',
-          background: 'white',
-          color: 'var(--text-primary)',
-          transition: 'all 0.2s ease',
-          boxSizing: 'border-box',
-          fontFamily: 'inherit',
-          ...style,
-        }}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
-      />
-      {error && <div style={{ color: 'var(--danger)', fontSize: 12, marginTop: 6 }}>{error}</div>}
+    <div className="skeleton" style={{ width: '70%', height: 18, marginBottom: 12 }} />
+    <div style={{ display: 'flex', gap: 8 }}>
+      <div className="skeleton" style={{ width: 70, height: 24, borderRadius: 12 }} />
+      <div className="skeleton" style={{ width: 50, height: 24, borderRadius: 12 }} />
     </div>
-  )
-}
-
-// ── Inline EmptyState Component ────────────────────────────
-const EmptyState = ({ icon: Icon, title, description }) => (
-  <div style={{border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '48px 32px', textAlign: 'center' }}>
-    {Icon && <Icon size={40} color="var(--text-muted)" strokeWidth={1.25} style={{ marginBottom: 16 }} />}
-    <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 800, marginBottom: 8 }}>{title}</h3>
-    {description && <p style={{ color: 'var(--text-secondary)', fontSize: 14, lineHeight: 1.75 }}>{description}</p>}
   </div>
 )
 
-// ── Inline SkeletonCard Component ────────────────────────────
-const SkeletonCard = ({ rows = 4 }) => (
-  <div style={{ border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '20px 24px' }}>
-    {Array(rows).fill(0).map((_, i) => (
-      <div key={i} style={{
-        height: i === 0 ? 24 : 14,
-        background: 'linear-gradient(90deg, var(--bg-hover) 25%, var(--bg-elevated) 50%, var(--bg-hover) 75%)',
-        backgroundSize: '200% 100%',
-        animation: 'shimmer 1.5s infinite',
-        borderRadius: 6,
-        marginBottom: i < rows - 1 ? 12 : 0,
-      }} />
-    ))}
-    <style>{`@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }`}</style>
-  </div>
-)
-
-// ── Inline Badge Component ────────────────────────────
-const Badge = ({ children, icon: Icon, variant = 'primary' }) => {
-  const colors = { primary: '#e8f0fe', secondary: '#f3f4f6', success: '#d1fae5' }
-  const textColors = { primary: '#1a73e8', secondary: '#374151', success: '#10b981' }
-  return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center', gap: 6,
-      padding: '6px 12px',
-      borderRadius: '12px',
-      fontSize: 12,
-      fontWeight: 600,
-      background: colors[variant],
-      color: textColors[variant],
-    }}>
-      {Icon && <Icon size={14} />}
-      {children}
-    </span>
-  )
-}
-
-// ── Inline Modal Component ────────────────────────────
-const Modal = ({ open, title, children, onClose, fullWidth = false }) => {
-  return (
-    <AnimatePresence>
-      {open && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0, 0, 0, 0.5)',
-            zIndex: 999,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '20px',
-          }}
-          onClick={onClose}
-        >
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              background: 'white',
-              borderRadius: 'var(--radius-lg)',
-              padding: '32px',
-              width: '100%',
-              maxWidth: '500px',
-              maxHeight: '90vh',
-              overflow: 'auto',
-              zIndex: 1000,
-              boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 20, fontWeight: 800 }}>{title}</h2>
-              <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 24, padding: 0 }}>×</button>
-            </div>
-            {children}
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  )
-}
-
+// ════════════════════════════════════════════════════════════════
+// STUDENT FORM
+// ════════════════════════════════════════════════════════════════
 function StudentForm({ student, onClose, onSave }) {
-  const [form, setForm]     = useState(student || { name: '', className: '', rollNumber: '', age: '' })
+  const [form, setForm] = useState(student || { name: '', className: '', rollNumber: '', age: '' })
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState({})
   const isEdit = !!student?.id
 
   const validate = () => {
     const e = {}
-    if (!form.name)      e.name      = 'Name is required'
-    if (!form.rollNumber) e.rollNumber = 'Roll No is required'
-    if (!form.className) e.className = 'Class is required'
-    
-    // ✅ Improved age validation
+    if (!form.name?.trim()) e.name = 'Student name is required'
+    if (!form.rollNumber?.trim()) e.rollNumber = 'Roll number is required'
+    if (!form.className?.trim()) e.className = 'Class/Grade is required'
+
     const age = parseInt(form.age, 10)
-    if (!form.age || isNaN(age) || age < 1 || age > 100) {
-      e.age = 'Age must be between 1 and 100'
+    if (!form.age || isNaN(age) || age < 1 || age > 25) {
+      e.age = 'Enter a valid age (1-25)'
     }
-    
+
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -227,220 +96,589 @@ function StudentForm({ student, onClose, onSave }) {
     if (!validate()) return
     setLoading(true)
     try {
-      // ✅ Ensure age is a valid integer
       const age = parseInt(form.age, 10)
-      if (isNaN(age) || age < 1 || age > 100) {
-        throw new Error('Invalid age value')
+      const payload = {
+        name: form.name.trim(),
+        rollNumber: form.rollNumber.trim(),
+        className: form.className.trim(),
+        age
       }
-      
-      const payload = { name: form.name, rollNumber: form.rollNumber, className: form.className, age }
       if (isEdit) await optimizedStudentAPI.update(student.id, payload)
-      else        await optimizedStudentAPI.create(payload)
+      else await optimizedStudentAPI.create(payload)
       toast.success(`Student ${isEdit ? 'updated' : 'added'} successfully`)
       onSave()
       onClose()
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message || 'Failed to save')
-    } finally { setLoading(false) }
+      toast.error(err.response?.data?.message || err.message || 'Failed to save student')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
     <form onSubmit={handleSubmit}>
-      <Input label="Full name"     value={form.name}      onChange={e => setForm(f => ({...f, name: e.target.value}))}      placeholder="John Doe"      required error={errors.name} />
-      <Input label="Roll No"       value={form.rollNumber} onChange={e => setForm(f => ({...f, rollNumber: e.target.value}))} placeholder="A001"         required error={errors.rollNumber} />
-      <Input label="Class / Grade" value={form.className} onChange={e => setForm(f => ({...f, className: e.target.value}))} placeholder="Grade 4-B"     required error={errors.className} />
-      <Input label="Age" type="number" min="1" max="25" value={form.age} onChange={e => setForm(f => ({...f, age: e.target.value}))} placeholder="9" required error={errors.age} />
-      <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
-        <Button variant="ghost" type="button" fullWidth onClick={onClose}>Cancel</Button>
-        <Button type="submit" fullWidth loading={loading} icon={<Check size={14} />}>
-          {isEdit ? 'Save changes' : 'Add student'}
+      <Input
+        label="Full Name"
+        value={form.name}
+        onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+        placeholder="Enter student's full name"
+        required
+        error={errors.name}
+      />
+      <Input
+        label="Roll Number"
+        value={form.rollNumber}
+        onChange={e => setForm(f => ({ ...f, rollNumber: e.target.value }))}
+        placeholder="e.g., A001"
+        required
+        error={errors.rollNumber}
+      />
+      <Input
+        label="Class / Grade"
+        value={form.className}
+        onChange={e => setForm(f => ({ ...f, className: e.target.value }))}
+        placeholder="e.g., Grade 4-B"
+        required
+        error={errors.className}
+      />
+      <Input
+        label="Age"
+        type="number"
+        value={form.age}
+        onChange={e => setForm(f => ({ ...f, age: e.target.value }))}
+        placeholder="e.g., 9"
+        required
+        error={errors.age}
+      />
+
+      <div style={{ display: 'flex', gap: 12, marginTop: 24 }}>
+        <Button
+          variant="ghost"
+          type="button"
+          fullWidth
+          onClick={onClose}
+        >
+          Cancel
+        </Button>
+        <Button
+          type="submit"
+          fullWidth
+          loading={loading}
+          icon={<Check size={16} />}
+        >
+          {isEdit ? 'Save Changes' : 'Add Student'}
         </Button>
       </div>
     </form>
   )
 }
 
+// ════════════════════════════════════════════════════════════════
+// DELETE CONFIRMATION MODAL
+// ════════════════════════════════════════════════════════════════
+function DeleteConfirmModal({ student, onClose, onConfirm }) {
+  const [loading, setLoading] = useState(false)
+
+  const handleDelete = async () => {
+    setLoading(true)
+    try {
+      await onConfirm()
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div style={{ textAlign: 'center' }}>
+      <div style={{
+        width: 64,
+        height: 64,
+        borderRadius: 16,
+        background: COLORS.dangerBg,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        margin: '0 auto 20px',
+      }}>
+        <AlertCircle size={32} color={COLORS.danger} />
+      </div>
+
+      <h3 style={{
+        fontSize: 18,
+        fontWeight: 700,
+        color: COLORS.textPrimary,
+        marginBottom: 8,
+        fontFamily: 'var(--font-display)',
+      }}>
+        Remove Student?
+      </h3>
+
+      <p style={{
+        fontSize: 14,
+        color: COLORS.textMuted,
+        marginBottom: 24,
+        lineHeight: 1.6,
+      }}>
+        This will permanently delete <strong style={{ color: COLORS.textPrimary }}>{student?.name}</strong> and all their associated papers and reports. This action cannot be undone.
+      </p>
+
+      <div style={{ display: 'flex', gap: 12 }}>
+        <Button
+          variant="ghost"
+          fullWidth
+          onClick={onClose}
+        >
+          Cancel
+        </Button>
+        <Button
+          variant="danger"
+          fullWidth
+          loading={loading}
+          icon={<Trash2 size={16} />}
+          onClick={handleDelete}
+        >
+          Delete Student
+        </Button>
+      </div>
+    </div>
+  )
+}
+
+// ════════════════════════════════════════════════════════════════
+// STUDENT CARD
+// ════════════════════════════════════════════════════════════════
 function StudentCard({ student, onEdit, onDelete, index }) {
+  // Generate consistent color from student name
   const hue = (student.name?.charCodeAt(0) || 0) * 137 % 360
+  const avatarBg = `hsl(${hue}, 45%, 92%)`
+  const avatarColor = `hsl(${hue}, 55%, 35%)`
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.04, duration: 0.3 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{ delay: index * 0.03, duration: 0.3, ease: [0.2, 0, 0, 1] }}
       layout
-      className="glass-panel"
       style={{
-        padding: '22px', cursor: 'default',
-        transition: 'all var(--duration) var(--ease)',
-        position: 'relative', overflow: 'hidden',
+        background: COLORS.bgSurface,
+        border: `1px solid ${COLORS.border}`,
+        borderRadius: 12,
+        padding: 22,
+        cursor: 'default',
+        transition: 'all 0.15s ease',
+        position: 'relative',
       }}
-      onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border-strong)'; e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = 'var(--shadow)' }}
-      onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none' }}
+      whileHover={{
+        y: -3,
+        boxShadow: '0 8px 24px rgba(15, 23, 42, 0.08)',
+        borderColor: COLORS.borderStrong,
+      }}
     >
-      {/* Subtle bg accent */}
+      {/* Header */}
       <div style={{
-        position: 'absolute', top: 0, right: 0, width: 80, height: 80,
-        background: `radial-gradient(circle at top right, hsla(${hue}, 60%, 50%, 0.06) 0%, transparent 70%)`,
-        pointerEvents: 'none',
-      }} />
-
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        marginBottom: 16,
+      }}>
+        {/* Avatar */}
         <div style={{
-          width: 48, height: 48, borderRadius: 13,
-          background: `hsl(${hue}, 40%, 15%)`,
-          border: `1px solid hsl(${hue}, 50%, 30%)`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontFamily: 'var(--font-display)', fontWeight: 900, fontSize: 18,
-          color: `hsl(${hue}, 70%, 75%)`,
+          width: 48,
+          height: 48,
+          borderRadius: 12,
+          background: avatarBg,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontFamily: 'var(--font-display)',
+          fontWeight: 700,
+          fontSize: 18,
+          color: avatarColor,
         }}>
           {student.name?.charAt(0).toUpperCase()}
         </div>
 
+        {/* Actions */}
         <div style={{ display: 'flex', gap: 6 }}>
-          <button onClick={() => onEdit(student)} style={{
-            width: 30, height: 30, borderRadius: 8, border: '1px solid var(--border)',
-            background: 'var(--bg-elevated)', color: 'var(--text-secondary)',
-            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            transition: 'all var(--duration-fast)',
-          }}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--violet)'; e.currentTarget.style.color = 'var(--violet-soft)' }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--text-secondary)' }}
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => onEdit(student)}
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: 8,
+              border: `1px solid ${COLORS.border}`,
+              background: COLORS.bgSurface,
+              color: COLORS.textMuted,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.15s ease',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.borderColor = COLORS.primary
+              e.currentTarget.style.color = COLORS.primary
+              e.currentTarget.style.background = COLORS.primaryBg
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.borderColor = COLORS.border
+              e.currentTarget.style.color = COLORS.textMuted
+              e.currentTarget.style.background = COLORS.bgSurface
+            }}
           >
-            <Pencil size={13} />
-          </button>
-          <button onClick={() => onDelete(student)} style={{
-            width: 30, height: 30, borderRadius: 8, border: '1px solid rgba(239,68,68,0.2)',
-            background: 'var(--danger-dim)', color: 'var(--danger)',
-            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            transition: 'all var(--duration-fast)',
-          }}
-          onMouseEnter={e => e.currentTarget.style.background = 'rgba(239,68,68,0.2)'}
-          onMouseLeave={e => e.currentTarget.style.background = 'var(--danger-dim)'}
+            <Pencil size={14} />
+          </motion.button>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => onDelete(student)}
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: 8,
+              border: `1px solid rgba(185, 28, 28, 0.2)`,
+              background: COLORS.dangerBg,
+              color: COLORS.danger,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.15s ease',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = 'rgba(185, 28, 28, 0.15)'
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = COLORS.dangerBg
+            }}
           >
-            <Trash2 size={13} />
-          </button>
+            <Trash2 size={14} />
+          </motion.button>
         </div>
       </div>
 
-      <div style={{ fontFamily: 'var(--font-display)', fontSize: 16, fontWeight: 700, marginBottom: 10 }}>{student.name}</div>
+      {/* Name */}
+      <div style={{
+        fontFamily: 'var(--font-display)',
+        fontSize: 16,
+        fontWeight: 700,
+        color: COLORS.textPrimary,
+        marginBottom: 12,
+      }}>
+        {student.name}
+      </div>
 
-      <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap' }}>
-        <Badge color="violet" dot><GraduationCap size={10} style={{ marginRight: 2 }} />{student.className}</Badge>
-        <Badge>Age {student.age}</Badge>
+      {/* Badges */}
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
+        <Badge color="primary" size="sm">
+          <GraduationCap size={12} style={{ marginRight: 4 }} />
+          {student.className}
+        </Badge>
+        <Badge color="default" size="sm">
+          Age {student.age}
+        </Badge>
         {student.totalPapers > 0 && (
-          <Badge color="cyan"><FileText size={10} style={{ marginRight: 2 }} />{student.totalPapers} {student.totalPapers === 1 ? 'paper' : 'papers'}</Badge>
+          <Badge color="secondary" size="sm">
+            <FileText size={12} style={{ marginRight: 4 }} />
+            {student.totalPapers} {student.totalPapers === 1 ? 'sample' : 'samples'}
+          </Badge>
         )}
       </div>
 
-      {/* Student ID */}
-      <div style={{ marginTop: 12, fontSize: 11, color: 'var(--text-muted)', fontFamily: 'var(--font-display)', letterSpacing: '0.04em' }}>
-        ID #{String(student.id).padStart(4, '0')}
+      {/* Student ID - High contrast */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 6,
+        paddingTop: 12,
+        borderTop: `1px solid ${COLORS.border}`,
+      }}>
+        <span style={{
+          fontSize: 11,
+          fontWeight: 600,
+          color: COLORS.textLight,
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
+        }}>
+          ID
+        </span>
+        <span style={{
+          fontSize: 12,
+          fontWeight: 700,
+          color: COLORS.textSecondary,
+          fontFamily: 'var(--font-display)',
+          background: COLORS.bgSubtle,
+          padding: '2px 8px',
+          borderRadius: 4,
+        }}>
+          #{student.rollNumber || String(student.id).padStart(4, '0')}
+        </span>
       </div>
     </motion.div>
   )
 }
 
+// ════════════════════════════════════════════════════════════════
+// MAIN COMPONENT
+// ════════════════════════════════════════════════════════════════
 export default function StudentsPage() {
   const [students, setStudents] = useState([])
-  const [loading, setLoading]   = useState(true)
-  const [search, setSearch]     = useState('')
-  const [modal, setModal]       = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
+  const [modal, setModal] = useState(null)
+  const [deleteTarget, setDeleteTarget] = useState(null)
   const debouncedSearch = useDebounce(search, 250)
 
   const load = async () => {
     setLoading(true)
     try {
-      // Use retry logic immediately after student is created/updated
       const result = await optimizedStudentAPI.getAllWithIndexRetry()
       setStudents(result.data.data || [])
-      if (result.attempts > 1) {
-        console.log(`✅ Found students after ${result.attempts} attempts`)
-      }
     } catch (error) {
       console.error('Failed to load students:', error)
-      toast.error('Failed to load students')
+      toast.error('Unable to load student roster')
       setStudents([])
     } finally {
       setLoading(false)
     }
   }
-  
+
   useEffect(() => { load() }, [])
 
-  const handleDelete = async (student) => {
-    if (!confirm(`Delete "${student.name}"? All their papers and reports will also be removed.`)) return
+  const handleDelete = async () => {
+    if (!deleteTarget) return
     try {
-      await optimizedStudentAPI.remove(student.id)
-      toast.success(`${student.name} removed`)
+      await optimizedStudentAPI.remove(deleteTarget.id)
+      toast.success(`${deleteTarget.name} removed from roster`)
+      setDeleteTarget(null)
       load()
-    } catch { toast.error('Delete failed') }
+    } catch {
+      toast.error('Failed to remove student')
+    }
   }
 
   const filtered = students.filter(s =>
     s.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-    s.className.toLowerCase().includes(debouncedSearch.toLowerCase())
+    s.className.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+    s.rollNumber?.toLowerCase().includes(debouncedSearch.toLowerCase())
   )
 
   return (
-    <div>
-      <PageHeader
-        title="Students"
-        subtitle={loading ? 'Loading…' : `${students.length} enrolled student${students.length !== 1 ? 's' : ''}`}
-        action={
-          <Button icon={<UserPlus size={15} />} onClick={() => setModal('add')}>
-            Add Student
-          </Button>
-        }
-      />
+    <div style={{ minHeight: '100vh', background: COLORS.bgBase, padding: '32px 40px' }}>
+      {/* Header */}
+      <motion.div
+        initial={{ opacity: 0, y: -16 }}
+        animate={{ opacity: 1, y: 0 }}
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'flex-start',
+          marginBottom: 32,
+          flexWrap: 'wrap',
+          gap: 20,
+        }}
+      >
+        <div>
+          <h1 style={{
+            fontSize: 28,
+            fontWeight: 700,
+            color: COLORS.textPrimary,
+            letterSpacing: '-0.02em',
+            marginBottom: 6,
+            fontFamily: 'var(--font-display)',
+          }}>
+            Student Roster
+          </h1>
+          <p style={{
+            fontSize: 15,
+            color: COLORS.textMuted,
+          }}>
+            {loading
+              ? 'Loading student data...'
+              : `${students.length} student${students.length !== 1 ? 's' : ''} enrolled in your classroom`
+            }
+          </p>
+        </div>
+
+        <Button
+          icon={<UserPlus size={18} />}
+          onClick={() => setModal('add')}
+          style={{
+            background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryLight} 100%)`,
+            boxShadow: '0 4px 16px rgba(49, 46, 129, 0.25)',
+          }}
+        >
+          Add Student
+        </Button>
+      </motion.div>
 
       {/* Search */}
-      <div style={{ position: 'relative', maxWidth: 380, marginBottom: 24 }}>
-        <Search size={15} style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', pointerEvents: 'none' }} />
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        style={{
+          position: 'relative',
+          maxWidth: 400,
+          marginBottom: 28,
+        }}
+      >
+        <Search
+          size={18}
+          style={{
+            position: 'absolute',
+            left: 14,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            color: COLORS.textLight,
+            pointerEvents: 'none',
+          }}
+        />
         <input
           value={search}
           onChange={e => setSearch(e.target.value)}
-          placeholder="Search by name or class…"
+          placeholder="Search by name, class, or ID..."
           style={{
-            width: '100%', padding: '10px 14px 10px 38px',
-            background: 'var(--bg-card)', border: '1px solid var(--border)',
-            borderRadius: 'var(--radius)', color: 'var(--text-primary)',
-            fontFamily: 'var(--font-body)', fontSize: 14, outline: 'none',
-            transition: 'border-color var(--duration)',
+            width: '100%',
+            padding: '12px 40px 12px 44px',
+            background: COLORS.bgSurface,
+            border: `1.5px solid ${COLORS.border}`,
+            borderRadius: 10,
+            color: COLORS.textPrimary,
+            fontFamily: 'var(--font-body)',
+            fontSize: 14,
+            outline: 'none',
+            transition: 'all 0.15s ease',
           }}
-          onFocus={e  => e.target.style.borderColor = 'var(--border-focus)'}
-          onBlur={e   => e.target.style.borderColor = 'var(--border)'}
+          onFocus={e => {
+            e.target.style.borderColor = COLORS.primary
+            e.target.style.boxShadow = '0 0 0 3px rgba(49, 46, 129, 0.1)'
+          }}
+          onBlur={e => {
+            e.target.style.borderColor = COLORS.border
+            e.target.style.boxShadow = 'none'
+          }}
         />
         {search && (
-          <button onClick={() => setSearch('')} style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
+          <button
+            onClick={() => setSearch('')}
+            style={{
+              position: 'absolute',
+              right: 12,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              background: COLORS.bgSubtle,
+              border: 'none',
+              borderRadius: 6,
+              width: 24,
+              height: 24,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: COLORS.textMuted,
+              cursor: 'pointer',
+            }}
+          >
             <X size={14} />
           </button>
         )}
-      </div>
+      </motion.div>
 
+      {/* Content */}
       {loading ? (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>
-          {[0,1,2,3,4,5].map(i => <SkeletonCard key={i} rows={3} />)}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+          gap: 16,
+        }}>
+          {[0, 1, 2, 3, 4, 5].map(i => <StudentCardSkeleton key={i} />)}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="glass-panel" style={{ overflow: 'hidden' }}>
-          <EmptyState
-            icon={Users}
-            title={search ? 'No students found' : 'No students yet'}
-            description={search ? `No results for "${search}". Try a different search.` : 'Add your first student to start uploading papers and running AI analysis.'}
-            action={!search && <Button icon={<UserPlus size={15} />} onClick={() => setModal('add')}>Add your first student</Button>}
-          />
-        </div>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          style={{
+            background: COLORS.bgSurface,
+            border: `1px solid ${COLORS.border}`,
+            borderRadius: 12,
+            padding: '60px 40px',
+            textAlign: 'center',
+          }}
+        >
+          <div style={{
+            width: 72,
+            height: 72,
+            borderRadius: 16,
+            background: COLORS.bgSubtle,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 20px',
+          }}>
+            <Users size={32} color={COLORS.textLight} strokeWidth={1.5} />
+          </div>
+          <h3 style={{
+            fontSize: 18,
+            fontWeight: 700,
+            color: COLORS.textPrimary,
+            marginBottom: 8,
+            fontFamily: 'var(--font-display)',
+          }}>
+            {search ? 'No students found' : 'No students yet'}
+          </h3>
+          <p style={{
+            fontSize: 14,
+            color: COLORS.textMuted,
+            maxWidth: 320,
+            margin: '0 auto 24px',
+            lineHeight: 1.6,
+          }}>
+            {search
+              ? `No results for "${search}". Try a different search term.`
+              : 'Add students to your classroom to start uploading handwriting samples for analysis.'
+            }
+          </p>
+          {!search && (
+            <Button
+              icon={<UserPlus size={16} />}
+              onClick={() => setModal('add')}
+            >
+              Add Your First Student
+            </Button>
+          )}
+        </motion.div>
       ) : (
-        <motion.div layout style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 16 }}>
-          <AnimatePresence>
+        <motion.div
+          layout
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+            gap: 16,
+          }}
+        >
+          <AnimatePresence mode="popLayout">
             {filtered.map((s, i) => (
-              <StudentCard key={s.id} student={s} index={i} onEdit={(s) => setModal(s)} onDelete={handleDelete} />
+              <StudentCard
+                key={s.id}
+                student={s}
+                index={i}
+                onEdit={(student) => setModal(student)}
+                onDelete={(student) => setDeleteTarget(student)}
+              />
             ))}
           </AnimatePresence>
         </motion.div>
       )}
 
-      <Modal open={!!modal} onClose={() => setModal(null)} title={modal === 'add' ? 'Add New Student' : 'Edit Student'}>
+      {/* Add/Edit Modal */}
+      <Modal
+        open={!!modal && modal !== null && !deleteTarget}
+        onClose={() => setModal(null)}
+        title={modal === 'add' ? 'Add New Student' : 'Edit Student'}
+      >
         {modal && (
           <StudentForm
             student={modal === 'add' ? null : modal}
@@ -448,6 +686,20 @@ export default function StudentsPage() {
             onSave={load}
           />
         )}
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        open={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        title=""
+        size="sm"
+      >
+        <DeleteConfirmModal
+          student={deleteTarget}
+          onClose={() => setDeleteTarget(null)}
+          onConfirm={handleDelete}
+        />
       </Modal>
     </div>
   )

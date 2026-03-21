@@ -3,116 +3,99 @@ import { motion } from 'framer-motion'
 import { TrendingUp, TrendingDown, Minus, Calendar, Brain, ArrowUpRight, ArrowDownRight } from 'lucide-react'
 import { optimizedAnalysisAPI } from '../../services/optimizedApi'
 import { useAuth } from '../../context/AuthContext'
-import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid,
-  Tooltip, ResponsiveContainer, ReferenceLine
-} from 'recharts'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts'
 import toast from 'react-hot-toast'
 import { format } from 'date-fns'
 
-// ── Inline PageHeader Component ────────────────────────────
-const PageHeader = ({ title, subtitle, breadcrumb }) => (
-  <div style={{ marginBottom: 32 }}>
-    {breadcrumb && <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 12 }}>{breadcrumb}</div>}
-    <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 32, fontWeight: 800, marginBottom: 6, color: 'var(--text-primary)' }}>{title}</h1>
-    {subtitle && <p style={{ fontSize: 15, color: 'var(--text-secondary)', lineHeight: 1.6 }}>{subtitle}</p>}
-  </div>
-)
-
-// ── Inline RiskBadge Component ────────────────────────────
-const RiskBadge = ({ level }) => {
-  const colors = { LOW: { bg: '#d1fae5', text: '#065f46' }, MEDIUM: { bg: '#fef3c7', text: '#92400e' }, HIGH: { bg: '#fee2e2', text: '#7f1d1d' } }
-  const color = colors[level] || colors.LOW
-  return (
-    <span style={{
-      display: 'inline-block',
-      padding: '4px 10px',
-      borderRadius: '12px',
-      fontSize: 12,
-      fontWeight: 600,
-      background: color.bg,
-      color: color.text,
-    }}>
-      {level}
-    </span>
-  )
+// ════════════════════════════════════════════════════════════════
+// DESIGN SYSTEM COLORS
+// ════════════════════════════════════════════════════════════════
+const COLORS = {
+  primary: '#312E81',
+  primaryLight: '#4338CA',
+  primaryBg: '#EEF2FF',
+  secondary: '#14B8A6',
+  secondaryBg: '#CCFBF1',
+  riskHigh: '#B91C1C',
+  riskHighBg: '#FEF2F2',
+  riskMedium: '#B45309',
+  riskMediumBg: '#FFFBEB',
+  riskLow: '#047857',
+  riskLowBg: '#ECFDF5',
+  textPrimary: '#1E293B',
+  textSecondary: '#475569',
+  textMuted: '#64748B',
+  textLight: '#94A3B8',
+  bgSurface: '#FFFFFF',
+  bgSubtle: '#F1F5F9',
+  border: '#E2E8F0',
 }
 
-// ── Inline SkeletonCard Component ────────────────────────────
-const SkeletonCard = ({ rows = 4 }) => (
-  <div className="glass-panel" style={{ padding: '20px 24px' }}>
-    {Array(rows).fill(0).map((_, i) => (
-      <div key={i} style={{
-        height: i === 0 ? 24 : 14,
-        background: 'linear-gradient(90deg, var(--bg-hover) 25%, var(--bg-elevated) 50%, var(--bg-hover) 75%)',
-        backgroundSize: '200% 100%',
-        animation: 'shimmer 1.5s infinite',
-        borderRadius: 6,
-        marginBottom: i < rows - 1 ? 12 : 0,
-      }} />
-    ))}
-    <style>{`
-      @keyframes shimmer {
-        0% { background-position: 200% 0; }
-        100% { background-position: -200% 0; }
-      }
-    `}</style>
+const PageHeader = ({ title, subtitle }) => (
+  <div style={{ marginBottom: 32 }}>
+    <h1 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 28, fontWeight: 800, marginBottom: 8, color: COLORS.textPrimary, letterSpacing: '-0.02em' }}>{title}</h1>
+    {subtitle && <p style={{ fontSize: 15, color: COLORS.textSecondary, lineHeight: 1.6 }}>{subtitle}</p>}
   </div>
 )
 
-// ── Inline StatCard Component ────────────────────────────
-const StatCard = ({ icon: Icon, label, value, color = 'blue', delay = 0 }) => {
-  const colors = { blue: '#1a73e8', violet: '#7c3aed', green: '#10b981', amber: '#f59e0b' }
+const RiskBadge = ({ level }) => {
+  const styles = { LOW: { bg: COLORS.riskLowBg, text: COLORS.riskLow }, MEDIUM: { bg: COLORS.riskMediumBg, text: COLORS.riskMedium }, HIGH: { bg: COLORS.riskHighBg, text: COLORS.riskHigh } }
+  const s = styles[level] || styles.LOW
+  return <span style={{ display: 'inline-block', padding: '5px 12px', borderRadius: 100, fontSize: 12, fontWeight: 600, background: s.bg, color: s.text }}>{level}</span>
+}
+
+const SkeletonCard = ({ rows = 4 }) => (
+  <div style={{ background: COLORS.bgSurface, border: `1px solid ${COLORS.border}`, borderRadius: 16, padding: '22px 24px' }}>
+    {Array(rows).fill(0).map((_, i) => (
+      <div key={i} style={{ height: i === 0 ? 24 : 14, background: `linear-gradient(90deg, ${COLORS.bgSubtle} 25%, ${COLORS.bgSurface} 50%, ${COLORS.bgSubtle} 75%)`, backgroundSize: '200% 100%', animation: 'shimmer 1.5s infinite', borderRadius: 8, marginBottom: i < rows - 1 ? 12 : 0 }} />
+    ))}
+    <style>{`@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }`}</style>
+  </div>
+)
+
+const StatCard = ({ icon: Icon, label, value, color = 'primary', delay = 0 }) => {
+  const colorMap = { primary: { bg: COLORS.primaryBg, icon: COLORS.primary }, secondary: { bg: COLORS.secondaryBg, icon: COLORS.secondary }, success: { bg: COLORS.riskLowBg, icon: COLORS.riskLow }, warning: { bg: COLORS.riskMediumBg, icon: COLORS.riskMedium }, danger: { bg: COLORS.riskHighBg, icon: COLORS.riskHigh } }
+  const c = colorMap[color] || colorMap.primary
   return (
-    <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: delay * 0.06 }}
-      className="glass-panel" style={{ padding: '20px 22px' }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-        <div style={{
-          width: 40, height: 40, borderRadius: 10,
-          background: `${colors[color]}20`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center'
-        }}>
-          <Icon size={20} color={colors[color]} strokeWidth={2} />
-        </div>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 4 }}>{label}</div>
-          <div style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 800, color: 'var(--text-primary)' }}>{value}</div>
-        </div>
+    <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: delay * 0.08 }} style={{ background: COLORS.bgSurface, border: `1px solid ${COLORS.border}`, borderRadius: 16, padding: '22px 24px' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+        <div style={{ width: 44, height: 44, borderRadius: 12, background: c.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon size={22} color={c.icon} strokeWidth={2} /></div>
+        <div style={{ flex: 1 }}><div style={{ fontSize: 13, color: COLORS.textMuted, marginBottom: 4 }}>{label}</div><div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 26, fontWeight: 800, color: COLORS.textPrimary }}>{value}</div></div>
       </div>
     </motion.div>
   )
 }
 
-// ── Inline Badge Component ────────────────────────────
-const Badge = ({ children, color = 'blue', dot = false }) => {
-  const colors = { blue: '#e8f0fe', violet: '#ede9fe', green: '#d1fae5' }
-  const textColors = { blue: '#1a73e8', violet: '#7c3aed', green: '#059669' }
+const Badge = ({ children, color = 'primary' }) => {
+  const colors = { primary: { bg: COLORS.primaryBg, text: COLORS.primary }, secondary: { bg: COLORS.secondaryBg, text: COLORS.secondary } }
+  const c = colors[color] || colors.primary
+  return <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '5px 12px', borderRadius: 100, fontSize: 12, fontWeight: 600, background: c.bg, color: c.text }}>{children}</span>
+}
+
+const CustomTooltip = ({ active, payload }) => {
+  if (!active || !payload?.length) return null
   return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center', gap: 6,
-      padding: '4px 10px',
-      borderRadius: '12px',
-      fontSize: 12,
-      fontWeight: 600,
-      background: colors[color],
-      color: textColors[color],
-    }}>
-      {dot && <span style={{ width: 6, height: 6, borderRadius: '50%', background: textColors[color] }} />}
-      {children}
-    </span>
+    <div style={{ background: COLORS.bgSurface, border: `1px solid ${COLORS.border}`, borderRadius: 12, padding: '12px 16px', fontSize: 13, boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)' }}>
+      {payload.map(p => (
+        <div key={p.name} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+          <div style={{ width: 10, height: 10, borderRadius: 3, background: p.color }} />
+          <span style={{ color: COLORS.textSecondary }}>{p.name}:</span>
+          <span style={{ fontWeight: 700, color: COLORS.textPrimary }}>{p.value?.toFixed(1)}%</span>
+        </div>
+      ))}
+    </div>
   )
 }
 
 export default function ProgressPage() {
-  const { user }   = useAuth()
-  const [data, setData]       = useState(null)
+  const { user } = useAuth()
+  const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [noData, setNoData]   = useState(false)
+  const [noData, setNoData] = useState(false)
 
   useEffect(() => {
     const sid = user?.studentId || localStorage.getItem('ns_studentId')
     if (!sid) { setNoData(true); setLoading(false); return }
-
     optimizedAnalysisAPI.getProgress(sid)
       .then(res => setData(res.data.data))
       .catch(err => {
@@ -123,197 +106,98 @@ export default function ProgressPage() {
   }, [user?.userId, user?.studentId])
 
   if (loading) return (
-    <div>
-      <PageHeader title="Progress Tracker" subtitle="Loading progress data…" />
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 20 }}>
-        <SkeletonCard rows={8} /><SkeletonCard rows={6} />
-      </div>
+    <div><PageHeader title="Progress Tracker" subtitle="Loading progress data..." />
+      <div style={{ display: 'grid', gap: 20 }}><SkeletonCard rows={8} /><SkeletonCard rows={6} /></div>
     </div>
   )
 
   const reports = data?.reports || []
-  const chartData = [...reports].reverse().map(r => ({
-    date:       format(new Date(r.createdAt || r.uploadDate), 'MMM d'),
-    Dyslexia:   +r.dyslexiaScore?.toFixed(1),
-    Dysgraphia: +r.dysgraphiaScore?.toFixed(1),
-  }))
-
+  const chartData = [...reports].reverse().map(r => ({ date: format(new Date(r.createdAt || r.uploadDate), 'MMM d'), Dyslexia: +r.dyslexiaScore?.toFixed(1), Dysgraphia: +r.dysgraphiaScore?.toFixed(1) }))
   const trend = data?.trend || 'INSUFFICIENT_DATA'
-  const TrendIcon  = trend === 'IMPROVING' ? TrendingDown : trend === 'WORSENING' ? TrendingUp : Minus
-  const trendColor = trend === 'IMPROVING' ? 'var(--success)' : trend === 'WORSENING' ? 'var(--danger)' : 'var(--text-secondary)'
+  const TrendIcon = trend === 'IMPROVING' ? TrendingDown : trend === 'WORSENING' ? TrendingUp : Minus
+  const trendColor = trend === 'IMPROVING' ? COLORS.riskLow : trend === 'WORSENING' ? COLORS.riskHigh : COLORS.textMuted
   const trendLabel = { IMPROVING: 'Improving', WORSENING: 'Needs attention', STABLE: 'Stable', INSUFFICIENT_DATA: 'Not enough data' }[trend] || '—'
-
-  const latest   = reports[0]
-  const previous = reports[1]
-  const dyslexiaDelta   = latest && previous ? (latest.dyslexiaScore   - previous.dyslexiaScore).toFixed(1)   : null
+  const latest = reports[0], previous = reports[1]
+  const dyslexiaDelta = latest && previous ? (latest.dyslexiaScore - previous.dyslexiaScore).toFixed(1) : null
   const dysgraphiaDelta = latest && previous ? (latest.dysgraphiaScore - previous.dysgraphiaScore).toFixed(1) : null
 
   return (
     <div>
-      <PageHeader
-        title="Progress Tracker"
-        subtitle={data?.studentName ? `Tracking ${data.studentName}'s learning journey over ${reports.length} analyses.` : 'Learning progress over time.'}
-        breadcrumb="NeuraScan / Progress"
-      />
+      <PageHeader title="Progress Tracker" subtitle={data?.studentName ? `Tracking ${data.studentName}'s learning journey over ${reports.length} assessments.` : 'Learning progress over time.'} />
 
       {noData || reports.length === 0 ? (
-        <div className="glass-panel" style={{ maxWidth: 520 }}>
-          <div style={{ padding: '48px 32px', textAlign: 'center' }}>
-            <TrendingUp size={40} color="var(--text-muted)" strokeWidth={1.25} style={{ marginBottom: 16 }} />
-            <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 800, marginBottom: 8 }}>No Progress Data Yet</h3>
-            <p style={{ color: 'var(--text-secondary)', fontSize: 14, lineHeight: 1.75 }}>
-              Multiple analyses are needed to track progress. Progress charts appear once at least 2 analyses have been completed.
-            </p>
+        <div style={{ background: COLORS.bgSurface, border: `1px solid ${COLORS.border}`, borderRadius: 16, maxWidth: 520 }}>
+          <div style={{ padding: '56px 32px', textAlign: 'center' }}>
+            <TrendingUp size={48} color={COLORS.textLight} strokeWidth={1.25} style={{ marginBottom: 20 }} />
+            <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 20, fontWeight: 700, marginBottom: 10, color: COLORS.textPrimary }}>No Progress Data Yet</h3>
+            <p style={{ color: COLORS.textSecondary, fontSize: 14, lineHeight: 1.75 }}>Multiple assessments are needed to track progress. Charts appear once at least 2 assessments have been completed.</p>
           </div>
         </div>
       ) : (
         <>
-          {/* Stats row */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 16, marginBottom: 24 }}>
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0 }}
-              className="glass-panel"
-              style={{ border: `1px solid ${trend === 'IMPROVING' ? 'rgba(16,185,129,0.25)' : trend === 'WORSENING' ? 'rgba(239,68,68,0.25)' : 'var(--border)'}`, padding: '20px 22px', display: 'flex', alignItems: 'center', gap: 14 }}>
-              <div style={{ width: 42, height: 42, borderRadius: 11, background: `${trendColor}18`, border: `1px solid ${trendColor}40`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <TrendIcon size={20} color={trendColor} strokeWidth={2} />
-              </div>
-              <div>
-                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 3 }}>Overall Trend</div>
-                <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 18, color: trendColor }}>{trendLabel}</div>
-              </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16, marginBottom: 28 }}>
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} style={{ background: COLORS.bgSurface, border: `1px solid ${trend === 'IMPROVING' ? `${COLORS.riskLow}40` : trend === 'WORSENING' ? `${COLORS.riskHigh}40` : COLORS.border}`, borderRadius: 16, padding: '22px 24px', display: 'flex', alignItems: 'center', gap: 14 }}>
+              <div style={{ width: 48, height: 48, borderRadius: 14, background: `${trendColor}18`, border: `1px solid ${trendColor}40`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><TrendIcon size={22} color={trendColor} strokeWidth={2} /></div>
+              <div><div style={{ fontSize: 13, color: COLORS.textMuted, marginBottom: 4 }}>Overall Trend</div><div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800, fontSize: 18, color: trendColor }}>{trendLabel}</div></div>
             </motion.div>
-
-            <StatCard icon={Brain}    label="Total Analyses" value={reports.length} color="violet"  delay={1} />
-
+            <StatCard icon={Brain} label="Total Assessments" value={reports.length} color="secondary" delay={1} />
             {latest && (
               <>
-                <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.16 }}
-                  className="glass-panel" style={{ padding: '20px 22px' }}>
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 4 }}>Latest Dyslexia</div>
-                  <div style={{ fontFamily: 'var(--font-display)', fontSize: 26, fontWeight: 800, color: latest.dyslexiaScore >= 70 ? 'var(--danger)' : latest.dyslexiaScore >= 45 ? 'var(--warning)' : 'var(--success)', lineHeight: 1 }}>
-                    {latest.dyslexiaScore?.toFixed(1)}%
-                  </div>
-                  {dyslexiaDelta !== null && (
-                    <div style={{ fontSize: 12, marginTop: 4, color: Number(dyslexiaDelta) < 0 ? 'var(--success)' : Number(dyslexiaDelta) > 0 ? 'var(--danger)' : 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 3 }}>
-                      {Number(dyslexiaDelta) < 0 ? <ArrowDownRight size={11} /> : Number(dyslexiaDelta) > 0 ? <ArrowUpRight size={11} /> : <Minus size={11} />}
-                      {Math.abs(dyslexiaDelta)}% vs previous
-                    </div>
-                  )}
+                <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.16 }} style={{ background: COLORS.bgSurface, border: `1px solid ${COLORS.border}`, borderRadius: 16, padding: '22px 24px' }}>
+                  <div style={{ fontSize: 13, color: COLORS.textMuted, marginBottom: 6 }}>Latest Dyslexia</div>
+                  <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 28, fontWeight: 800, color: latest.dyslexiaScore >= 70 ? COLORS.riskHigh : latest.dyslexiaScore >= 45 ? COLORS.riskMedium : COLORS.riskLow, lineHeight: 1 }}>{latest.dyslexiaScore?.toFixed(1)}%</div>
+                  {dyslexiaDelta !== null && <div style={{ fontSize: 12, marginTop: 6, color: Number(dyslexiaDelta) < 0 ? COLORS.riskLow : Number(dyslexiaDelta) > 0 ? COLORS.riskHigh : COLORS.textMuted, display: 'flex', alignItems: 'center', gap: 3 }}>{Number(dyslexiaDelta) < 0 ? <ArrowDownRight size={12} /> : Number(dyslexiaDelta) > 0 ? <ArrowUpRight size={12} /> : <Minus size={12} />}{Math.abs(dyslexiaDelta)}% vs previous</div>}
                 </motion.div>
-
-                <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.24 }}
-                  className="glass-panel" style={{ padding: '20px 22px' }}>
-                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 4 }}>Latest Dysgraphia</div>
-                  <div style={{ fontFamily: 'var(--font-display)', fontSize: 26, fontWeight: 800, color: latest.dysgraphiaScore >= 70 ? 'var(--danger)' : latest.dysgraphiaScore >= 45 ? 'var(--warning)' : 'var(--success)', lineHeight: 1 }}>
-                    {latest.dysgraphiaScore?.toFixed(1)}%
-                  </div>
-                  {dysgraphiaDelta !== null && (
-                    <div style={{ fontSize: 12, marginTop: 4, color: Number(dysgraphiaDelta) < 0 ? 'var(--success)' : Number(dysgraphiaDelta) > 0 ? 'var(--danger)' : 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 3 }}>
-                      {Number(dysgraphiaDelta) < 0 ? <ArrowDownRight size={11} /> : Number(dysgraphiaDelta) > 0 ? <ArrowUpRight size={11} /> : <Minus size={11} />}
-                      {Math.abs(dysgraphiaDelta)}% vs previous
-                    </div>
-                  )}
+                <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.24 }} style={{ background: COLORS.bgSurface, border: `1px solid ${COLORS.border}`, borderRadius: 16, padding: '22px 24px' }}>
+                  <div style={{ fontSize: 13, color: COLORS.textMuted, marginBottom: 6 }}>Latest Dysgraphia</div>
+                  <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 28, fontWeight: 800, color: latest.dysgraphiaScore >= 70 ? COLORS.riskHigh : latest.dysgraphiaScore >= 45 ? COLORS.riskMedium : COLORS.riskLow, lineHeight: 1 }}>{latest.dysgraphiaScore?.toFixed(1)}%</div>
+                  {dysgraphiaDelta !== null && <div style={{ fontSize: 12, marginTop: 6, color: Number(dysgraphiaDelta) < 0 ? COLORS.riskLow : Number(dysgraphiaDelta) > 0 ? COLORS.riskHigh : COLORS.textMuted, display: 'flex', alignItems: 'center', gap: 3 }}>{Number(dysgraphiaDelta) < 0 ? <ArrowDownRight size={12} /> : Number(dysgraphiaDelta) > 0 ? <ArrowUpRight size={12} /> : <Minus size={12} />}{Math.abs(dysgraphiaDelta)}% vs previous</div>}
                 </motion.div>
               </>
             )}
           </div>
 
-          {/* Line chart */}
           {chartData.length > 1 && (
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}
-              className="glass-panel" style={{ padding: '22px 24px', marginBottom: 24 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
-                <div>
-                  <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 15, fontWeight: 700, marginBottom: 2 }}>Score History</h3>
-                  <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Score trends over all {reports.length} analyses</p>
-                </div>
-                <div style={{ display: 'flex', gap: 16, fontSize: 12 }}>
-                  {[['Dyslexia', 'var(--primary)'], ['Dysgraphia', 'var(--secondary)']].map(([n, c]) => (
-                    <div key={n} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: c }} />
-                      <span style={{ color: 'var(--text-muted)' }}>{n}</span>
-                    </div>
-                  ))}
-                </div>
+            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} style={{ background: COLORS.bgSurface, border: `1px solid ${COLORS.border}`, borderRadius: 16, padding: '24px', marginBottom: 24 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
+                <div><h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 16, fontWeight: 700, marginBottom: 4, color: COLORS.textPrimary }}>Score History</h3><p style={{ fontSize: 13, color: COLORS.textMuted }}>Trends over all {reports.length} assessments</p></div>
+                <div style={{ display: 'flex', gap: 16, fontSize: 12 }}>{[['Dyslexia', COLORS.primary], ['Dysgraphia', COLORS.secondary]].map(([n, c]) => (<div key={n} style={{ display: 'flex', alignItems: 'center', gap: 6 }}><div style={{ width: 10, height: 10, borderRadius: 3, background: c }} /><span style={{ color: COLORS.textMuted }}>{n}</span></div>))}</div>
               </div>
               <ResponsiveContainer width="100%" height={240}>
                 <LineChart data={chartData}>
-                  <defs>
-                    <filter id="glow2"><feGaussianBlur stdDeviation="2.5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-                  </defs>
-                  <CartesianGrid stroke="rgba(139,92,246,0.06)" strokeDasharray="4 4" />
-                  <XAxis dataKey="date" tick={{ fill: '#475569', fontSize: 11 }} axisLine={false} tickLine={false} />
-                  <YAxis domain={[0, 100]} tick={{ fill: '#475569', fontSize: 11 }} axisLine={false} tickLine={false} />
-                  <ReferenceLine y={45} stroke="rgba(245,158,11,0.3)" strokeDasharray="6 3" label={{ value: 'Medium threshold', fill: '#475569', fontSize: 10, position: 'right' }} />
-                  <ReferenceLine y={70} stroke="rgba(239,68,68,0.3)"  strokeDasharray="6 3" label={{ value: 'High threshold',   fill: '#475569', fontSize: 10, position: 'right' }} />
-                  <Tooltip
-                    contentStyle={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 8, fontSize: 12 }}
-                    formatter={v => [`${v}%`]}
-                  />
-                  <Line type="monotone" dataKey="Dyslexia"   stroke="#1a73e8" strokeWidth={2.5} dot={{ fill: '#1a73e8', r: 4, strokeWidth: 0 }} activeDot={{ r: 6 }} filter="url(#glow2)" />
-                  <Line type="monotone" dataKey="Dysgraphia" stroke="#0891b2" strokeWidth={2.5} dot={{ fill: '#0891b2', r: 4, strokeWidth: 0 }} activeDot={{ r: 6 }} filter="url(#glow2)" />
+                  <CartesianGrid stroke={`${COLORS.primary}10`} strokeDasharray="4 4" vertical={false} />
+                  <XAxis dataKey="date" tick={{ fill: COLORS.textMuted, fontSize: 11 }} axisLine={false} tickLine={false} />
+                  <YAxis domain={[0, 100]} tick={{ fill: COLORS.textMuted, fontSize: 11 }} axisLine={false} tickLine={false} />
+                  <ReferenceLine y={45} stroke={`${COLORS.riskMedium}40`} strokeDasharray="6 3" />
+                  <ReferenceLine y={70} stroke={`${COLORS.riskHigh}40`} strokeDasharray="6 3" />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Line type="monotone" dataKey="Dyslexia" stroke={COLORS.primary} strokeWidth={2.5} dot={{ fill: COLORS.primary, r: 4, strokeWidth: 0 }} activeDot={{ r: 6, fill: COLORS.primary }} />
+                  <Line type="monotone" dataKey="Dysgraphia" stroke={COLORS.secondary} strokeWidth={2.5} dot={{ fill: COLORS.secondary, r: 4, strokeWidth: 0 }} activeDot={{ r: 6, fill: COLORS.secondary }} />
                 </LineChart>
               </ResponsiveContainer>
             </motion.div>
           )}
 
-          {/* Timeline */}
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
-            className="glass-panel" style={{ overflow: 'hidden' }}>
-            <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)' }}>
-              <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 15, fontWeight: 700 }}>Report Timeline</h3>
-            </div>
-            <div style={{ padding: '24px' }}>
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} style={{ background: COLORS.bgSurface, border: `1px solid ${COLORS.border}`, borderRadius: 16, overflow: 'hidden' }}>
+            <div style={{ padding: '20px 24px', borderBottom: `1px solid ${COLORS.border}` }}><h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 16, fontWeight: 700, color: COLORS.textPrimary }}>Assessment Timeline</h3></div>
+            <div style={{ padding: 24 }}>
               {reports.map((r, i) => (
-                <div key={r.reportId} style={{ display: 'flex', gap: 16, paddingBottom: i < reports.length - 1 ? 20 : 0 }}>
-                  {/* Spine */}
+                <div key={r.reportId} style={{ display: 'flex', gap: 16, paddingBottom: i < reports.length - 1 ? 24 : 0 }}>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
-                    <motion.div
-                      initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.5 + i * 0.06, type: 'spring', damping: 15 }}
-                      style={{
-                        width: 34, height: 34, borderRadius: '50%', flexShrink: 0,
-                        background: i === 0 ? 'var(--primary-dim)' : 'var(--bg-elevated)',
-                        border: `2px solid ${i === 0 ? 'var(--primary)' : 'var(--border)'}`,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 12,
-                        color: i === 0 ? 'var(--primary)' : 'var(--text-muted)',
-                        boxShadow: i === 0 ? '0 0 12px var(--primary-glow)' : 'none',
-                      }}
-                    >
-                      {reports.length - i}
-                    </motion.div>
-                    {i < reports.length - 1 && (
-                      <div style={{ width: 2, flex: 1, minHeight: 20, background: 'var(--border)', margin: '6px 0' }} />
-                    )}
+                    <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.5 + i * 0.06, type: 'spring', damping: 15 }} style={{ width: 38, height: 38, borderRadius: '50%', flexShrink: 0, background: i === 0 ? COLORS.primaryBg : COLORS.bgSubtle, border: `2px solid ${i === 0 ? COLORS.primary : COLORS.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800, fontSize: 13, color: i === 0 ? COLORS.primary : COLORS.textMuted, boxShadow: i === 0 ? '0 4px 14px rgba(49, 46, 129, 0.2)' : 'none' }}>{reports.length - i}</motion.div>
+                    {i < reports.length - 1 && <div style={{ width: 2, flex: 1, minHeight: 24, background: COLORS.border, margin: '8px 0' }} />}
                   </div>
-
                   <div style={{ flex: 1, paddingBottom: 4 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
-                      <span style={{ fontSize: 12, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
-                        <Calendar size={11} />
-                        {r.createdAt ? format(new Date(r.createdAt), 'MMMM d, yyyy') : '—'}
-                      </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: 13, color: COLORS.textMuted, display: 'flex', alignItems: 'center', gap: 5 }}><Calendar size={12} />{r.createdAt ? format(new Date(r.createdAt), 'MMMM d, yyyy') : '—'}</span>
                       <RiskBadge level={r.riskLevel} />
-                      {i === 0 && <Badge color="blue" dot>Latest</Badge>}
+                      {i === 0 && <Badge color="primary">Latest</Badge>}
                     </div>
-
-                    <div style={{ display: 'flex', gap: 20, marginBottom: 8, fontSize: 13 }}>
-                      <span style={{ color: 'var(--text-secondary)' }}>
-                        Dyslexia: <strong style={{ color: r.dyslexiaScore >= 70 ? 'var(--danger)' : r.dyslexiaScore >= 45 ? 'var(--warning)' : 'var(--success)' }}>
-                          {r.dyslexiaScore?.toFixed(1)}%
-                        </strong>
-                      </span>
-                      <span style={{ color: 'var(--text-secondary)' }}>
-                        Dysgraphia: <strong style={{ color: r.dysgraphiaScore >= 70 ? 'var(--danger)' : r.dysgraphiaScore >= 45 ? 'var(--warning)' : 'var(--success)' }}>
-                          {r.dysgraphiaScore?.toFixed(1)}%
-                        </strong>
-                      </span>
+                    <div style={{ display: 'flex', gap: 24, marginBottom: 10, fontSize: 14 }}>
+                      <span style={{ color: COLORS.textSecondary }}>Dyslexia: <strong style={{ color: r.dyslexiaScore >= 70 ? COLORS.riskHigh : r.dyslexiaScore >= 45 ? COLORS.riskMedium : COLORS.riskLow }}>{r.dyslexiaScore?.toFixed(1)}%</strong></span>
+                      <span style={{ color: COLORS.textSecondary }}>Dysgraphia: <strong style={{ color: r.dysgraphiaScore >= 70 ? COLORS.riskHigh : r.dysgraphiaScore >= 45 ? COLORS.riskMedium : COLORS.riskLow }}>{r.dysgraphiaScore?.toFixed(1)}%</strong></span>
                     </div>
-
-                    {r.aiComment && (
-                      <p style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.65, background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: 'var(--radius)', padding: '8px 12px' }}>
-                        {r.aiComment.length > 140 ? r.aiComment.substring(0, 140) + '…' : r.aiComment}
-                      </p>
-                    )}
+                    {r.aiComment && <p style={{ fontSize: 13, color: COLORS.textMuted, lineHeight: 1.7, background: COLORS.bgSubtle, border: `1px solid ${COLORS.border}`, borderRadius: 10, padding: '10px 14px' }}>{r.aiComment.length > 160 ? r.aiComment.substring(0, 160) + '...' : r.aiComment}</p>}
                   </div>
                 </div>
               ))}
