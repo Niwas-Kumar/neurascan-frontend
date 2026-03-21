@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import { AnimatePresence } from 'framer-motion'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { useBackendKeepAlive } from './hooks/useBackendKeepAlive'
 
 // Landing & Public pages
 import LandingPage from './pages/LandingPage'
@@ -62,6 +63,7 @@ function RootRedirect() {
 }
 
 function AppRoutes() {
+  useBackendKeepAlive(14 * 60 * 1000) // Ping every 14 minutes
   return (
     <Routes>
       {/* ── Public landing & info pages ── */}
