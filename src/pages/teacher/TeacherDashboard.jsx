@@ -3,18 +3,17 @@ import { useNavigate, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
   Users, FileText, AlertTriangle, TrendingUp, Upload,
-  Brain, Activity, Clock, ChevronRight, BarChart3, PieChart as PieChartIcon
+  Brain, Clock, ChevronRight, BarChart3, PieChart as PieChartIcon
 } from 'lucide-react'
 import { optimizedAnalysisAPI } from '../../services/optimizedApi'
 import { useAuth } from '../../context/AuthContext'
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid,
-  Tooltip as ReTooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend
+  Tooltip as ReTooltip, ResponsiveContainer, PieChart, Pie, Cell
 } from 'recharts'
 import { format, formatDistanceToNow } from 'date-fns'
 import toast from 'react-hot-toast'
-import { Button, RiskBadge, Card } from '../../components/shared/UI'
-import { NeuraScanLogo } from '../../components/shared/Logo'
+import { Button, RiskBadge } from '../../components/shared/UI'
 
 // ════════════════════════════════════════════════════════════════
 // DESIGN SYSTEM COLORS - Deep Indigo + Soft Teal

@@ -3,13 +3,12 @@ import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   LayoutDashboard, Users, Upload, FileText, TrendingUp,
-  LogOut, Brain, Bell, Settings, Menu, X, ChevronLeft,
-  ChevronRight, Search, BookOpen,
-  AlertTriangle, Info, CheckCircle
+  LogOut, Bell, Settings, Menu, X, ChevronLeft,
+  ChevronRight, BookOpen, AlertTriangle, Info, CheckCircle
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useIsMobile, useClickOutside } from '../../hooks'
-import { Badge, Tooltip, Card, NavItem } from '../shared/UI'
+import { Tooltip, Card, NavItem } from '../shared/UI'
 import { NeuraScanLogo } from '../shared/Logo'
 import toast from 'react-hot-toast'
 

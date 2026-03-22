@@ -1,15 +1,13 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  Users, Plus, Pencil, Trash2, Search, GraduationCap,
+  Users, Pencil, Trash2, Search, GraduationCap,
   FileText, X, Check, UserPlus, AlertCircle
 } from 'lucide-react'
 import { optimizedStudentAPI } from '../../services/optimizedApi'
 import toast from 'react-hot-toast'
 import { useDebounce } from '../../hooks'
-import {
-  Button, Input, Modal, Badge, PageHeader, EmptyState
-} from '../../components/shared/UI'
+import { Button, Input, Modal, Badge } from '../../components/shared/UI'
 
 // ════════════════════════════════════════════════════════════════
 // DESIGN SYSTEM COLORS

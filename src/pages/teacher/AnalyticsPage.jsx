@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { TrendingUp, Brain, Users, BarChart3, AlertTriangle, FileText, Activity } from 'lucide-react'
+import { Brain, Users, AlertTriangle, FileText, Activity } from 'lucide-react'
 import { optimizedAnalysisAPI, optimizedStudentAPI } from '../../services/optimizedApi'
 import { useAuth } from '../../context/AuthContext'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar,
-  ScatterChart, Scatter, ZAxis, AreaChart, Area
+  ScatterChart, Scatter, ZAxis
 } from 'recharts'
 import toast from 'react-hot-toast'
 

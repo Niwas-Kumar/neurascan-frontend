@@ -3,7 +3,7 @@
 // ============================================================
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { FileText, Search, ChevronDown, ChevronUp, X, Download, Filter, AlertCircle } from 'lucide-react'
+import { FileText, Search, ChevronDown, ChevronUp, X, Download } from 'lucide-react'
 import { optimizedAnalysisAPI } from '../../services/optimizedApi'
 import toast from 'react-hot-toast'
 import { format } from 'date-fns'
