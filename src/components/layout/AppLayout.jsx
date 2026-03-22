@@ -8,92 +8,27 @@ import {
   AlertTriangle, Info, CheckCircle
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
-import { useIsMobile, useClickOutside } from '../../hooks'
+import { useClickOutside } from '../../hooks'
 import { Badge, Tooltip, Card, NavItem } from '../shared/UI'
 import { NeuraScanLogo } from '../shared/Logo'
 import toast from 'react-hot-toast'
 
 const teacherNav = [
-  { to: '/teacher/dashboard', icon: LayoutDashboard, label: 'Dashboard',    badge: null, mobileOrder: 1 },
-  { to: '/teacher/students',  icon: Users,           label: 'Students',     badge: null, mobileOrder: 2 },
-  { to: '/teacher/upload',    icon: Upload,          label: 'Upload Paper', badge: null, mobileOrder: 3 },
-  { to: '/teacher/analytics', icon: TrendingUp,      label: 'Analytics',    badge: null, mobileOrder: 4 },
-  { to: '/teacher/reports',   icon: FileText,        label: 'Reports',      badge: null, mobileOrder: 5 },
-  { to: '/teacher/quizzes',   icon: FileText,        label: 'Quizzes',      badge: null, mobileOrder: 6 },
-  { to: '/teacher/settings',  icon: Settings,        label: 'Settings',     badge: null, mobileOrder: 7 },
+  { to: '/teacher/dashboard', icon: LayoutDashboard, label: 'Dashboard',    badge: null },
+  { to: '/teacher/students',  icon: Users,           label: 'Students',     badge: null },
+  { to: '/teacher/upload',    icon: Upload,          label: 'Upload Paper', badge: null },
+  { to: '/teacher/analytics', icon: TrendingUp,      label: 'Analytics',    badge: null },
+  { to: '/teacher/reports',   icon: FileText,        label: 'Reports',      badge: null },
+  { to: '/teacher/quizzes',   icon: FileText,        label: 'Quizzes',      badge: null },
+  { to: '/teacher/settings',  icon: Settings,        label: 'Settings',     badge: null },
 ]
 
 const parentNav = [
-  { to: '/parent/dashboard', icon: LayoutDashboard, label: 'My Child',    badge: null, mobileOrder: 1 },
-  { to: '/parent/progress',  icon: TrendingUp,      label: 'Progress',    badge: null, mobileOrder: 2 },
-  { to: '/parent/quiz-progress', icon: BookOpen,   label: 'Quiz Progress', badge: null, mobileOrder: 3 },
-  { to: '/parent/settings',  icon: Settings,        label: 'Settings',    badge: null, mobileOrder: 4 },
+  { to: '/parent/dashboard', icon: LayoutDashboard, label: 'My Child',    badge: null },
+  { to: '/parent/progress',  icon: TrendingUp,      label: 'Progress',    badge: null },
+  { to: '/parent/quiz-progress', icon: BookOpen,   label: 'Quiz Progress', badge: null },
+  { to: '/parent/settings',  icon: Settings,        label: 'Settings',    badge: null },
 ]
-
-// Mobile bottom nav - shows first 4 items + more menu
-function MobileBottomNav({ navItems, location, onMoreClick }) {
-  const bottomItems = navItems.slice(0, 4)
-  const hasMore = navItems.length > 4
-
-  return (
-    <nav
-      className="fixed bottom-0 left-0 right-0 z-50 md:hidden"
-      style={{
-        background: 'linear-gradient(180deg, rgba(255,255,255,0.98) 0%, #ffffff 100%)',
-        borderTop: '1px solid #e8eaed',
-        boxShadow: '0 -4px 16px rgba(0,0,0,0.06)',
-        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-      }}
-    >
-      <div className="flex justify-around items-center h-16 px-2">
-        {bottomItems.map(({ to, icon: Icon, label }) => {
-          const active = location.pathname === to || location.pathname.startsWith(to + '/')
-          return (
-            <NavLink
-              key={to}
-              to={to}
-              className="flex flex-col items-center justify-center flex-1 py-2 min-h-[48px]"
-              style={{ textDecoration: 'none' }}
-            >
-              <div
-                className="flex items-center justify-center w-10 h-8 rounded-lg transition-all duration-200"
-                style={{
-                  background: active ? 'linear-gradient(135deg, #EEF2FF 0%, rgba(20, 184, 166, 0.08) 100%)' : 'transparent',
-                }}
-              >
-                <Icon
-                  size={22}
-                  color={active ? '#312E81' : '#64748B'}
-                  strokeWidth={active ? 2 : 1.75}
-                />
-              </div>
-              <span
-                className="text-[10px] mt-1 font-medium truncate max-w-[60px]"
-                style={{ color: active ? '#312E81' : '#64748B' }}
-              >
-                {label}
-              </span>
-            </NavLink>
-          )
-        })}
-        {hasMore && (
-          <button
-            onClick={onMoreClick}
-            className="flex flex-col items-center justify-center flex-1 py-2 min-h-[48px]"
-            style={{ background: 'none', border: 'none', cursor: 'pointer' }}
-          >
-            <div className="flex items-center justify-center w-10 h-8 rounded-lg">
-              <MoreHorizontal size={22} color="#64748B" strokeWidth={1.75} />
-            </div>
-            <span className="text-[10px] mt-1 font-medium" style={{ color: '#64748B' }}>
-              More
-            </span>
-          </button>
-        )}
-      </div>
-    </nav>
-  )
-}
 
 function NotificationPanel({ notifications, markAllRead, onClose }) {
   const ref = useClickOutside(onClose)
@@ -263,13 +198,12 @@ export default function AppLayout() {
   const { user, logout, isTeacher, notifications, unreadCount, markAllRead } = useAuth()
   const navigate   = useNavigate()
   const location   = useLocation()
-  const isMobile   = useIsMobile()
   const [collapsed, setCollapsed]   = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [showNotifs, setShowNotifs] = useState(false)
   const navItems = isTeacher ? teacherNav : parentNav
 
-  const sidebarWidth = collapsed ? 72 : 260
+  const sidebarWidth = collapsed ? 72 : 256
 
   const handleLogout = () => {
     logout()
@@ -281,134 +215,157 @@ export default function AppLayout() {
   const currentNav = navItems.find(n => location.pathname.startsWith(n.to))
 
   return (
-    <div className="flex min-h-screen" style={{ background: 'var(--bg-page)' }}>
+    // ═══════════════════════════════════════════════════════════════
+    // ROOT APP WRAPPER - flex col on mobile, row on desktop
+    // ═══════════════════════════════════════════════════════════════
+    <div className="flex h-screen w-full flex-col md:flex-row bg-[#F8FAFC] overflow-hidden">
 
-      {/* Desktop Sidebar - hidden on mobile */}
-      {!isMobile && (
-        <motion.aside
-          animate={{ width: sidebarWidth }}
-          transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-          className="hidden md:block flex-shrink-0 sticky top-0 h-screen overflow-hidden z-20"
-          style={{
-            background: 'linear-gradient(180deg, #f0f4ff 0%, #ffffff 100%)',
-            borderRight: '1px solid var(--border)',
-          }}
-        >
-          <Sidebar
-            collapsed={collapsed}
-            isTeacher={isTeacher}
-            navItems={navItems}
-            location={location}
-            setCollapsed={setCollapsed}
-            setMobileOpen={setMobileOpen}
-            user={user}
-            navigate={navigate}
-            handleLogout={handleLogout}
-            isMobile={false}
-          />
-        </motion.aside>
-      )}
+      {/* ═══════════════════════════════════════════════════════════════
+          DESKTOP SIDEBAR - hidden on mobile, visible on md+
+          ═══════════════════════════════════════════════════════════════ */}
+      <motion.aside
+        animate={{ width: sidebarWidth }}
+        transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+        className="hidden md:flex w-64 flex-col h-full border-r border-gray-200 bg-white flex-shrink-0"
+        style={{
+          background: 'linear-gradient(180deg, #f0f4ff 0%, #ffffff 100%)',
+        }}
+      >
+        <Sidebar
+          collapsed={collapsed}
+          isTeacher={isTeacher}
+          navItems={navItems}
+          location={location}
+          setCollapsed={setCollapsed}
+          setMobileOpen={setMobileOpen}
+          user={user}
+          navigate={navigate}
+          handleLogout={handleLogout}
+          isMobile={false}
+        />
+      </motion.aside>
 
-      {/* Mobile Drawer - off-canvas slide-out */}
-      {isMobile && (
-        <AnimatePresence>
-          {mobileOpen && (
-            <>
-              <motion.div
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      {/* ═══════════════════════════════════════════════════════════════
+          MOBILE DRAWER OVERLAY - only renders when mobileOpen is true
+          ═══════════════════════════════════════════════════════════════ */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileOpen(false)}
+              className="fixed inset-0 z-40 md:hidden"
+              style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(2px)' }}
+            />
+            <motion.aside
+              initial={{ x: -280 }}
+              animate={{ x: 0 }}
+              exit={{ x: -280 }}
+              transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+              className="fixed left-0 top-0 bottom-0 z-50 w-[280px] max-w-[85vw] md:hidden"
+              style={{ background: '#fff', borderRight: '1px solid #e8eaed' }}
+            >
+              <button
                 onClick={() => setMobileOpen(false)}
-                className="fixed inset-0 z-40"
-                style={{ background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(2px)' }}
-              />
-              <motion.aside
-                initial={{ x: -280 }} animate={{ x: 0 }} exit={{ x: -280 }}
-                transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-                className="fixed left-0 top-0 bottom-0 z-50 w-[280px] overflow-hidden"
-                style={{
-                  background: '#fff', borderRight: '1px solid #e8eaed',
-                  maxWidth: '85vw',
-                }}
+                className="absolute top-4 right-4 w-9 h-9 flex items-center justify-center rounded-lg z-10"
+                style={{ background: '#f1f5f9', border: '1px solid #e2e8f0' }}
               >
-                {/* Close button for drawer */}
-                <button
-                  onClick={() => setMobileOpen(false)}
-                  className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-lg z-10"
-                  style={{ background: '#f1f5f9', border: '1px solid #e2e8f0' }}
-                >
-                  <X size={18} color="#64748B" />
-                </button>
-                <Sidebar
-                  collapsed={false}
-                  isTeacher={isTeacher}
-                  navItems={navItems}
-                  location={location}
-                  setCollapsed={setCollapsed}
-                  setMobileOpen={setMobileOpen}
-                  user={user}
-                  navigate={navigate}
-                  handleLogout={handleLogout}
-                  isMobile={true}
-                />
-              </motion.aside>
-            </>
-          )}
-        </AnimatePresence>
-      )}
+                <X size={18} color="#64748B" />
+              </button>
+              <Sidebar
+                collapsed={false}
+                isTeacher={isTeacher}
+                navItems={navItems}
+                location={location}
+                setCollapsed={setCollapsed}
+                setMobileOpen={setMobileOpen}
+                user={user}
+                navigate={navigate}
+                handleLogout={handleLogout}
+                isMobile={true}
+              />
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0">
+      {/* ═══════════════════════════════════════════════════════════════
+          MAIN CONTENT AREA - takes remaining space
+          ═══════════════════════════════════════════════════════════════ */}
+      <div className="flex-1 flex flex-col h-full w-full overflow-hidden relative">
 
-        {/* Topbar - responsive padding */}
-        <header
-          className="h-14 md:h-[60px] flex items-center px-3 md:px-5 sticky top-0 z-10 gap-2 md:gap-3"
-          style={{
-            borderBottom: '1px solid var(--border)',
-            background: 'linear-gradient(135deg, #312E81 0%, #14B8A6 100%)',
-            color: '#fff',
-            boxShadow: '0 8px 18px rgba(49, 46, 129, 0.2)',
-          }}
-        >
-          {/* Mobile hamburger menu */}
-          {isMobile && (
+        {/* ─── MOBILE HEADER - visible only on mobile ─── */}
+        <header className="flex md:hidden w-full h-16 items-center justify-between px-4 bg-white border-b border-gray-200 flex-shrink-0">
+          <div className="flex items-center gap-3">
             <button
               onClick={() => setMobileOpen(true)}
-              className="w-10 h-10 flex items-center justify-center rounded-lg -ml-1"
-              style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer' }}
+              className="w-10 h-10 flex items-center justify-center rounded-lg"
+              style={{ background: 'none', border: 'none', color: '#312E81', cursor: 'pointer' }}
             >
-              <Menu size={22} />
+              <Menu size={24} />
             </button>
-          )}
-
-          {/* Breadcrumb - truncate on mobile */}
-          <div className="flex-1 text-sm font-medium truncate" style={{ color: 'rgba(255,255,255,0.85)' }}>
-            <span className="hidden sm:inline" style={{ color: 'rgba(255,255,255,0.9)' }}>NeuraScan</span>
-            <span className="hidden sm:inline mx-1.5">/</span>
-            <span style={{ color: '#ffffff', fontWeight: 600 }}>
-              {currentNav?.label || 'Dashboard'}
-            </span>
+            <NeuraScanLogo size={28} showText={true} variant="default" />
           </div>
-
-          <div className="flex items-center gap-1.5 md:gap-2">
-
-            {/* Notifications */}
+          <div className="flex items-center gap-2">
             <div className="relative">
               <button
                 onClick={() => setShowNotifs(v => !v)}
-                className="w-9 h-9 md:w-10 md:h-10 rounded-lg flex items-center justify-center relative"
-                style={{
-                  border: '1px solid #e0e0e0',
-                  background: '#fff', color: '#5f6368', cursor: 'pointer',
-                }}
+                className="w-10 h-10 rounded-lg flex items-center justify-center relative"
+                style={{ border: '1px solid #e2e8f0', background: '#fff', color: '#5f6368', cursor: 'pointer' }}
+              >
+                <Bell size={18} />
+                {unreadCount > 0 && (
+                  <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-red-500" />
+                )}
+              </button>
+              <AnimatePresence>
+                {showNotifs && (
+                  <NotificationPanel
+                    notifications={notifications}
+                    markAllRead={() => { markAllRead(); setShowNotifs(false) }}
+                    onClose={() => setShowNotifs(false)}
+                  />
+                )}
+              </AnimatePresence>
+            </div>
+            <div className="cursor-pointer" onClick={() => navigate(isTeacher ? '/teacher/settings' : '/parent/settings')}>
+              <UserAvatar name={user?.name} picture={user?.picture} size={36} />
+            </div>
+          </div>
+        </header>
+
+        {/* ─── DESKTOP TOPBAR - visible only on desktop ─── */}
+        <header
+          className="hidden md:flex h-[60px] items-center px-5 sticky top-0 z-10 gap-3 flex-shrink-0"
+          style={{
+            borderBottom: '1px solid #e2e8f0',
+            background: 'linear-gradient(135deg, #312E81 0%, #14B8A6 100%)',
+            color: '#fff',
+            boxShadow: '0 4px 12px rgba(49, 46, 129, 0.15)',
+          }}
+        >
+          <div className="flex-1 text-sm font-medium" style={{ color: 'rgba(255,255,255,0.85)' }}>
+            <span style={{ color: 'rgba(255,255,255,0.9)' }}>NeuraScan</span>
+            <span className="mx-2">/</span>
+            <span style={{ color: '#ffffff', fontWeight: 600 }}>{currentNav?.label || 'Dashboard'}</span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <div className="relative">
+              <button
+                onClick={() => setShowNotifs(v => !v)}
+                className="w-10 h-10 rounded-lg flex items-center justify-center relative"
+                style={{ border: '1px solid #e0e0e0', background: '#fff', color: '#5f6368', cursor: 'pointer' }}
               >
                 <Bell size={16} />
                 {unreadCount > 0 && (
                   <motion.div
-                    initial={{ scale: 0 }} animate={{ scale: 1 }}
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
                     className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full"
-                    style={{
-                      background: '#d93025',
-                      border: '1.5px solid #fff',
-                    }}
+                    style={{ background: '#d93025', border: '1.5px solid #fff' }}
                   />
                 )}
               </button>
@@ -422,21 +379,14 @@ export default function AppLayout() {
                 )}
               </AnimatePresence>
             </div>
-
-            {/* Avatar */}
-            <div
-              className="cursor-pointer"
-              onClick={() => navigate(isTeacher ? '/teacher/settings' : '/parent/settings')}
-            >
-              <UserAvatar name={user?.name} picture={user?.picture} size={isMobile ? 32 : 34} />
+            <div className="cursor-pointer" onClick={() => navigate(isTeacher ? '/teacher/settings' : '/parent/settings')}>
+              <UserAvatar name={user?.name} picture={user?.picture} size={36} />
             </div>
           </div>
         </header>
 
-        {/* Content - responsive padding and margin-bottom for mobile bottom nav */}
-        <main
-          className="flex-1 p-4 md:p-6 lg:p-7 pb-20 md:pb-6 overflow-x-hidden"
-        >
+        {/* ─── SCROLLABLE CONTENT AREA ─── */}
+        <main className="flex-1 overflow-y-auto relative">
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}
@@ -444,22 +394,58 @@ export default function AppLayout() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
-              className="max-w-6xl mx-auto w-full"
+              className="w-full max-w-7xl mx-auto p-4 md:p-8 pb-24 md:pb-8"
             >
               <Outlet />
             </motion.div>
           </AnimatePresence>
         </main>
-      </div>
 
-      {/* Mobile Bottom Navigation */}
-      {isMobile && (
-        <MobileBottomNav
-          navItems={navItems}
-          location={location}
-          onMoreClick={() => setMobileOpen(true)}
-        />
-      )}
+        {/* ─── MOBILE BOTTOM NAVIGATION - visible only on mobile ─── */}
+        <nav
+          className="flex md:hidden w-full h-16 items-center justify-around bg-white border-t border-gray-200 flex-shrink-0"
+          style={{
+            boxShadow: '0 -2px 10px rgba(0,0,0,0.05)',
+            paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+          }}
+        >
+          {navItems.slice(0, 4).map(({ to, icon: Icon, label }) => {
+            const active = location.pathname === to || location.pathname.startsWith(to + '/')
+            return (
+              <NavLink
+                key={to}
+                to={to}
+                className="flex flex-col items-center justify-center flex-1 py-2 min-h-[56px]"
+                style={{ textDecoration: 'none' }}
+              >
+                <Icon
+                  size={22}
+                  color={active ? '#312E81' : '#64748B'}
+                  strokeWidth={active ? 2 : 1.75}
+                />
+                <span
+                  className="text-[10px] mt-1 font-medium truncate max-w-[60px]"
+                  style={{ color: active ? '#312E81' : '#64748B' }}
+                >
+                  {label}
+                </span>
+              </NavLink>
+            )
+          })}
+          {navItems.length > 4 && (
+            <button
+              onClick={() => setMobileOpen(true)}
+              className="flex flex-col items-center justify-center flex-1 py-2 min-h-[56px]"
+              style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+            >
+              <MoreHorizontal size={22} color="#64748B" strokeWidth={1.75} />
+              <span className="text-[10px] mt-1 font-medium" style={{ color: '#64748B' }}>
+                More
+              </span>
+            </button>
+          )}
+        </nav>
+      </div>
     </div>
   )
 }
