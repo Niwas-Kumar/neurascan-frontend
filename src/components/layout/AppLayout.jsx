@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   LayoutDashboard, Users, Upload, FileText, TrendingUp,
   LogOut, Brain, Bell, Settings, Menu, X, ChevronLeft,
-  ChevronRight, Search, BookOpen,
+  ChevronRight, Search, BookOpen, MoreHorizontal,
   AlertTriangle, Info, CheckCircle
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
@@ -14,21 +14,86 @@ import { NeuraScanLogo } from '../shared/Logo'
 import toast from 'react-hot-toast'
 
 const teacherNav = [
-  { to: '/teacher/dashboard', icon: LayoutDashboard, label: 'Dashboard',    badge: null },
-  { to: '/teacher/students',  icon: Users,           label: 'Students',     badge: null },
-  { to: '/teacher/upload',    icon: Upload,          label: 'Upload Paper', badge: null },
-  { to: '/teacher/analytics', icon: TrendingUp,      label: 'Analytics',    badge: null },
-  { to: '/teacher/reports',   icon: FileText,        label: 'Reports',      badge: null },
-  { to: '/teacher/quizzes',   icon: FileText,        label: 'Quizzes',      badge: null },
-  { to: '/teacher/settings',  icon: Settings,        label: 'Settings',     badge: null },
+  { to: '/teacher/dashboard', icon: LayoutDashboard, label: 'Dashboard',    badge: null, mobileOrder: 1 },
+  { to: '/teacher/students',  icon: Users,           label: 'Students',     badge: null, mobileOrder: 2 },
+  { to: '/teacher/upload',    icon: Upload,          label: 'Upload Paper', badge: null, mobileOrder: 3 },
+  { to: '/teacher/analytics', icon: TrendingUp,      label: 'Analytics',    badge: null, mobileOrder: 4 },
+  { to: '/teacher/reports',   icon: FileText,        label: 'Reports',      badge: null, mobileOrder: 5 },
+  { to: '/teacher/quizzes',   icon: FileText,        label: 'Quizzes',      badge: null, mobileOrder: 6 },
+  { to: '/teacher/settings',  icon: Settings,        label: 'Settings',     badge: null, mobileOrder: 7 },
 ]
 
 const parentNav = [
-  { to: '/parent/dashboard', icon: LayoutDashboard, label: 'My Child',    badge: null },
-  { to: '/parent/progress',  icon: TrendingUp,      label: 'Progress',    badge: null },
-  { to: '/parent/quiz-progress', icon: BookOpen,   label: 'Quiz Progress', badge: null },
-  { to: '/parent/settings',  icon: Settings,        label: 'Settings',    badge: null },
+  { to: '/parent/dashboard', icon: LayoutDashboard, label: 'My Child',    badge: null, mobileOrder: 1 },
+  { to: '/parent/progress',  icon: TrendingUp,      label: 'Progress',    badge: null, mobileOrder: 2 },
+  { to: '/parent/quiz-progress', icon: BookOpen,   label: 'Quiz Progress', badge: null, mobileOrder: 3 },
+  { to: '/parent/settings',  icon: Settings,        label: 'Settings',    badge: null, mobileOrder: 4 },
 ]
+
+// Mobile bottom nav - shows first 4 items + more menu
+function MobileBottomNav({ navItems, location, onMoreClick }) {
+  const bottomItems = navItems.slice(0, 4)
+  const hasMore = navItems.length > 4
+
+  return (
+    <nav
+      className="fixed bottom-0 left-0 right-0 z-50 md:hidden"
+      style={{
+        background: 'linear-gradient(180deg, rgba(255,255,255,0.98) 0%, #ffffff 100%)',
+        borderTop: '1px solid #e8eaed',
+        boxShadow: '0 -4px 16px rgba(0,0,0,0.06)',
+        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+      }}
+    >
+      <div className="flex justify-around items-center h-16 px-2">
+        {bottomItems.map(({ to, icon: Icon, label }) => {
+          const active = location.pathname === to || location.pathname.startsWith(to + '/')
+          return (
+            <NavLink
+              key={to}
+              to={to}
+              className="flex flex-col items-center justify-center flex-1 py-2 min-h-[48px]"
+              style={{ textDecoration: 'none' }}
+            >
+              <div
+                className="flex items-center justify-center w-10 h-8 rounded-lg transition-all duration-200"
+                style={{
+                  background: active ? 'linear-gradient(135deg, #EEF2FF 0%, rgba(20, 184, 166, 0.08) 100%)' : 'transparent',
+                }}
+              >
+                <Icon
+                  size={22}
+                  color={active ? '#312E81' : '#64748B'}
+                  strokeWidth={active ? 2 : 1.75}
+                />
+              </div>
+              <span
+                className="text-[10px] mt-1 font-medium truncate max-w-[60px]"
+                style={{ color: active ? '#312E81' : '#64748B' }}
+              >
+                {label}
+              </span>
+            </NavLink>
+          )
+        })}
+        {hasMore && (
+          <button
+            onClick={onMoreClick}
+            className="flex flex-col items-center justify-center flex-1 py-2 min-h-[48px]"
+            style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+          >
+            <div className="flex items-center justify-center w-10 h-8 rounded-lg">
+              <MoreHorizontal size={22} color="#64748B" strokeWidth={1.75} />
+            </div>
+            <span className="text-[10px] mt-1 font-medium" style={{ color: '#64748B' }}>
+              More
+            </span>
+          </button>
+        )}
+      </div>
+    </nav>
+  )
+}
 
 function NotificationPanel({ notifications, markAllRead, onClose }) {
   const ref = useClickOutside(onClose)
@@ -42,9 +107,8 @@ function NotificationPanel({ notifications, markAllRead, onClose }) {
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -8, scale: 0.97 }}
       transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+      className="absolute right-0 top-[calc(100%+10px)] z-[200] w-[calc(100vw-32px)] sm:w-[340px] max-w-[340px]"
       style={{
-        position: 'absolute', right: 0, top: 'calc(100% + 10px)',
-        width: 340, zIndex: 200,
         background: '#fff', border: '1px solid #e0e0e0',
         borderRadius: 16, overflow: 'hidden',
         boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
@@ -215,23 +279,19 @@ export default function AppLayout() {
 
   // Breadcrumb
   const currentNav = navItems.find(n => location.pathname.startsWith(n.to))
-  
-  return (
-    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-page)' }}>
 
-      {/* Desktop Sidebar */}
+  return (
+    <div className="flex min-h-screen" style={{ background: 'var(--bg-page)' }}>
+
+      {/* Desktop Sidebar - hidden on mobile */}
       {!isMobile && (
         <motion.aside
           animate={{ width: sidebarWidth }}
           transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+          className="hidden md:block flex-shrink-0 sticky top-0 h-screen overflow-hidden z-20"
           style={{
             background: 'linear-gradient(180deg, #f0f4ff 0%, #ffffff 100%)',
             borderRight: '1px solid var(--border)',
-            height: '100vh',
-            position: 'sticky', top: 0,
-            overflow: 'hidden',
-            flexShrink: 0,
-            zIndex: 20,
           }}
         >
           <Sidebar
@@ -249,7 +309,7 @@ export default function AppLayout() {
         </motion.aside>
       )}
 
-      {/* Mobile Drawer */}
+      {/* Mobile Drawer - off-canvas slide-out */}
       {isMobile && (
         <AnimatePresence>
           {mobileOpen && (
@@ -257,17 +317,26 @@ export default function AppLayout() {
               <motion.div
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                 onClick={() => setMobileOpen(false)}
-                style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(2px)', zIndex: 40 }}
+                className="fixed inset-0 z-40"
+                style={{ background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(2px)' }}
               />
               <motion.aside
-                initial={{ x: -260 }} animate={{ x: 0 }} exit={{ x: -260 }}
+                initial={{ x: -280 }} animate={{ x: 0 }} exit={{ x: -280 }}
                 transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+                className="fixed left-0 top-0 bottom-0 z-50 w-[280px] overflow-hidden"
                 style={{
-                  position: 'fixed', left: 0, top: 0, bottom: 0, width: 260,
                   background: '#fff', borderRight: '1px solid #e8eaed',
-                  zIndex: 50, overflow: 'hidden',
+                  maxWidth: '85vw',
                 }}
               >
+                {/* Close button for drawer */}
+                <button
+                  onClick={() => setMobileOpen(false)}
+                  className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-lg z-10"
+                  style={{ background: '#f1f5f9', border: '1px solid #e2e8f0' }}
+                >
+                  <X size={18} color="#64748B" />
+                </button>
                 <Sidebar
                   collapsed={false}
                   isTeacher={isTeacher}
@@ -286,54 +355,58 @@ export default function AppLayout() {
         </AnimatePresence>
       )}
 
-      {/* Main */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+      {/* Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0">
 
-        {/* Topbar */}
-        <header style={{
-          height: 60, display: 'flex', alignItems: 'center',
-          padding: '0 20px 0 24px',
-          borderBottom: '1px solid var(--border)',
-          background: 'linear-gradient(135deg, #312E81 0%, #14B8A6 100%)',
-          position: 'sticky', top: 0, zIndex: 10,
-          gap: 12,
-          color: '#fff',
-          boxShadow: '0 8px 18px rgba(49, 46, 129, 0.2)',
-        }}>
+        {/* Topbar - responsive padding */}
+        <header
+          className="h-14 md:h-[60px] flex items-center px-3 md:px-5 sticky top-0 z-10 gap-2 md:gap-3"
+          style={{
+            borderBottom: '1px solid var(--border)',
+            background: 'linear-gradient(135deg, #312E81 0%, #14B8A6 100%)',
+            color: '#fff',
+            boxShadow: '0 8px 18px rgba(49, 46, 129, 0.2)',
+          }}
+        >
+          {/* Mobile hamburger menu */}
           {isMobile && (
-            <button onClick={() => setMobileOpen(true)} style={{ background: 'none', border: 'none', color: '#5f6368', cursor: 'pointer' }}>
+            <button
+              onClick={() => setMobileOpen(true)}
+              className="w-10 h-10 flex items-center justify-center rounded-lg -ml-1"
+              style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer' }}
+            >
               <Menu size={22} />
             </button>
           )}
 
-          {/* Breadcrumb */}
-          <div style={{ flex: 1, fontSize: 14, color: 'rgba(255,255,255,0.85)', fontWeight: 500 }}>
-            <span style={{ color: 'rgba(255,255,255,0.9)' }}>NeuraScan</span>
-            <span style={{ margin: '0 6px' }}>/</span>
+          {/* Breadcrumb - truncate on mobile */}
+          <div className="flex-1 text-sm font-medium truncate" style={{ color: 'rgba(255,255,255,0.85)' }}>
+            <span className="hidden sm:inline" style={{ color: 'rgba(255,255,255,0.9)' }}>NeuraScan</span>
+            <span className="hidden sm:inline mx-1.5">/</span>
             <span style={{ color: '#ffffff', fontWeight: 600 }}>
               {currentNav?.label || 'Dashboard'}
             </span>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div className="flex items-center gap-1.5 md:gap-2">
 
             {/* Notifications */}
-            <div style={{ position: 'relative' }}>
+            <div className="relative">
               <button
                 onClick={() => setShowNotifs(v => !v)}
+                className="w-9 h-9 md:w-10 md:h-10 rounded-lg flex items-center justify-center relative"
                 style={{
-                  width: 36, height: 36, borderRadius: 8, border: '1px solid #e0e0e0',
+                  border: '1px solid #e0e0e0',
                   background: '#fff', color: '#5f6368', cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative',
                 }}
               >
                 <Bell size={16} />
                 {unreadCount > 0 && (
                   <motion.div
                     initial={{ scale: 0 }} animate={{ scale: 1 }}
+                    className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full"
                     style={{
-                      position: 'absolute', top: 6, right: 6, width: 8, height: 8,
-                      borderRadius: '50%', background: '#d93025',
+                      background: '#d93025',
                       border: '1.5px solid #fff',
                     }}
                   />
@@ -351,14 +424,19 @@ export default function AppLayout() {
             </div>
 
             {/* Avatar */}
-            <div style={{ cursor: 'pointer' }} onClick={() => navigate(isTeacher ? '/teacher/settings' : '/parent/settings')}>
-              <UserAvatar name={user?.name} picture={user?.picture} size={34} />
+            <div
+              className="cursor-pointer"
+              onClick={() => navigate(isTeacher ? '/teacher/settings' : '/parent/settings')}
+            >
+              <UserAvatar name={user?.name} picture={user?.picture} size={isMobile ? 32 : 34} />
             </div>
           </div>
         </header>
 
-        {/* Content */}
-        <main style={{ flex: 1, padding: isMobile ? '20px 16px' : '24px 28px', overflowX: 'hidden' }}>
+        {/* Content - responsive padding and margin-bottom for mobile bottom nav */}
+        <main
+          className="flex-1 p-4 md:p-6 lg:p-7 pb-20 md:pb-6 overflow-x-hidden"
+        >
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}
@@ -366,13 +444,22 @@ export default function AppLayout() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
-              style={{ maxWidth: 1200, margin: '0 auto' }}
+              className="max-w-6xl mx-auto w-full"
             >
               <Outlet />
             </motion.div>
           </AnimatePresence>
         </main>
       </div>
+
+      {/* Mobile Bottom Navigation */}
+      {isMobile && (
+        <MobileBottomNav
+          navItems={navItems}
+          location={location}
+          onMoreClick={() => setMobileOpen(true)}
+        />
+      )}
     </div>
   )
 }

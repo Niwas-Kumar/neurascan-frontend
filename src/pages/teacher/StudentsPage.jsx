@@ -260,14 +260,10 @@ function StudentCard({ student, onEdit, onDelete, index }) {
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ delay: index * 0.03, duration: 0.3, ease: [0.2, 0, 0, 1] }}
       layout
+      className="rounded-xl p-4 md:p-[22px] cursor-default transition-all relative"
       style={{
         background: COLORS.bgSurface,
         border: `1px solid ${COLORS.border}`,
-        borderRadius: 12,
-        padding: 22,
-        cursor: 'default',
-        transition: 'all 0.15s ease',
-        position: 'relative',
       }}
       whileHover={{
         y: -3,
@@ -276,47 +272,27 @@ function StudentCard({ student, onEdit, onDelete, index }) {
       }}
     >
       {/* Header */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        marginBottom: 16,
-      }}>
+      <div className="flex justify-between items-start mb-3 md:mb-4">
         {/* Avatar */}
-        <div style={{
-          width: 48,
-          height: 48,
-          borderRadius: 12,
+        <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center text-base md:text-lg font-bold" style={{
           background: avatarBg,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
           fontFamily: 'var(--font-display)',
-          fontWeight: 700,
-          fontSize: 18,
           color: avatarColor,
         }}>
           {student.name?.charAt(0).toUpperCase()}
         </div>
 
-        {/* Actions */}
-        <div style={{ display: 'flex', gap: 6 }}>
+        {/* Actions - larger touch targets */}
+        <div className="flex gap-1.5">
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => onEdit(student)}
+            className="w-9 h-9 md:w-8 md:h-8 rounded-lg flex items-center justify-center transition-all"
             style={{
-              width: 32,
-              height: 32,
-              borderRadius: 8,
               border: `1px solid ${COLORS.border}`,
               background: COLORS.bgSurface,
               color: COLORS.textMuted,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all 0.15s ease',
             }}
             onMouseEnter={e => {
               e.currentTarget.style.borderColor = COLORS.primary
@@ -335,18 +311,11 @@ function StudentCard({ student, onEdit, onDelete, index }) {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => onDelete(student)}
+            className="w-9 h-9 md:w-8 md:h-8 rounded-lg flex items-center justify-center transition-all"
             style={{
-              width: 32,
-              height: 32,
-              borderRadius: 8,
               border: `1px solid rgba(185, 28, 28, 0.2)`,
               background: COLORS.dangerBg,
               color: COLORS.danger,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all 0.15s ease',
             }}
             onMouseEnter={e => {
               e.currentTarget.style.background = 'rgba(185, 28, 28, 0.15)'
@@ -361,20 +330,17 @@ function StudentCard({ student, onEdit, onDelete, index }) {
       </div>
 
       {/* Name */}
-      <div style={{
+      <div className="text-sm md:text-base font-bold mb-2.5 md:mb-3" style={{
         fontFamily: 'var(--font-display)',
-        fontSize: 16,
-        fontWeight: 700,
         color: COLORS.textPrimary,
-        marginBottom: 12,
       }}>
         {student.name}
       </div>
 
       {/* Badges */}
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
+      <div className="flex gap-1.5 md:gap-2 flex-wrap mb-2.5 md:mb-3">
         <Badge color="primary" size="sm">
-          <GraduationCap size={12} style={{ marginRight: 4 }} />
+          <GraduationCap size={11} style={{ marginRight: 3 }} />
           {student.className}
         </Badge>
         <Badge color="default" size="sm">
@@ -382,37 +348,23 @@ function StudentCard({ student, onEdit, onDelete, index }) {
         </Badge>
         {student.totalPapers > 0 && (
           <Badge color="secondary" size="sm">
-            <FileText size={12} style={{ marginRight: 4 }} />
+            <FileText size={11} style={{ marginRight: 3 }} />
             {student.totalPapers} {student.totalPapers === 1 ? 'sample' : 'samples'}
           </Badge>
         )}
       </div>
 
       {/* Student ID - High contrast */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 6,
-        paddingTop: 12,
-        borderTop: `1px solid ${COLORS.border}`,
-      }}>
-        <span style={{
-          fontSize: 11,
-          fontWeight: 600,
+      <div className="flex items-center gap-1.5 pt-2.5 md:pt-3" style={{ borderTop: `1px solid ${COLORS.border}` }}>
+        <span className="text-[10px] font-semibold uppercase tracking-wide" style={{
           color: COLORS.textLight,
-          textTransform: 'uppercase',
-          letterSpacing: '0.05em',
         }}>
           ID
         </span>
-        <span style={{
-          fontSize: 12,
-          fontWeight: 700,
+        <span className="text-[11px] font-bold px-2 py-0.5 rounded" style={{
           color: COLORS.textSecondary,
           fontFamily: 'var(--font-display)',
           background: COLORS.bgSubtle,
-          padding: '2px 8px',
-          borderRadius: 4,
         }}>
           #{student.rollNumber || String(student.id).padStart(4, '0')}
         </span>
@@ -467,35 +419,22 @@ export default function StudentsPage() {
   )
 
   return (
-    <div style={{ minHeight: '100vh', background: COLORS.bgBase, padding: '32px 40px' }}>
+    <div className="min-h-screen p-4 md:p-8" style={{ background: COLORS.bgBase }}>
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -16 }}
         animate={{ opacity: 1, y: 0 }}
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'flex-start',
-          marginBottom: 32,
-          flexWrap: 'wrap',
-          gap: 20,
-        }}
+        className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-6 md:mb-8"
       >
         <div>
-          <h1 style={{
-            fontSize: 28,
-            fontWeight: 700,
+          <h1 className="text-xl md:text-[28px] font-bold mb-1.5" style={{
             color: COLORS.textPrimary,
             letterSpacing: '-0.02em',
-            marginBottom: 6,
             fontFamily: 'var(--font-display)',
           }}>
             Student Roster
           </h1>
-          <p style={{
-            fontSize: 15,
-            color: COLORS.textMuted,
-          }}>
+          <p className="text-sm" style={{ color: COLORS.textMuted }}>
             {loading
               ? 'Loading student data...'
               : `${students.length} student${students.length !== 1 ? 's' : ''} enrolled in your classroom`
@@ -506,6 +445,7 @@ export default function StudentsPage() {
         <Button
           icon={<UserPlus size={18} />}
           onClick={() => setModal('add')}
+          className="self-start min-h-[44px]"
           style={{
             background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryLight} 100%)`,
             boxShadow: '0 4px 16px rgba(49, 46, 129, 0.25)',
@@ -520,38 +460,23 @@ export default function StudentsPage() {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        style={{
-          position: 'relative',
-          maxWidth: 400,
-          marginBottom: 28,
-        }}
+        className="relative w-full md:max-w-[400px] mb-5 md:mb-7"
       >
         <Search
           size={18}
-          style={{
-            position: 'absolute',
-            left: 14,
-            top: '50%',
-            transform: 'translateY(-50%)',
-            color: COLORS.textLight,
-            pointerEvents: 'none',
-          }}
+          className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
+          style={{ color: COLORS.textLight }}
         />
         <input
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder="Search by name, class, or ID..."
+          className="w-full py-3 px-11 rounded-lg text-sm outline-none transition-all min-h-[44px]"
           style={{
-            width: '100%',
-            padding: '12px 40px 12px 44px',
             background: COLORS.bgSurface,
             border: `1.5px solid ${COLORS.border}`,
-            borderRadius: 10,
             color: COLORS.textPrimary,
             fontFamily: 'var(--font-body)',
-            fontSize: 14,
-            outline: 'none',
-            transition: 'all 0.15s ease',
           }}
           onFocus={e => {
             e.target.style.borderColor = COLORS.primary
@@ -565,21 +490,10 @@ export default function StudentsPage() {
         {search && (
           <button
             onClick={() => setSearch('')}
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded flex items-center justify-center"
             style={{
-              position: 'absolute',
-              right: 12,
-              top: '50%',
-              transform: 'translateY(-50%)',
               background: COLORS.bgSubtle,
-              border: 'none',
-              borderRadius: 6,
-              width: 24,
-              height: 24,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
               color: COLORS.textMuted,
-              cursor: 'pointer',
             }}
           >
             <X size={14} />
@@ -589,53 +503,29 @@ export default function StudentsPage() {
 
       {/* Content */}
       {loading ? (
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-          gap: 16,
-        }}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
           {[0, 1, 2, 3, 4, 5].map(i => <StudentCardSkeleton key={i} />)}
         </div>
       ) : filtered.length === 0 ? (
         <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
+          className="rounded-xl p-8 md:p-14 text-center"
           style={{
             background: COLORS.bgSurface,
             border: `1px solid ${COLORS.border}`,
-            borderRadius: 12,
-            padding: '60px 40px',
-            textAlign: 'center',
           }}
         >
-          <div style={{
-            width: 72,
-            height: 72,
-            borderRadius: 16,
-            background: COLORS.bgSubtle,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            margin: '0 auto 20px',
-          }}>
-            <Users size={32} color={COLORS.textLight} strokeWidth={1.5} />
+          <div className="w-16 h-16 md:w-[72px] md:h-[72px] rounded-2xl flex items-center justify-center mx-auto mb-5" style={{ background: COLORS.bgSubtle }}>
+            <Users size={28} color={COLORS.textLight} strokeWidth={1.5} />
           </div>
-          <h3 style={{
-            fontSize: 18,
-            fontWeight: 700,
+          <h3 className="text-base md:text-lg font-bold mb-2" style={{
             color: COLORS.textPrimary,
-            marginBottom: 8,
             fontFamily: 'var(--font-display)',
           }}>
             {search ? 'No students found' : 'No students yet'}
           </h3>
-          <p style={{
-            fontSize: 14,
-            color: COLORS.textMuted,
-            maxWidth: 320,
-            margin: '0 auto 24px',
-            lineHeight: 1.6,
-          }}>
+          <p className="text-sm max-w-[320px] mx-auto mb-6 leading-relaxed" style={{ color: COLORS.textMuted }}>
             {search
               ? `No results for "${search}". Try a different search term.`
               : 'Add students to your classroom to start uploading handwriting samples for analysis.'
@@ -645,6 +535,7 @@ export default function StudentsPage() {
             <Button
               icon={<UserPlus size={16} />}
               onClick={() => setModal('add')}
+              className="min-h-[44px]"
             >
               Add Your First Student
             </Button>
@@ -653,11 +544,7 @@ export default function StudentsPage() {
       ) : (
         <motion.div
           layout
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-            gap: 16,
-          }}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4"
         >
           <AnimatePresence mode="popLayout">
             {filtered.map((s, i) => (

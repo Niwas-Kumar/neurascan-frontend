@@ -54,29 +54,17 @@ const COLORS = {
 // ════════════════════════════════════════════════════════════════
 
 const PageHeader = ({ title, subtitle, action }) => (
-  <div style={{
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 32,
-  }}>
+  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-6 md:mb-8">
     <div>
-      <h1 style={{
+      <h1 className="text-xl md:text-[28px] font-extrabold mb-2" style={{
         fontFamily: "'Plus Jakarta Sans', sans-serif",
-        fontSize: 28,
-        fontWeight: 800,
-        marginBottom: 8,
         color: COLORS.textPrimary,
         letterSpacing: '-0.02em',
       }}>
         {title}
       </h1>
       {subtitle && (
-        <p style={{
-          fontSize: 15,
-          color: COLORS.textSecondary,
-          lineHeight: 1.6,
-        }}>
+        <p className="text-sm md:text-[15px] leading-relaxed" style={{ color: COLORS.textSecondary }}>
           {subtitle}
         </p>
       )}
@@ -282,18 +270,12 @@ export function ReportsPage() {
             whileHover={{ y: -1 }}
             whileTap={{ scale: 0.98 }}
             onClick={handleExport}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold min-h-[44px]"
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              padding: '10px 18px',
-              borderRadius: 10,
               background: COLORS.bgSurface,
               border: `1px solid ${COLORS.border}`,
               color: COLORS.textPrimary,
               cursor: 'pointer',
-              fontSize: 13,
-              fontWeight: 600,
               fontFamily: "'Inter', sans-serif",
               transition: 'all 0.2s ease',
             }}
@@ -304,40 +286,24 @@ export function ReportsPage() {
       />
 
       {/* Filter bar */}
-      <div style={{
-        display: 'flex',
-        gap: 12,
-        marginBottom: 24,
-        flexWrap: 'wrap',
-      }}>
+      <div className="flex flex-col sm:flex-row gap-3 mb-5 md:mb-6">
         {/* Search input */}
-        <div style={{ position: 'relative', flex: '1 1 280px', maxWidth: 360 }}>
+        <div className="relative flex-1 sm:max-w-[360px]">
           <Search
             size={16}
-            style={{
-              position: 'absolute',
-              left: 14,
-              top: '50%',
-              transform: 'translateY(-50%)',
-              color: COLORS.textMuted,
-              pointerEvents: 'none',
-            }}
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
+            style={{ color: COLORS.textMuted }}
           />
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Search by student name..."
+            className="w-full py-2.5 pl-10 pr-10 rounded-lg text-sm outline-none transition-colors min-h-[44px]"
             style={{
-              width: '100%',
-              padding: '11px 40px 11px 42px',
               background: COLORS.bgSurface,
               border: `1px solid ${COLORS.border}`,
-              borderRadius: 10,
               color: COLORS.textPrimary,
               fontFamily: "'Inter', sans-serif",
-              fontSize: 14,
-              outline: 'none',
-              transition: 'border-color 0.2s ease',
             }}
             onFocus={e => e.target.style.borderColor = COLORS.primary}
             onBlur={e => e.target.style.borderColor = COLORS.border}
@@ -345,16 +311,12 @@ export function ReportsPage() {
           {search && (
             <button
               onClick={() => setSearch('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1"
               style={{
-                position: 'absolute',
-                right: 12,
-                top: '50%',
-                transform: 'translateY(-50%)',
                 background: 'none',
                 border: 'none',
                 color: COLORS.textMuted,
                 cursor: 'pointer',
-                padding: 4,
               }}
             >
               <X size={14} />
@@ -362,73 +324,41 @@ export function ReportsPage() {
           )}
         </div>
 
-        {/* Risk filter pills */}
-        <div style={{
-          display: 'flex',
-          background: COLORS.bgSubtle,
-          borderRadius: 10,
-          padding: 4,
-          gap: 4,
-        }}>
-          {['ALL', 'LOW', 'MEDIUM', 'HIGH'].map(v => (
-            <button
-              key={v}
-              onClick={() => setRisk(v)}
-              style={{
-                padding: '8px 14px',
-                borderRadius: 8,
-                border: 'none',
-                cursor: 'pointer',
-                background: riskFilter === v ? COLORS.bgSurface : 'transparent',
-                color: riskFilter === v ? COLORS.textPrimary : COLORS.textMuted,
-                fontFamily: "'Inter', sans-serif",
-                fontSize: 13,
-                fontWeight: riskFilter === v ? 600 : 500,
-                transition: 'all 0.2s ease',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-                boxShadow: riskFilter === v ? '0 1px 3px rgba(0, 0, 0, 0.08)' : 'none',
-              }}
-            >
-              {v !== 'ALL' && (
-                <span style={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: '50%',
-                  background: riskFilterColors[v],
-                }} />
-              )}
-              {v}
-              <span style={{
-                fontSize: 11,
-                opacity: 0.6,
-                marginLeft: 2,
-              }}>
-                ({riskCounts[v]})
-              </span>
-            </button>
-          ))}
+        {/* Risk filter pills - horizontal scroll on mobile */}
+        <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+          <div className="flex rounded-lg p-1 gap-1 w-max sm:w-auto" style={{ background: COLORS.bgSubtle }}>
+            {['ALL', 'LOW', 'MEDIUM', 'HIGH'].map(v => (
+              <button
+                key={v}
+                onClick={() => setRisk(v)}
+                className="px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-1.5 whitespace-nowrap min-h-[40px]"
+                style={{
+                  border: 'none',
+                  cursor: 'pointer',
+                  background: riskFilter === v ? COLORS.bgSurface : 'transparent',
+                  color: riskFilter === v ? COLORS.textPrimary : COLORS.textMuted,
+                  fontFamily: "'Inter', sans-serif",
+                  fontWeight: riskFilter === v ? 600 : 500,
+                  transition: 'all 0.2s ease',
+                  boxShadow: riskFilter === v ? '0 1px 3px rgba(0, 0, 0, 0.08)' : 'none',
+                }}
+              >
+                {v !== 'ALL' && (
+                  <span className="w-2 h-2 rounded-full" style={{ background: riskFilterColors[v] }} />
+                )}
+                {v}
+                <span className="opacity-60 ml-0.5 text-[11px]">({riskCounts[v]})</span>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Column headers */}
+      {/* Column headers - hidden on mobile */}
       {filtered.length > 0 && !loading && (
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1.5fr 1fr 1fr 1fr 1fr 40px',
-          padding: '8px 24px',
-          gap: 12,
-          marginBottom: 8,
-        }}>
+        <div className="hidden md:grid gap-3 px-6 pb-2 mb-2" style={{ gridTemplateColumns: '1.5fr 1fr 1fr 1fr 1fr 40px' }}>
           {['Student', 'Dyslexia', 'Dysgraphia', 'Risk Level', 'Date', ''].map(h => (
-            <div key={h} style={{
-              fontSize: 11,
-              fontWeight: 600,
-              color: COLORS.textMuted,
-              textTransform: 'uppercase',
-              letterSpacing: '0.06em',
-            }}>
+            <div key={h} className="text-[11px] font-semibold uppercase tracking-wide" style={{ color: COLORS.textMuted }}>
               {h}
             </div>
           ))}
@@ -437,7 +367,7 @@ export function ReportsPage() {
 
       {/* Reports list */}
       {loading ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div className="flex flex-col gap-2">
           {[0, 1, 2, 3, 4].map(i => <SkeletonCard key={i} />)}
         </div>
       ) : filtered.length === 0 ? (
@@ -447,19 +377,17 @@ export function ReportsPage() {
           description="No analysis reports match your current filters. Try adjusting your search criteria."
         />
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div className="flex flex-col gap-2">
           {filtered.map((r, i) => (
             <motion.div
               key={r.reportId}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.03 }}
+              className="rounded-xl overflow-hidden transition-all"
               style={{
                 background: COLORS.bgSurface,
                 border: `1px solid ${COLORS.border}`,
-                borderRadius: 14,
-                overflow: 'hidden',
-                transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
               }}
               onMouseEnter={e => {
                 e.currentTarget.style.borderColor = COLORS.primaryLight
@@ -470,54 +398,81 @@ export function ReportsPage() {
                 e.currentTarget.style.boxShadow = 'none'
               }}
             >
+              {/* Desktop row layout */}
               <div
                 onClick={() => setExpId(id => id === r.reportId ? null : r.reportId)}
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: '1.5fr 1fr 1fr 1fr 1fr 40px',
-                  alignItems: 'center',
-                  padding: '16px 24px',
-                  cursor: 'pointer',
-                  gap: 12,
-                }}
+                className="hidden md:grid items-center px-6 py-4 cursor-pointer gap-3"
+                style={{ gridTemplateColumns: '1.5fr 1fr 1fr 1fr 1fr 40px' }}
               >
                 <div>
-                  <div style={{
-                    fontWeight: 600,
-                    fontSize: 14,
-                    color: COLORS.textPrimary,
-                  }}>
+                  <div className="font-semibold text-sm" style={{ color: COLORS.textPrimary }}>
                     {r.studentName}
                   </div>
-                  <div style={{
-                    fontSize: 12,
-                    color: COLORS.textMuted,
-                    marginTop: 2,
-                  }}>
+                  <div className="text-xs mt-0.5" style={{ color: COLORS.textMuted }}>
                     {r.className} · {r.originalFileName}
                   </div>
                 </div>
-                <span style={{
-                  fontWeight: 700,
-                  fontSize: 14,
+                <span className="font-bold text-sm" style={{
                   color: r.dyslexiaScore >= 70 ? COLORS.riskHigh : r.dyslexiaScore >= 45 ? COLORS.riskMedium : COLORS.riskLow,
                 }}>
                   {r.dyslexiaScore?.toFixed(1)}%
                 </span>
-                <span style={{
-                  fontWeight: 700,
-                  fontSize: 14,
+                <span className="font-bold text-sm" style={{
                   color: r.dysgraphiaScore >= 70 ? COLORS.riskHigh : r.dysgraphiaScore >= 45 ? COLORS.riskMedium : COLORS.riskLow,
                 }}>
                   {r.dysgraphiaScore?.toFixed(1)}%
                 </span>
                 <RiskBadge level={r.riskLevel} />
-                <span style={{ fontSize: 13, color: COLORS.textMuted }}>
+                <span className="text-xs" style={{ color: COLORS.textMuted }}>
                   {r.createdAt ? format(new Date(r.createdAt), 'MMM d, yyyy') : '—'}
                 </span>
                 <span style={{ color: COLORS.textMuted }}>
                   {expandedId === r.reportId ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                 </span>
+              </div>
+
+              {/* Mobile card layout */}
+              <div
+                onClick={() => setExpId(id => id === r.reportId ? null : r.reportId)}
+                className="md:hidden p-4 cursor-pointer"
+              >
+                <div className="flex justify-between items-start gap-3 mb-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-sm truncate" style={{ color: COLORS.textPrimary }}>
+                      {r.studentName}
+                    </div>
+                    <div className="text-xs mt-0.5 truncate" style={{ color: COLORS.textMuted }}>
+                      {r.className}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <RiskBadge level={r.riskLevel} />
+                    <span style={{ color: COLORS.textMuted }}>
+                      {expandedId === r.reportId ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4 text-xs">
+                  <div>
+                    <span style={{ color: COLORS.textMuted }}>Dyslexia: </span>
+                    <span className="font-bold" style={{
+                      color: r.dyslexiaScore >= 70 ? COLORS.riskHigh : r.dyslexiaScore >= 45 ? COLORS.riskMedium : COLORS.riskLow,
+                    }}>
+                      {r.dyslexiaScore?.toFixed(1)}%
+                    </span>
+                  </div>
+                  <div>
+                    <span style={{ color: COLORS.textMuted }}>Dysgraphia: </span>
+                    <span className="font-bold" style={{
+                      color: r.dysgraphiaScore >= 70 ? COLORS.riskHigh : r.dysgraphiaScore >= 45 ? COLORS.riskMedium : COLORS.riskLow,
+                    }}>
+                      {r.dysgraphiaScore?.toFixed(1)}%
+                    </span>
+                  </div>
+                </div>
+                <div className="text-[11px] mt-2" style={{ color: COLORS.textMuted }}>
+                  {r.createdAt ? format(new Date(r.createdAt), 'MMM d, yyyy') : '—'}
+                </div>
               </div>
 
               <AnimatePresence>
@@ -529,50 +484,20 @@ export function ReportsPage() {
                     transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
                     style={{ overflow: 'hidden' }}
                   >
-                    <div style={{
-                      padding: '0 24px 24px',
-                      borderTop: `1px solid ${COLORS.border}`,
-                      paddingTop: 24,
-                    }}>
-                      <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: '1fr 1fr',
-                        gap: 24,
-                      }}>
+                    <div className="px-4 pb-4 md:px-6 md:pb-6 pt-0 md:pt-0 border-t" style={{ borderColor: COLORS.border }}>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 md:pt-6">
                         <div>
-                          <div style={{
-                            fontSize: 12,
-                            fontWeight: 600,
-                            color: COLORS.textMuted,
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.06em',
-                            marginBottom: 16,
-                          }}>
+                          <div className="text-[11px] font-semibold uppercase tracking-wide mb-3 md:mb-4" style={{ color: COLORS.textMuted }}>
                             Score Breakdown
                           </div>
                           <ScoreBar label="Dyslexia Score" value={r.dyslexiaScore} />
                           <ScoreBar label="Dysgraphia Score" value={r.dysgraphiaScore} />
                         </div>
-                        <div style={{
-                          background: COLORS.bgSubtle,
-                          borderRadius: 12,
-                          padding: 20,
-                        }}>
-                          <div style={{
-                            fontSize: 12,
-                            fontWeight: 600,
-                            color: COLORS.textMuted,
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.06em',
-                            marginBottom: 12,
-                          }}>
+                        <div className="rounded-xl p-4 md:p-5" style={{ background: COLORS.bgSubtle }}>
+                          <div className="text-[11px] font-semibold uppercase tracking-wide mb-2.5 md:mb-3" style={{ color: COLORS.textMuted }}>
                             AI Analysis Summary
                           </div>
-                          <p style={{
-                            fontSize: 14,
-                            color: COLORS.textSecondary,
-                            lineHeight: 1.75,
-                          }}>
+                          <p className="text-xs md:text-sm leading-relaxed" style={{ color: COLORS.textSecondary }}>
                             {r.aiComment || 'No AI commentary available for this assessment.'}
                           </p>
                         </div>

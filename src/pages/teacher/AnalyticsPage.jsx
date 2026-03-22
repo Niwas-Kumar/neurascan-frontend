@@ -54,33 +54,21 @@ const COLORS = {
 // ════════════════════════════════════════════════════════════════
 
 const PageHeader = ({ title, subtitle, breadcrumb }) => (
-  <div style={{ marginBottom: 32 }}>
+  <div className="mb-6 md:mb-8">
     {breadcrumb && (
-      <div style={{
-        fontSize: 12,
-        color: COLORS.textMuted,
-        marginBottom: 10,
-        fontWeight: 500,
-      }}>
+      <div className="text-xs mb-2.5 font-medium" style={{ color: COLORS.textMuted }}>
         {breadcrumb}
       </div>
     )}
-    <h1 style={{
+    <h1 className="text-xl md:text-[28px] font-extrabold mb-2" style={{
       fontFamily: "'Plus Jakarta Sans', sans-serif",
-      fontSize: 28,
-      fontWeight: 800,
-      marginBottom: 8,
       color: COLORS.textPrimary,
       letterSpacing: '-0.02em',
     }}>
       {title}
     </h1>
     {subtitle && (
-      <p style={{
-        fontSize: 15,
-        color: COLORS.textSecondary,
-        lineHeight: 1.6,
-      }}>
+      <p className="text-sm md:text-[15px] leading-relaxed" style={{ color: COLORS.textSecondary }}>
         {subtitle}
       </p>
     )}
@@ -101,38 +89,22 @@ const StatCard = ({ icon: Icon, label, value, color = 'primary', delay = 0 }) =>
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: delay * 0.08 }}
+      className="rounded-xl p-4 md:p-[22px]"
       style={{
         background: COLORS.bgSurface,
-        borderRadius: 16,
-        padding: '22px 24px',
         border: `1px solid ${COLORS.border}`,
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
-        <div style={{
-          width: 44,
-          height: 44,
-          borderRadius: 12,
-          background: c.bg,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}>
-          <Icon size={22} color={c.icon} strokeWidth={2} />
+      <div className="flex items-start gap-3">
+        <div className="w-10 h-10 md:w-11 md:h-11 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: c.bg }}>
+          <Icon size={20} color={c.icon} strokeWidth={2} />
         </div>
-        <div style={{ flex: 1 }}>
-          <div style={{
-            fontSize: 13,
-            color: COLORS.textMuted,
-            marginBottom: 4,
-            fontWeight: 500,
-          }}>
+        <div className="flex-1 min-w-0">
+          <div className="text-xs font-medium mb-1" style={{ color: COLORS.textMuted }}>
             {label}
           </div>
-          <div style={{
+          <div className="text-xl md:text-[26px] font-extrabold truncate" style={{
             fontFamily: "'Plus Jakarta Sans', sans-serif",
-            fontSize: 26,
-            fontWeight: 800,
             color: COLORS.textPrimary,
           }}>
             {value}
@@ -144,20 +116,16 @@ const StatCard = ({ icon: Icon, label, value, color = 'primary', delay = 0 }) =>
 }
 
 const SkeletonCard = ({ rows = 4 }) => (
-  <div style={{
+  <div className="rounded-xl p-[22px]" style={{
     border: `1px solid ${COLORS.border}`,
-    borderRadius: 16,
-    padding: '22px 24px',
     background: COLORS.bgSurface,
   }}>
     {Array(rows).fill(0).map((_, i) => (
-      <div key={i} style={{
+      <div key={i} className="rounded-lg mb-3 last:mb-0" style={{
         height: i === 0 ? 24 : 14,
         background: `linear-gradient(90deg, ${COLORS.bgSubtle} 25%, ${COLORS.bgSurface} 50%, ${COLORS.bgSubtle} 75%)`,
         backgroundSize: '200% 100%',
         animation: 'shimmer 1.5s infinite',
-        borderRadius: 8,
-        marginBottom: i < rows - 1 ? 12 : 0,
       }} />
     ))}
     <style>{`@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }`}</style>
@@ -192,26 +160,21 @@ const ChartCard = ({ title, subtitle, children, delay = 0 }) => (
     initial={{ opacity: 0, y: 16 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ delay }}
+    className="rounded-xl p-4 md:p-6 h-full"
     style={{
       background: COLORS.bgSurface,
       border: `1px solid ${COLORS.border}`,
-      borderRadius: 16,
-      padding: '24px',
-      height: '100%',
     }}
   >
-    <div style={{ marginBottom: 20 }}>
-      <h3 style={{
+    <div className="mb-4 md:mb-5">
+      <h3 className="text-sm md:text-base font-bold mb-1" style={{
         fontFamily: "'Plus Jakarta Sans', sans-serif",
-        fontSize: 16,
-        fontWeight: 700,
         color: COLORS.textPrimary,
-        marginBottom: 4,
       }}>
         {title}
       </h3>
       {subtitle && (
-        <p style={{ fontSize: 13, color: COLORS.textMuted }}>
+        <p className="text-xs" style={{ color: COLORS.textMuted }}>
           {subtitle}
         </p>
       )}
@@ -275,10 +238,10 @@ export default function AnalyticsPage() {
     return (
       <div>
         <PageHeader title="Analytics" subtitle="Loading analytics data..." />
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 24 }}>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6">
           {[0, 1, 2, 3].map(i => <SkeletonCard key={i} rows={2} />)}
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-5">
           <SkeletonCard rows={8} />
           <SkeletonCard rows={8} />
         </div>
@@ -358,12 +321,7 @@ export default function AnalyticsPage() {
       />
 
       {/* Top stats */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-        gap: 16,
-        marginBottom: 28,
-      }}>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-5 md:mb-7">
         <StatCard icon={Users} label="Total Students" value={students.length} color="primary" delay={0} />
         <StatCard icon={FileText} label="Analyses Completed" value={reports.length} color="secondary" delay={1} />
         <StatCard icon={AlertTriangle} label="Students at Risk" value={dash?.studentsAtRisk ?? 0} color="warning" delay={2} />
@@ -371,12 +329,7 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Charts row 1 */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'minmax(0, 1fr) minmax(300px, 400px)',
-        gap: 20,
-        marginBottom: 20,
-      }}>
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_minmax(240px,340px)] gap-4 md:gap-5 mb-4 md:mb-5">
         {/* Bar: per-student scores */}
         <ChartCard
           title="Student Score Comparison"
@@ -384,25 +337,22 @@ export default function AnalyticsPage() {
           delay={0.3}
         >
           {perStudentData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={240}>
-              <BarChart data={perStudentData} barCategoryGap="30%">
-                <CartesianGrid stroke={COLORS.border} strokeDasharray="4 4" vertical={false} />
-                <XAxis dataKey="name" tick={{ fill: COLORS.textMuted, fontSize: 11 }} axisLine={false} tickLine={false} />
-                <YAxis domain={[0, 100]} tick={{ fill: COLORS.textMuted, fontSize: 11 }} axisLine={false} tickLine={false} />
-                <Tooltip content={<CustomTooltip />} />
-                <Bar dataKey="dyslexia" name="Dyslexia" fill={COLORS.primary} radius={[6, 6, 0, 0]} />
-                <Bar dataKey="dysgraphia" name="Dysgraphia" fill={COLORS.secondary} radius={[6, 6, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            <div className="w-full overflow-x-auto">
+              <div className="min-w-[280px]">
+                <ResponsiveContainer width="100%" height={200}>
+                  <BarChart data={perStudentData} barCategoryGap="30%">
+                    <CartesianGrid stroke={COLORS.border} strokeDasharray="4 4" vertical={false} />
+                    <XAxis dataKey="name" tick={{ fill: COLORS.textMuted, fontSize: 10 }} axisLine={false} tickLine={false} />
+                    <YAxis domain={[0, 100]} tick={{ fill: COLORS.textMuted, fontSize: 10 }} axisLine={false} tickLine={false} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Bar dataKey="dyslexia" name="Dyslexia" fill={COLORS.primary} radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="dysgraphia" name="Dysgraphia" fill={COLORS.secondary} radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
           ) : (
-            <div style={{
-              height: 240,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: COLORS.textMuted,
-              fontSize: 14,
-            }}>
+            <div className="h-48 md:h-60 flex items-center justify-center text-sm" style={{ color: COLORS.textMuted }}>
               No data yet. Upload student samples to see comparisons.
             </div>
           )}
@@ -414,105 +364,102 @@ export default function AnalyticsPage() {
           subtitle="Risk distribution and score averages"
           delay={0.4}
         >
-          <ResponsiveContainer width="100%" height={240}>
-            <RadarChart data={radarData}>
-              <PolarGrid stroke={`${COLORS.primary}15`} />
-              <PolarAngleAxis dataKey="subject" tick={{ fill: COLORS.textMuted, fontSize: 10 }} />
-              <PolarRadiusAxis tick={{ fill: COLORS.textMuted, fontSize: 9 }} />
-              <Radar
-                name="Classroom"
-                dataKey="A"
-                stroke={COLORS.primary}
-                fill={COLORS.primary}
-                fillOpacity={0.2}
-              />
-              <Tooltip
-                contentStyle={{
-                  background: COLORS.bgSurface,
-                  border: `1px solid ${COLORS.border}`,
-                  borderRadius: 10,
-                  fontSize: 12,
-                }}
-              />
-            </RadarChart>
-          </ResponsiveContainer>
+          <div className="w-full overflow-x-auto">
+            <div className="min-w-[200px]">
+              <ResponsiveContainer width="100%" height={200}>
+                <RadarChart data={radarData}>
+                  <PolarGrid stroke={`${COLORS.primary}15`} />
+                  <PolarAngleAxis dataKey="subject" tick={{ fill: COLORS.textMuted, fontSize: 9 }} />
+                  <PolarRadiusAxis tick={{ fill: COLORS.textMuted, fontSize: 8 }} />
+                  <Radar
+                    name="Classroom"
+                    dataKey="A"
+                    stroke={COLORS.primary}
+                    fill={COLORS.primary}
+                    fillOpacity={0.2}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      background: COLORS.bgSurface,
+                      border: `1px solid ${COLORS.border}`,
+                      borderRadius: 10,
+                      fontSize: 11,
+                    }}
+                  />
+                </RadarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         </ChartCard>
       </div>
 
       {/* Charts row 2 */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: 20,
-      }}>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-5">
         {/* Scatter: dyslexia vs dysgraphia */}
         <ChartCard
           title="Score Correlation Analysis"
           subtitle="Dyslexia vs Dysgraphia scores, colored by risk level"
           delay={0.5}
         >
-          <div style={{ display: 'flex', gap: 16, marginBottom: 16 }}>
+          <div className="flex gap-3 md:gap-4 mb-3 md:mb-4 flex-wrap">
             {[['Low', COLORS.riskLow], ['Medium', COLORS.riskMedium], ['High', COLORS.riskHigh]].map(([label, color]) => (
-              <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
-                <div style={{ width: 10, height: 10, borderRadius: '50%', background: color }} />
+              <div key={label} className="flex items-center gap-1.5 text-[11px]">
+                <div className="w-2.5 h-2.5 rounded-full" style={{ background: color }} />
                 <span style={{ color: COLORS.textMuted }}>{label}</span>
               </div>
             ))}
           </div>
           {scatterData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={220}>
-              <ScatterChart>
-                <CartesianGrid stroke={COLORS.border} strokeDasharray="4 4" />
-                <XAxis
-                  type="number"
-                  dataKey="x"
-                  name="Dyslexia"
-                  domain={[0, 100]}
-                  tick={{ fill: COLORS.textMuted, fontSize: 10 }}
-                  axisLine={false}
-                  tickLine={false}
-                  label={{ value: 'Dyslexia %', position: 'insideBottom', offset: -4, fill: COLORS.textMuted, fontSize: 10 }}
-                />
-                <YAxis
-                  type="number"
-                  dataKey="y"
-                  name="Dysgraphia"
-                  domain={[0, 100]}
-                  tick={{ fill: COLORS.textMuted, fontSize: 10 }}
-                  axisLine={false}
-                  tickLine={false}
-                  label={{ value: 'Dysgraphia %', angle: -90, position: 'insideLeft', fill: COLORS.textMuted, fontSize: 10 }}
-                />
-                <ZAxis dataKey="z" range={[50, 50]} />
-                <Tooltip
-                  cursor={{ strokeDasharray: '3 3' }}
-                  contentStyle={{
-                    background: COLORS.bgSurface,
-                    border: `1px solid ${COLORS.border}`,
-                    borderRadius: 10,
-                    fontSize: 12,
-                  }}
-                  formatter={(v, n) => [typeof v === 'number' ? v.toFixed(1) + '%' : v, n]}
-                />
-                <Scatter
-                  data={scatterData}
-                  shape={(props) => {
-                    const { cx, cy, payload } = props
-                    const fill = riskColors[payload.risk] || COLORS.primary
-                    return <circle cx={cx} cy={cy} r={6} fill={fill} fillOpacity={0.7} stroke={fill} strokeWidth={2} />
-                  }}
-                />
-              </ScatterChart>
-            </ResponsiveContainer>
+            <div className="w-full overflow-x-auto">
+              <div className="min-w-[280px]">
+                <ResponsiveContainer width="100%" height={180}>
+                  <ScatterChart>
+                    <CartesianGrid stroke={COLORS.border} strokeDasharray="4 4" />
+                    <XAxis
+                      type="number"
+                      dataKey="x"
+                      name="Dyslexia"
+                      domain={[0, 100]}
+                      tick={{ fill: COLORS.textMuted, fontSize: 9 }}
+                      axisLine={false}
+                      tickLine={false}
+                      label={{ value: 'Dyslexia %', position: 'insideBottom', offset: -4, fill: COLORS.textMuted, fontSize: 9 }}
+                    />
+                    <YAxis
+                      type="number"
+                      dataKey="y"
+                      name="Dysgraphia"
+                      domain={[0, 100]}
+                      tick={{ fill: COLORS.textMuted, fontSize: 9 }}
+                      axisLine={false}
+                      tickLine={false}
+                      label={{ value: 'Dysgraphia %', angle: -90, position: 'insideLeft', fill: COLORS.textMuted, fontSize: 9 }}
+                    />
+                    <ZAxis dataKey="z" range={[40, 40]} />
+                    <Tooltip
+                      cursor={{ strokeDasharray: '3 3' }}
+                      contentStyle={{
+                        background: COLORS.bgSurface,
+                        border: `1px solid ${COLORS.border}`,
+                        borderRadius: 10,
+                        fontSize: 11,
+                      }}
+                      formatter={(v, n) => [typeof v === 'number' ? v.toFixed(1) + '%' : v, n]}
+                    />
+                    <Scatter
+                      data={scatterData}
+                      shape={(props) => {
+                        const { cx, cy, payload } = props
+                        const fill = riskColors[payload.risk] || COLORS.primary
+                        return <circle cx={cx} cy={cy} r={5} fill={fill} fillOpacity={0.7} stroke={fill} strokeWidth={2} />
+                      }}
+                    />
+                  </ScatterChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
           ) : (
-            <div style={{
-              height: 220,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: COLORS.textMuted,
-              fontSize: 14,
-            }}>
+            <div className="h-44 flex items-center justify-center text-sm" style={{ color: COLORS.textMuted }}>
               No correlation data available yet.
             </div>
           )}
@@ -523,94 +470,67 @@ export default function AnalyticsPage() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
+          className="rounded-xl overflow-hidden"
           style={{
             background: COLORS.bgSurface,
             border: `1px solid ${COLORS.border}`,
-            borderRadius: 16,
-            overflow: 'hidden',
           }}
         >
-          <div style={{
-            padding: '20px 24px',
-            borderBottom: `1px solid ${COLORS.border}`,
-          }}>
-            <h3 style={{
+          <div className="p-4 md:p-5 border-b" style={{ borderColor: COLORS.border }}>
+            <h3 className="text-sm md:text-base font-bold mb-1" style={{
               fontFamily: "'Plus Jakarta Sans', sans-serif",
-              fontSize: 16,
-              fontWeight: 700,
-              marginBottom: 4,
               color: COLORS.textPrimary,
             }}>
               Students Requiring Attention
             </h3>
-            <p style={{ fontSize: 13, color: COLORS.textMuted }}>
+            <p className="text-xs" style={{ color: COLORS.textMuted }}>
               Ranked by highest risk indicators
             </p>
           </div>
 
           {atRiskStudents.length === 0 ? (
-            <div style={{ padding: '48px 24px', textAlign: 'center' }}>
-              <Activity size={40} color={COLORS.textLight} strokeWidth={1.5} style={{ marginBottom: 16 }} />
-              <p style={{ color: COLORS.textMuted, fontSize: 14 }}>
+            <div className="py-10 px-6 text-center">
+              <Activity size={36} color={COLORS.textLight} strokeWidth={1.5} style={{ marginBottom: 14 }} />
+              <p className="text-sm" style={{ color: COLORS.textMuted }}>
                 No high-risk students identified.
               </p>
             </div>
           ) : (
-            atRiskStudents.map((s, i) => (
-              <div
-                key={s.studentId}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 14,
-                  padding: '16px 24px',
-                  borderBottom: i < atRiskStudents.length - 1 ? `1px solid ${COLORS.borderLight}` : 'none',
-                }}
-              >
-                <div style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: 10,
-                  background: COLORS.primaryBg,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
-                  fontWeight: 700,
-                  fontSize: 14,
-                  color: COLORS.primary,
-                  flexShrink: 0,
-                }}>
-                  {s.studentName?.charAt(0).toUpperCase()}
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{
-                    fontWeight: 600,
-                    fontSize: 14,
-                    color: COLORS.textPrimary,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
+            <div className="max-h-[300px] overflow-y-auto">
+              {atRiskStudents.map((s, i) => (
+                <div
+                  key={s.studentId}
+                  className="flex items-center gap-3 p-3 md:p-4"
+                  style={{
+                    borderBottom: i < atRiskStudents.length - 1 ? `1px solid ${COLORS.borderLight}` : 'none',
+                  }}
+                >
+                  <div className="w-9 h-9 md:w-10 md:h-10 rounded-lg flex items-center justify-center flex-shrink-0 text-xs md:text-sm font-bold" style={{
+                    background: COLORS.primaryBg,
+                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    color: COLORS.primary,
                   }}>
-                    {s.studentName}
+                    {s.studentName?.charAt(0).toUpperCase()}
                   </div>
-                  <div style={{ fontSize: 12, color: COLORS.textMuted, marginTop: 2 }}>
-                    {s.className}
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-xs md:text-sm truncate" style={{ color: COLORS.textPrimary }}>
+                      {s.studentName}
+                    </div>
+                    <div className="text-[10px] md:text-xs mt-0.5" style={{ color: COLORS.textMuted }}>
+                      {s.className}
+                    </div>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <div className="text-sm md:text-[15px] font-bold mb-1" style={{
+                      color: s.dyslexiaScore >= 70 ? COLORS.riskHigh : COLORS.riskMedium,
+                    }}>
+                      {Math.max(s.dyslexiaScore, s.dysgraphiaScore).toFixed(1)}%
+                    </div>
+                    <RiskBadge level={s.riskLevel} />
                   </div>
                 </div>
-                <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                  <div style={{
-                    fontSize: 15,
-                    fontWeight: 700,
-                    color: s.dyslexiaScore >= 70 ? COLORS.riskHigh : COLORS.riskMedium,
-                    marginBottom: 4,
-                  }}>
-                    {Math.max(s.dyslexiaScore, s.dysgraphiaScore).toFixed(1)}%
-                  </div>
-                  <RiskBadge level={s.riskLevel} />
-                </div>
-              </div>
-            ))
+              ))}
+            </div>
           )}
         </motion.div>
       </div>

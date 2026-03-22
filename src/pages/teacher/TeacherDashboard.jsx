@@ -126,7 +126,7 @@ const StatCardSkeleton = () => (
 )
 
 // ════════════════════════════════════════════════════════════════
-// STAT CARD COMPONENT - Bespoke Design
+// STAT CARD COMPONENT - Bespoke Design (Mobile Responsive)
 // ════════════════════════════════════════════════════════════════
 const DashboardStatCard = ({ icon: Icon, label, value, color, delay = 0, subtitle }) => {
   const colorMap = {
@@ -143,13 +143,10 @@ const DashboardStatCard = ({ icon: Icon, label, value, color, delay = 0, subtitl
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: delay * 0.08, duration: 0.4, ease: [0.2, 0, 0, 1] }}
+      className="rounded-xl p-4 md:p-6 transition-all duration-200 cursor-default"
       style={{
         background: COLORS.bgSurface,
         border: `1px solid ${COLORS.border}`,
-        borderRadius: 12,
-        padding: 24,
-        transition: 'all 0.2s ease',
-        cursor: 'default',
       }}
       whileHover={{
         y: -4,
@@ -157,49 +154,25 @@ const DashboardStatCard = ({ icon: Icon, label, value, color, delay = 0, subtitl
         borderColor: COLORS.borderStrong,
       }}
     >
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        marginBottom: 16,
-      }}>
-        <div style={{
-          width: 48,
-          height: 48,
-          borderRadius: 10,
-          background: c.bg,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}>
-          <Icon size={24} color={c.icon} strokeWidth={1.75} />
+      <div className="flex justify-between items-start mb-3 md:mb-4">
+        <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg flex items-center justify-center" style={{ background: c.bg }}>
+          <Icon size={20} color={c.icon} strokeWidth={1.75} className="md:w-6 md:h-6" />
         </div>
       </div>
-      <p style={{
-        fontSize: 12,
+      <p className="text-[10px] md:text-xs uppercase tracking-wide font-semibold mb-1 md:mb-2" style={{
         color: COLORS.textMuted,
-        fontWeight: 600,
-        textTransform: 'uppercase',
         letterSpacing: '0.05em',
-        marginBottom: 8,
       }}>
         {label}
       </p>
-      <p style={{
-        fontSize: 32,
-        fontWeight: 700,
+      <p className="text-xl md:text-[32px] font-bold leading-none" style={{
         color: COLORS.textPrimary,
         fontFamily: 'var(--font-display)',
-        lineHeight: 1,
       }}>
         {value}
       </p>
       {subtitle && (
-        <p style={{
-          fontSize: 12,
-          color: COLORS.textLight,
-          marginTop: 6,
-        }}>
+        <p className="text-[10px] md:text-xs mt-1.5" style={{ color: COLORS.textLight }}>
           {subtitle}
         </p>
       )}
@@ -309,35 +282,22 @@ export default function TeacherDashboard() {
   // FULL LOADING STATE
   // ════════════════════════════════════════════════════════════════
   if (!user?.userId || (loading && dashLoading && reportsLoading)) return (
-    <div style={{
-      minHeight: '100vh',
-      background: COLORS.bgBase,
-      padding: '32px 40px',
-    }}>
+    <div className="min-h-screen p-4 md:p-8" style={{ background: COLORS.bgBase }}>
       {/* Header Skeleton */}
-      <div style={{ marginBottom: 40 }}>
-        <div className="skeleton" style={{ width: 280, height: 32, marginBottom: 12 }} />
-        <div className="skeleton" style={{ width: 360, height: 18 }} />
+      <div className="mb-6 md:mb-10">
+        <div className="skeleton w-48 md:w-72 h-7 md:h-8 mb-3" />
+        <div className="skeleton w-64 md:w-80 h-4 md:h-5" />
       </div>
 
       {/* Stats Skeleton */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-        gap: 20,
-        marginBottom: 40,
-      }}>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5 mb-6 md:mb-10">
         {[0, 1, 2, 3].map(i => <StatCardSkeleton key={i} />)}
       </div>
 
       {/* Charts Skeleton */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(480px, 1fr))',
-        gap: 24,
-      }}>
-        <SkeletonBox height={380} />
-        <SkeletonBox height={380} />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+        <SkeletonBox height={320} />
+        <SkeletonBox height={320} />
       </div>
     </div>
   )
@@ -346,41 +306,26 @@ export default function TeacherDashboard() {
   // MAIN RENDER
   // ════════════════════════════════════════════════════════════════
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: COLORS.bgBase,
-      padding: '32px 40px',
-    }}>
+    <div className="min-h-screen p-4 md:p-8" style={{ background: COLORS.bgBase }}>
       {/* ─── HEADER SECTION ─── */}
       <motion.div
         initial={{ opacity: 0, y: -16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        style={{ marginBottom: 40 }}
+        className="mb-6 md:mb-10"
       >
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'flex-start',
-          marginBottom: 32,
-          flexWrap: 'wrap',
-          gap: 20,
-        }}>
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-6 md:mb-8">
           <div>
-            <h1 style={{
-              fontSize: 28,
-              fontWeight: 700,
+            <h1 className="text-xl md:text-[28px] font-bold mb-2" style={{
               color: COLORS.textPrimary,
               letterSpacing: '-0.02em',
-              marginBottom: 8,
               fontFamily: 'var(--font-display)',
             }}>
               {greeting}, <span style={{ color: COLORS.primary }}>
                 {user?.name?.split(' ')[0] || 'Teacher'}
               </span>
             </h1>
-            <p style={{
-              fontSize: 15,
+            <p className="text-sm md:text-[15px]" style={{
               color: COLORS.textMuted,
               lineHeight: 1.5,
             }}>
@@ -388,36 +333,30 @@ export default function TeacherDashboard() {
             </p>
           </div>
 
-          <Link to="/teacher/upload" style={{ textDecoration: 'none' }}>
+          <Link to="/teacher/upload" className="self-start" style={{ textDecoration: 'none' }}>
             <Button
               variant="primary"
               size="lg"
               icon={<Upload size={18} />}
+              className="w-full sm:w-auto min-h-[44px]"
               style={{
                 background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryLight} 100%)`,
                 boxShadow: '0 4px 16px rgba(49, 46, 129, 0.25)',
               }}
             >
-              Upload Handwriting Sample
+              <span className="hidden sm:inline">Upload Handwriting Sample</span>
+              <span className="sm:hidden">Upload Sample</span>
             </Button>
           </Link>
         </div>
 
         {/* ─── STATS CARDS ─── */}
         {dashLoading ? (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-            gap: 20,
-          }}>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5">
             {[0, 1, 2, 3].map(i => <StatCardSkeleton key={i} />)}
           </div>
         ) : (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-            gap: 20,
-          }}>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5">
             <DashboardStatCard
               icon={Users}
               label="Total Students"
@@ -459,262 +398,200 @@ export default function TeacherDashboard() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.15, duration: 0.4 }}
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(480px, 1fr))',
-          gap: 24,
-          marginBottom: 40,
-        }}
+        className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-10"
       >
         {/* Trend Chart */}
-        <div style={{
+        <div className="p-4 md:p-7 rounded-xl" style={{
           background: COLORS.bgSurface,
           border: `1px solid ${COLORS.border}`,
-          borderRadius: 12,
-          padding: 28,
         }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-            marginBottom: 24,
-          }}>
-            <div style={{
-              width: 36,
-              height: 36,
-              borderRadius: 8,
+          <div className="flex items-center gap-2.5 mb-4 md:mb-6">
+            <div className="w-8 h-8 md:w-9 md:h-9 rounded-lg flex items-center justify-center" style={{
               background: COLORS.primaryBg,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
             }}>
-              <TrendingUp size={18} color={COLORS.primary} />
+              <TrendingUp size={16} color={COLORS.primary} />
             </div>
             <div>
-              <h3 style={{
-                fontSize: 16,
-                fontWeight: 600,
+              <h3 className="text-sm md:text-base font-semibold" style={{
                 color: COLORS.textPrimary,
                 fontFamily: 'var(--font-display)',
               }}>
                 Analysis Trend
               </h3>
-              <p style={{ fontSize: 12, color: COLORS.textMuted }}>
+              <p className="text-xs" style={{ color: COLORS.textMuted }}>
                 Recent assessment scores
               </p>
             </div>
           </div>
 
           {reportsLoading ? (
-            <SkeletonBox height={280} />
+            <SkeletonBox height={220} />
           ) : chartData.length === 0 ? (
-            <div style={{
-              height: 280,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
+            <div className="h-48 md:h-[280px] flex flex-col items-center justify-center rounded-lg" style={{
               color: COLORS.textMuted,
               background: COLORS.bgSubtle,
-              borderRadius: 8,
             }}>
-              <BarChart3 size={40} strokeWidth={1.5} style={{ marginBottom: 12, opacity: 0.5 }} />
-              <p style={{ fontSize: 14, fontWeight: 500 }}>No data yet</p>
-              <p style={{ fontSize: 13 }}>Upload samples to see trends</p>
+              <BarChart3 size={36} strokeWidth={1.5} style={{ marginBottom: 12, opacity: 0.5 }} />
+              <p className="text-sm font-medium">No data yet</p>
+              <p className="text-xs">Upload samples to see trends</p>
             </div>
           ) : (
-            <ResponsiveContainer width="100%" height={280}>
-              <AreaChart data={chartData} margin={{ top: 10, right: 20, left: -20, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="dyslexiaGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={COLORS.primary} stopOpacity={0.25} />
-                    <stop offset="100%" stopColor={COLORS.primary} stopOpacity={0} />
-                  </linearGradient>
-                  <linearGradient id="dysgraphiaGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={COLORS.secondary} stopOpacity={0.25} />
-                    <stop offset="100%" stopColor={COLORS.secondary} stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke={COLORS.border} vertical={false} />
-                <XAxis
-                  dataKey="date"
-                  stroke={COLORS.textLight}
-                  style={{ fontSize: 12 }}
-                  tickLine={false}
-                  axisLine={{ stroke: COLORS.border }}
-                />
-                <YAxis
-                  stroke={COLORS.textLight}
-                  style={{ fontSize: 12 }}
-                  tickLine={false}
-                  axisLine={false}
-                  tickFormatter={(v) => `${v}%`}
-                />
-                <ReTooltip content={<CustomTooltip />} />
-                <Area
-                  type="monotone"
-                  name="Dyslexia"
-                  dataKey="Dyslexia"
-                  stroke={COLORS.primary}
-                  strokeWidth={2.5}
-                  fillOpacity={1}
-                  fill="url(#dyslexiaGrad)"
-                  dot={{ fill: COLORS.primary, strokeWidth: 0, r: 4 }}
-                  activeDot={{ r: 6, stroke: COLORS.bgSurface, strokeWidth: 2 }}
-                />
-                <Area
-                  type="monotone"
-                  name="Dysgraphia"
-                  dataKey="Dysgraphia"
-                  stroke={COLORS.secondary}
-                  strokeWidth={2.5}
-                  fillOpacity={1}
-                  fill="url(#dysgraphiaGrad)"
-                  dot={{ fill: COLORS.secondary, strokeWidth: 0, r: 4 }}
-                  activeDot={{ r: 6, stroke: COLORS.bgSurface, strokeWidth: 2 }}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          )}
+            <>
+              <div className="w-full overflow-x-auto">
+                <div className="min-w-[300px]">
+                  <ResponsiveContainer width="100%" height={240}>
+                    <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="dyslexiaGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor={COLORS.primary} stopOpacity={0.25} />
+                          <stop offset="100%" stopColor={COLORS.primary} stopOpacity={0} />
+                        </linearGradient>
+                        <linearGradient id="dysgraphiaGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor={COLORS.secondary} stopOpacity={0.25} />
+                          <stop offset="100%" stopColor={COLORS.secondary} stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke={COLORS.border} vertical={false} />
+                      <XAxis
+                        dataKey="date"
+                        stroke={COLORS.textLight}
+                        style={{ fontSize: 11 }}
+                        tickLine={false}
+                        axisLine={{ stroke: COLORS.border }}
+                      />
+                      <YAxis
+                        stroke={COLORS.textLight}
+                        style={{ fontSize: 11 }}
+                        tickLine={false}
+                        axisLine={false}
+                        tickFormatter={(v) => `${v}%`}
+                      />
+                      <ReTooltip content={<CustomTooltip />} />
+                      <Area
+                        type="monotone"
+                        name="Dyslexia"
+                        dataKey="Dyslexia"
+                        stroke={COLORS.primary}
+                        strokeWidth={2.5}
+                        fillOpacity={1}
+                        fill="url(#dyslexiaGrad)"
+                        dot={{ fill: COLORS.primary, strokeWidth: 0, r: 3 }}
+                        activeDot={{ r: 5, stroke: COLORS.bgSurface, strokeWidth: 2 }}
+                      />
+                      <Area
+                        type="monotone"
+                        name="Dysgraphia"
+                        dataKey="Dysgraphia"
+                        stroke={COLORS.secondary}
+                        strokeWidth={2.5}
+                        fillOpacity={1}
+                        fill="url(#dysgraphiaGrad)"
+                        dot={{ fill: COLORS.secondary, strokeWidth: 0, r: 3 }}
+                        activeDot={{ r: 5, stroke: COLORS.bgSurface, strokeWidth: 2 }}
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
 
-          {/* Legend */}
-          {chartData.length > 0 && (
-            <div style={{
-              display: 'flex',
-              justifyContent: 'center',
-              gap: 24,
-              marginTop: 16,
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div style={{ width: 12, height: 12, borderRadius: 3, background: COLORS.primary }} />
-                <span style={{ fontSize: 13, color: COLORS.textMuted, fontWeight: 500 }}>Dyslexia</span>
+              {/* Legend */}
+              <div className="flex justify-center gap-4 md:gap-6 mt-3 md:mt-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded" style={{ background: COLORS.primary }} />
+                  <span className="text-xs font-medium" style={{ color: COLORS.textMuted }}>Dyslexia</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded" style={{ background: COLORS.secondary }} />
+                  <span className="text-xs font-medium" style={{ color: COLORS.textMuted }}>Dysgraphia</span>
+                </div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div style={{ width: 12, height: 12, borderRadius: 3, background: COLORS.secondary }} />
-                <span style={{ fontSize: 13, color: COLORS.textMuted, fontWeight: 500 }}>Dysgraphia</span>
-              </div>
-            </div>
+            </>
           )}
         </div>
 
         {/* Risk Distribution */}
-        <div style={{
+        <div className="p-4 md:p-7 rounded-xl" style={{
           background: COLORS.bgSurface,
           border: `1px solid ${COLORS.border}`,
-          borderRadius: 12,
-          padding: 28,
         }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-            marginBottom: 24,
-          }}>
-            <div style={{
-              width: 36,
-              height: 36,
-              borderRadius: 8,
+          <div className="flex items-center gap-2.5 mb-4 md:mb-6">
+            <div className="w-8 h-8 md:w-9 md:h-9 rounded-lg flex items-center justify-center" style={{
               background: COLORS.secondaryBg,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
             }}>
-              <PieChartIcon size={18} color={COLORS.secondary} />
+              <PieChartIcon size={16} color={COLORS.secondary} />
             </div>
             <div>
-              <h3 style={{
-                fontSize: 16,
-                fontWeight: 600,
+              <h3 className="text-sm md:text-base font-semibold" style={{
                 color: COLORS.textPrimary,
                 fontFamily: 'var(--font-display)',
               }}>
                 Risk Distribution
               </h3>
-              <p style={{ fontSize: 12, color: COLORS.textMuted }}>
+              <p className="text-xs" style={{ color: COLORS.textMuted }}>
                 Classroom breakdown
               </p>
             </div>
           </div>
 
           {dashLoading ? (
-            <SkeletonBox height={280} />
+            <SkeletonBox height={220} />
           ) : pieData.length === 0 ? (
-            <div style={{
-              height: 280,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
+            <div className="h-48 md:h-[280px] flex flex-col items-center justify-center rounded-lg" style={{
               color: COLORS.textMuted,
               background: COLORS.bgSubtle,
-              borderRadius: 8,
             }}>
-              <PieChartIcon size={40} strokeWidth={1.5} style={{ marginBottom: 12, opacity: 0.5 }} />
-              <p style={{ fontSize: 14, fontWeight: 500 }}>No assessments</p>
-              <p style={{ fontSize: 13 }}>Data will appear here</p>
+              <PieChartIcon size={36} strokeWidth={1.5} style={{ marginBottom: 12, opacity: 0.5 }} />
+              <p className="text-sm font-medium">No assessments</p>
+              <p className="text-xs">Data will appear here</p>
             </div>
           ) : (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
-              <ResponsiveContainer width="50%" height={250}>
-                <PieChart>
-                  <Pie
-                    data={pieData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={50}
-                    outerRadius={85}
-                    paddingAngle={4}
-                    dataKey="value"
-                  >
-                    {pieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
-                    ))}
-                  </Pie>
-                </PieChart>
-              </ResponsiveContainer>
+            <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8">
+              <div className="w-full md:w-1/2 overflow-x-auto">
+                <div className="min-w-[180px]">
+                  <ResponsiveContainer width="100%" height={200}>
+                    <PieChart>
+                      <Pie
+                        data={pieData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={40}
+                        outerRadius={70}
+                        paddingAngle={4}
+                        dataKey="value"
+                      >
+                        {pieData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
+                        ))}
+                      </Pie>
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
 
               {/* Custom Legend */}
-              <div style={{ flex: 1 }}>
+              <div className="flex-1 w-full">
                 {pieData.map((item, i) => (
                   <div
                     key={i}
+                    className="flex items-center justify-between py-2.5 md:py-3"
                     style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      padding: '12px 0',
                       borderBottom: i < pieData.length - 1 ? `1px solid ${COLORS.border}` : 'none',
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <div style={{
-                        width: 12,
-                        height: 12,
-                        borderRadius: 3,
-                        background: item.color,
-                      }} />
-                      <span style={{
-                        fontSize: 14,
-                        color: COLORS.textSecondary,
-                        fontWeight: 500,
-                      }}>
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-3 h-3 rounded" style={{ background: item.color }} />
+                      <span className="text-xs md:text-sm font-medium" style={{ color: COLORS.textSecondary }}>
                         {item.name}
                       </span>
                     </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <span style={{
-                        fontSize: 16,
-                        fontWeight: 700,
+                    <div className="text-right">
+                      <span className="text-sm md:text-base font-bold" style={{
                         color: COLORS.textPrimary,
                         fontFamily: 'var(--font-display)',
                       }}>
                         {item.value}
                       </span>
-                      <span style={{
-                        fontSize: 12,
-                        color: COLORS.textMuted,
-                        marginLeft: 6,
-                      }}>
+                      <span className="text-xs ml-1.5" style={{ color: COLORS.textMuted }}>
                         ({item.percentage}%)
                       </span>
                     </div>
@@ -733,15 +610,8 @@ export default function TeacherDashboard() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25, duration: 0.4 }}
         >
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: 20,
-          }}>
-            <h3 style={{
-              fontSize: 18,
-              fontWeight: 600,
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4 md:mb-5">
+            <h3 className="text-base md:text-lg font-semibold" style={{
               color: COLORS.textPrimary,
               fontFamily: 'var(--font-display)',
             }}>
@@ -751,17 +621,14 @@ export default function TeacherDashboard() {
               variant="outline"
               size="sm"
               iconRight={<ChevronRight size={16} />}
+              className="self-start min-h-[40px]"
               onClick={() => navigate('/teacher/reports')}
             >
               View All Reports
             </Button>
           </div>
 
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 12,
-          }}>
+          <div className="flex flex-col gap-2 md:gap-3">
             {reports.slice(0, 5).map((r, index) => (
               <motion.div
                 key={r.reportId}
@@ -769,16 +636,10 @@ export default function TeacherDashboard() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.3 + index * 0.05 }}
                 onClick={() => navigate(`/teacher/reports?id=${r.reportId}`)}
+                className="rounded-lg p-3 md:p-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 cursor-pointer transition-all duration-150"
                 style={{
                   background: COLORS.bgSurface,
                   border: `1px solid ${COLORS.border}`,
-                  borderRadius: 10,
-                  padding: '16px 20px',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s ease',
                 }}
                 whileHover={{
                   y: -2,
@@ -787,54 +648,26 @@ export default function TeacherDashboard() {
                 }}
               >
                 <div>
-                  <p style={{
-                    fontWeight: 600,
-                    fontSize: 15,
-                    color: COLORS.textPrimary,
-                    marginBottom: 4,
-                  }}>
+                  <p className="font-semibold text-sm md:text-[15px] mb-1" style={{ color: COLORS.textPrimary }}>
                     {r.studentName}
                   </p>
-                  <p style={{
-                    fontSize: 13,
-                    color: COLORS.textMuted,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 6,
-                  }}>
-                    <Clock size={14} />
+                  <p className="text-xs flex items-center gap-1.5" style={{ color: COLORS.textMuted }}>
+                    <Clock size={12} />
                     {formatDistanceToNow(new Date(r.createdAt), { addSuffix: true })}
                   </p>
                 </div>
-                <div style={{
-                  display: 'flex',
-                  gap: 12,
-                  alignItems: 'center',
-                }}>
-                  <div style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'flex-end',
-                    gap: 4,
-                  }}>
-                    <div style={{
+                <div className="flex gap-2 md:gap-3 items-center">
+                  <div className="flex flex-col gap-1">
+                    <div className="px-2.5 py-1 rounded text-[11px] font-bold" style={{
                       background: COLORS.primaryBg,
                       color: COLORS.primary,
-                      padding: '4px 10px',
-                      borderRadius: 6,
-                      fontSize: 12,
-                      fontWeight: 700,
                       fontFamily: 'var(--font-display)',
                     }}>
                       D: {r.dyslexiaScore.toFixed(1)}%
                     </div>
-                    <div style={{
+                    <div className="px-2.5 py-1 rounded text-[11px] font-bold" style={{
                       background: COLORS.secondaryBg,
                       color: COLORS.secondaryDark,
-                      padding: '4px 10px',
-                      borderRadius: 6,
-                      fontSize: 12,
-                      fontWeight: 700,
                       fontFamily: 'var(--font-display)',
                     }}>
                       G: {r.dysgraphiaScore.toFixed(1)}%
