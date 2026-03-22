@@ -4,11 +4,11 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   LayoutDashboard, Users, Upload, FileText, TrendingUp,
   LogOut, Brain, Bell, Settings, Menu, X, ChevronLeft,
-  ChevronRight, Search, BookOpen, MoreHorizontal,
+  ChevronRight, Search, BookOpen,
   AlertTriangle, Info, CheckCircle
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
-import { useClickOutside } from '../../hooks'
+import { useIsMobile, useClickOutside } from '../../hooks'
 import { Badge, Tooltip, Card, NavItem } from '../shared/UI'
 import { NeuraScanLogo } from '../shared/Logo'
 import toast from 'react-hot-toast'
@@ -42,8 +42,9 @@ function NotificationPanel({ notifications, markAllRead, onClose }) {
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -8, scale: 0.97 }}
       transition={{ type: 'spring', damping: 25, stiffness: 350 }}
-      className="absolute right-0 top-[calc(100%+10px)] z-[200] w-[calc(100vw-32px)] sm:w-[340px] max-w-[340px]"
       style={{
+        position: 'absolute', right: 0, top: 'calc(100% + 10px)',
+        width: 340, zIndex: 200,
         background: '#fff', border: '1px solid #e0e0e0',
         borderRadius: 16, overflow: 'hidden',
         boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
@@ -198,12 +199,13 @@ export default function AppLayout() {
   const { user, logout, isTeacher, notifications, unreadCount, markAllRead } = useAuth()
   const navigate   = useNavigate()
   const location   = useLocation()
+  const isMobile   = useIsMobile()
   const [collapsed, setCollapsed]   = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [showNotifs, setShowNotifs] = useState(false)
   const navItems = isTeacher ? teacherNav : parentNav
 
-  const sidebarWidth = collapsed ? 72 : 256
+  const sidebarWidth = collapsed ? 72 : 260
 
   const handleLogout = () => {
     logout()
@@ -213,159 +215,127 @@ export default function AppLayout() {
 
   // Breadcrumb
   const currentNav = navItems.find(n => location.pathname.startsWith(n.to))
-
+  
   return (
-    // ═══════════════════════════════════════════════════════════════
-    // ROOT APP WRAPPER - flex col on mobile, row on desktop
-    // ═══════════════════════════════════════════════════════════════
-    <div className="flex h-screen w-full flex-col md:flex-row bg-[#F8FAFC] overflow-hidden">
+    <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--bg-page)' }}>
 
-      {/* ═══════════════════════════════════════════════════════════════
-          DESKTOP SIDEBAR - hidden on mobile, visible on md+
-          ═══════════════════════════════════════════════════════════════ */}
-      <motion.aside
-        animate={{ width: sidebarWidth }}
-        transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-        className="hidden md:flex w-64 flex-col h-full border-r border-gray-200 bg-white flex-shrink-0"
-        style={{
-          background: 'linear-gradient(180deg, #f0f4ff 0%, #ffffff 100%)',
-        }}
-      >
-        <Sidebar
-          collapsed={collapsed}
-          isTeacher={isTeacher}
-          navItems={navItems}
-          location={location}
-          setCollapsed={setCollapsed}
-          setMobileOpen={setMobileOpen}
-          user={user}
-          navigate={navigate}
-          handleLogout={handleLogout}
-          isMobile={false}
-        />
-      </motion.aside>
-
-      {/* ═══════════════════════════════════════════════════════════════
-          MOBILE DRAWER OVERLAY - only renders when mobileOpen is true
-          ═══════════════════════════════════════════════════════════════ */}
-      <AnimatePresence>
-        {mobileOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setMobileOpen(false)}
-              className="fixed inset-0 z-40 md:hidden"
-              style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(2px)' }}
-            />
-            <motion.aside
-              initial={{ x: -280 }}
-              animate={{ x: 0 }}
-              exit={{ x: -280 }}
-              transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-              className="fixed left-0 top-0 bottom-0 z-50 w-[280px] max-w-[85vw] md:hidden"
-              style={{ background: '#fff', borderRight: '1px solid #e8eaed' }}
-            >
-              <button
-                onClick={() => setMobileOpen(false)}
-                className="absolute top-4 right-4 w-9 h-9 flex items-center justify-center rounded-lg z-10"
-                style={{ background: '#f1f5f9', border: '1px solid #e2e8f0' }}
-              >
-                <X size={18} color="#64748B" />
-              </button>
-              <Sidebar
-                collapsed={false}
-                isTeacher={isTeacher}
-                navItems={navItems}
-                location={location}
-                setCollapsed={setCollapsed}
-                setMobileOpen={setMobileOpen}
-                user={user}
-                navigate={navigate}
-                handleLogout={handleLogout}
-                isMobile={true}
-              />
-            </motion.aside>
-          </>
-        )}
-      </AnimatePresence>
-
-      {/* ═══════════════════════════════════════════════════════════════
-          MAIN CONTENT AREA - takes remaining space
-          ═══════════════════════════════════════════════════════════════ */}
-      <div className="flex-1 flex flex-col h-full w-full overflow-hidden relative">
-
-        {/* ─── MOBILE HEADER - visible only on mobile ─── */}
-        <header className="flex md:hidden w-full h-16 items-center justify-between px-4 bg-white border-b border-gray-200 flex-shrink-0">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setMobileOpen(true)}
-              className="w-10 h-10 flex items-center justify-center rounded-lg"
-              style={{ background: 'none', border: 'none', color: '#312E81', cursor: 'pointer' }}
-            >
-              <Menu size={24} />
-            </button>
-            <NeuraScanLogo size={28} showText={true} variant="default" />
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="relative">
-              <button
-                onClick={() => setShowNotifs(v => !v)}
-                className="w-10 h-10 rounded-lg flex items-center justify-center relative"
-                style={{ border: '1px solid #e2e8f0', background: '#fff', color: '#5f6368', cursor: 'pointer' }}
-              >
-                <Bell size={18} />
-                {unreadCount > 0 && (
-                  <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-red-500" />
-                )}
-              </button>
-              <AnimatePresence>
-                {showNotifs && (
-                  <NotificationPanel
-                    notifications={notifications}
-                    markAllRead={() => { markAllRead(); setShowNotifs(false) }}
-                    onClose={() => setShowNotifs(false)}
-                  />
-                )}
-              </AnimatePresence>
-            </div>
-            <div className="cursor-pointer" onClick={() => navigate(isTeacher ? '/teacher/settings' : '/parent/settings')}>
-              <UserAvatar name={user?.name} picture={user?.picture} size={36} />
-            </div>
-          </div>
-        </header>
-
-        {/* ─── DESKTOP TOPBAR - visible only on desktop ─── */}
-        <header
-          className="hidden md:flex h-[60px] items-center px-5 sticky top-0 z-10 gap-3 flex-shrink-0"
+      {/* Desktop Sidebar */}
+      {!isMobile && (
+        <motion.aside
+          animate={{ width: sidebarWidth }}
+          transition={{ type: 'spring', damping: 30, stiffness: 300 }}
           style={{
-            borderBottom: '1px solid #e2e8f0',
-            background: 'linear-gradient(135deg, #312E81 0%, #14B8A6 100%)',
-            color: '#fff',
-            boxShadow: '0 4px 12px rgba(49, 46, 129, 0.15)',
+            background: 'linear-gradient(180deg, #f0f4ff 0%, #ffffff 100%)',
+            borderRight: '1px solid var(--border)',
+            height: '100vh',
+            position: 'sticky', top: 0,
+            overflow: 'hidden',
+            flexShrink: 0,
+            zIndex: 20,
           }}
         >
-          <div className="flex-1 text-sm font-medium" style={{ color: 'rgba(255,255,255,0.85)' }}>
+          <Sidebar
+            collapsed={collapsed}
+            isTeacher={isTeacher}
+            navItems={navItems}
+            location={location}
+            setCollapsed={setCollapsed}
+            setMobileOpen={setMobileOpen}
+            user={user}
+            navigate={navigate}
+            handleLogout={handleLogout}
+            isMobile={false}
+          />
+        </motion.aside>
+      )}
+
+      {/* Mobile Drawer */}
+      {isMobile && (
+        <AnimatePresence>
+          {mobileOpen && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                onClick={() => setMobileOpen(false)}
+                style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(2px)', zIndex: 40 }}
+              />
+              <motion.aside
+                initial={{ x: -260 }} animate={{ x: 0 }} exit={{ x: -260 }}
+                transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+                style={{
+                  position: 'fixed', left: 0, top: 0, bottom: 0, width: 260,
+                  background: '#fff', borderRight: '1px solid #e8eaed',
+                  zIndex: 50, overflow: 'hidden',
+                }}
+              >
+                <Sidebar
+                  collapsed={false}
+                  isTeacher={isTeacher}
+                  navItems={navItems}
+                  location={location}
+                  setCollapsed={setCollapsed}
+                  setMobileOpen={setMobileOpen}
+                  user={user}
+                  navigate={navigate}
+                  handleLogout={handleLogout}
+                  isMobile={true}
+                />
+              </motion.aside>
+            </>
+          )}
+        </AnimatePresence>
+      )}
+
+      {/* Main */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+
+        {/* Topbar */}
+        <header style={{
+          height: 60, display: 'flex', alignItems: 'center',
+          padding: '0 20px 0 24px',
+          borderBottom: '1px solid var(--border)',
+          background: 'linear-gradient(135deg, #312E81 0%, #14B8A6 100%)',
+          position: 'sticky', top: 0, zIndex: 10,
+          gap: 12,
+          color: '#fff',
+          boxShadow: '0 8px 18px rgba(49, 46, 129, 0.2)',
+        }}>
+          {isMobile && (
+            <button onClick={() => setMobileOpen(true)} style={{ background: 'none', border: 'none', color: '#5f6368', cursor: 'pointer' }}>
+              <Menu size={22} />
+            </button>
+          )}
+
+          {/* Breadcrumb */}
+          <div style={{ flex: 1, fontSize: 14, color: 'rgba(255,255,255,0.85)', fontWeight: 500 }}>
             <span style={{ color: 'rgba(255,255,255,0.9)' }}>NeuraScan</span>
-            <span className="mx-2">/</span>
-            <span style={{ color: '#ffffff', fontWeight: 600 }}>{currentNav?.label || 'Dashboard'}</span>
+            <span style={{ margin: '0 6px' }}>/</span>
+            <span style={{ color: '#ffffff', fontWeight: 600 }}>
+              {currentNav?.label || 'Dashboard'}
+            </span>
           </div>
 
-          <div className="flex items-center gap-2">
-            <div className="relative">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+
+            {/* Notifications */}
+            <div style={{ position: 'relative' }}>
               <button
                 onClick={() => setShowNotifs(v => !v)}
-                className="w-10 h-10 rounded-lg flex items-center justify-center relative"
-                style={{ border: '1px solid #e0e0e0', background: '#fff', color: '#5f6368', cursor: 'pointer' }}
+                style={{
+                  width: 36, height: 36, borderRadius: 8, border: '1px solid #e0e0e0',
+                  background: '#fff', color: '#5f6368', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative',
+                }}
               >
                 <Bell size={16} />
                 {unreadCount > 0 && (
                   <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full"
-                    style={{ background: '#d93025', border: '1.5px solid #fff' }}
+                    initial={{ scale: 0 }} animate={{ scale: 1 }}
+                    style={{
+                      position: 'absolute', top: 6, right: 6, width: 8, height: 8,
+                      borderRadius: '50%', background: '#d93025',
+                      border: '1.5px solid #fff',
+                    }}
                   />
                 )}
               </button>
@@ -379,14 +349,16 @@ export default function AppLayout() {
                 )}
               </AnimatePresence>
             </div>
-            <div className="cursor-pointer" onClick={() => navigate(isTeacher ? '/teacher/settings' : '/parent/settings')}>
-              <UserAvatar name={user?.name} picture={user?.picture} size={36} />
+
+            {/* Avatar */}
+            <div style={{ cursor: 'pointer' }} onClick={() => navigate(isTeacher ? '/teacher/settings' : '/parent/settings')}>
+              <UserAvatar name={user?.name} picture={user?.picture} size={34} />
             </div>
           </div>
         </header>
 
-        {/* ─── SCROLLABLE CONTENT AREA ─── */}
-        <main className="flex-1 overflow-y-auto relative">
+        {/* Content */}
+        <main style={{ flex: 1, padding: isMobile ? '20px 16px' : '24px 28px', overflowX: 'hidden' }}>
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}
@@ -394,57 +366,12 @@ export default function AppLayout() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }}
               transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
-              className="w-full max-w-7xl mx-auto p-4 md:p-8 pb-24 md:pb-8"
+              style={{ maxWidth: 1200, margin: '0 auto' }}
             >
               <Outlet />
             </motion.div>
           </AnimatePresence>
         </main>
-
-        {/* ─── MOBILE BOTTOM NAVIGATION - visible only on mobile ─── */}
-        <nav
-          className="flex md:hidden w-full h-16 items-center justify-around bg-white border-t border-gray-200 flex-shrink-0"
-          style={{
-            boxShadow: '0 -2px 10px rgba(0,0,0,0.05)',
-            paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-          }}
-        >
-          {navItems.slice(0, 4).map(({ to, icon: Icon, label }) => {
-            const active = location.pathname === to || location.pathname.startsWith(to + '/')
-            return (
-              <NavLink
-                key={to}
-                to={to}
-                className="flex flex-col items-center justify-center flex-1 py-2 min-h-[56px]"
-                style={{ textDecoration: 'none' }}
-              >
-                <Icon
-                  size={22}
-                  color={active ? '#312E81' : '#64748B'}
-                  strokeWidth={active ? 2 : 1.75}
-                />
-                <span
-                  className="text-[10px] mt-1 font-medium truncate max-w-[60px]"
-                  style={{ color: active ? '#312E81' : '#64748B' }}
-                >
-                  {label}
-                </span>
-              </NavLink>
-            )
-          })}
-          {navItems.length > 4 && (
-            <button
-              onClick={() => setMobileOpen(true)}
-              className="flex flex-col items-center justify-center flex-1 py-2 min-h-[56px]"
-              style={{ background: 'none', border: 'none', cursor: 'pointer' }}
-            >
-              <MoreHorizontal size={22} color="#64748B" strokeWidth={1.75} />
-              <span className="text-[10px] mt-1 font-medium" style={{ color: '#64748B' }}>
-                More
-              </span>
-            </button>
-          )}
-        </nav>
       </div>
     </div>
   )
