@@ -16,6 +16,11 @@ const COLORS = {
   primaryBg: '#EEF2FF',
   secondary: '#14B8A6',
   secondaryBg: '#CCFBF1',
+
+  // Chart colors (per design system)
+  chartDyslexia: '#14B8A6',    // Soft Teal for Dyslexia
+  chartDysgraphia: '#6366F1',  // Indigo for Dysgraphia
+
   riskHigh: '#B91C1C',
   riskHighBg: '#FEF2F2',
   riskMedium: '#B45309',
@@ -161,18 +166,18 @@ export default function ProgressPage() {
             <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }} style={{ background: COLORS.bgSurface, border: `1px solid ${COLORS.border}`, borderRadius: 16, padding: '24px', marginBottom: 24 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
                 <div><h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 16, fontWeight: 700, marginBottom: 4, color: COLORS.textPrimary }}>Score History</h3><p style={{ fontSize: 13, color: COLORS.textMuted }}>Trends over all {reports.length} assessments</p></div>
-                <div style={{ display: 'flex', gap: 16, fontSize: 12 }}>{[['Dyslexia', COLORS.primary], ['Dysgraphia', COLORS.secondary]].map(([n, c]) => (<div key={n} style={{ display: 'flex', alignItems: 'center', gap: 6 }}><div style={{ width: 10, height: 10, borderRadius: 3, background: c }} /><span style={{ color: COLORS.textMuted }}>{n}</span></div>))}</div>
+                <div style={{ display: 'flex', gap: 16, fontSize: 12 }}>{[['Dyslexia', COLORS.chartDyslexia], ['Dysgraphia', COLORS.chartDysgraphia]].map(([n, c]) => (<div key={n} style={{ display: 'flex', alignItems: 'center', gap: 6 }}><div style={{ width: 10, height: 10, borderRadius: 3, background: c }} /><span style={{ color: COLORS.textMuted }}>{n}</span></div>))}</div>
               </div>
               <ResponsiveContainer width="100%" height={240}>
                 <LineChart data={chartData}>
-                  <CartesianGrid stroke={`${COLORS.primary}10`} strokeDasharray="4 4" vertical={false} />
+                  <CartesianGrid stroke={`${COLORS.chartDyslexia}10`} strokeDasharray="4 4" vertical={false} />
                   <XAxis dataKey="date" tick={{ fill: COLORS.textMuted, fontSize: 11 }} axisLine={false} tickLine={false} />
                   <YAxis domain={[0, 100]} tick={{ fill: COLORS.textMuted, fontSize: 11 }} axisLine={false} tickLine={false} />
                   <ReferenceLine y={45} stroke={`${COLORS.riskMedium}40`} strokeDasharray="6 3" />
                   <ReferenceLine y={70} stroke={`${COLORS.riskHigh}40`} strokeDasharray="6 3" />
                   <Tooltip content={<CustomTooltip />} />
-                  <Line type="monotone" dataKey="Dyslexia" stroke={COLORS.primary} strokeWidth={2.5} dot={{ fill: COLORS.primary, r: 4, strokeWidth: 0 }} activeDot={{ r: 6, fill: COLORS.primary }} />
-                  <Line type="monotone" dataKey="Dysgraphia" stroke={COLORS.secondary} strokeWidth={2.5} dot={{ fill: COLORS.secondary, r: 4, strokeWidth: 0 }} activeDot={{ r: 6, fill: COLORS.secondary }} />
+                  <Line type="monotone" dataKey="Dyslexia" stroke={COLORS.chartDyslexia} strokeWidth={2.5} dot={{ fill: COLORS.chartDyslexia, r: 4, strokeWidth: 0 }} activeDot={{ r: 6, fill: COLORS.chartDyslexia }} />
+                  <Line type="monotone" dataKey="Dysgraphia" stroke={COLORS.chartDysgraphia} strokeWidth={2.5} dot={{ fill: COLORS.chartDysgraphia, r: 4, strokeWidth: 0 }} activeDot={{ r: 6, fill: COLORS.chartDysgraphia }} />
                 </LineChart>
               </ResponsiveContainer>
             </motion.div>

@@ -14,16 +14,20 @@ import toast from 'react-hot-toast'
 // DESIGN SYSTEM COLORS
 // ════════════════════════════════════════════════════════════════
 const COLORS = {
-  // Primary: Deep Indigo
+  // Primary: Deep Indigo (UI elements, not charts)
   primary: '#312E81',
   primaryLight: '#4338CA',
   primaryLighter: '#6366F1',
   primaryBg: '#EEF2FF',
 
-  // Secondary: Soft Teal
+  // Secondary: Soft Teal (UI elements, not charts)
   secondary: '#14B8A6',
   secondaryDark: '#0D9488',
   secondaryBg: '#CCFBF1',
+
+  // Chart colors (per design system)
+  chartDyslexia: '#14B8A6',    // Soft Teal for Dyslexia
+  chartDysgraphia: '#6366F1',  // Indigo for Dysgraphia
 
   // Risk levels (muted clinical)
   riskHigh: '#B91C1C',
@@ -390,8 +394,8 @@ export default function AnalyticsPage() {
                 <XAxis dataKey="name" tick={{ fill: COLORS.textMuted, fontSize: 11 }} axisLine={false} tickLine={false} />
                 <YAxis domain={[0, 100]} tick={{ fill: COLORS.textMuted, fontSize: 11 }} axisLine={false} tickLine={false} />
                 <Tooltip content={<CustomTooltip />} />
-                <Bar dataKey="dyslexia" name="Dyslexia" fill={COLORS.primary} radius={[6, 6, 0, 0]} />
-                <Bar dataKey="dysgraphia" name="Dysgraphia" fill={COLORS.secondary} radius={[6, 6, 0, 0]} />
+                <Bar dataKey="dyslexia" name="Dyslexia" fill={COLORS.chartDyslexia} radius={[6, 6, 0, 0]} />
+                <Bar dataKey="dysgraphia" name="Dysgraphia" fill={COLORS.chartDysgraphia} radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           ) : (
@@ -416,14 +420,14 @@ export default function AnalyticsPage() {
         >
           <ResponsiveContainer width="100%" height={240}>
             <RadarChart data={radarData}>
-              <PolarGrid stroke={`${COLORS.primary}15`} />
+              <PolarGrid stroke={`${COLORS.chartDyslexia}15`} />
               <PolarAngleAxis dataKey="subject" tick={{ fill: COLORS.textMuted, fontSize: 10 }} />
               <PolarRadiusAxis tick={{ fill: COLORS.textMuted, fontSize: 9 }} />
               <Radar
                 name="Classroom"
                 dataKey="A"
-                stroke={COLORS.primary}
-                fill={COLORS.primary}
+                stroke={COLORS.chartDyslexia}
+                fill={COLORS.chartDyslexia}
                 fillOpacity={0.2}
               />
               <Tooltip
