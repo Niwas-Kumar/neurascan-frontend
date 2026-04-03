@@ -361,7 +361,7 @@ export default function UploadPage() {
                 cursor: 'pointer',
                 outline: 'none',
                 transition: 'all 0.15s ease',
-                boxShadow: studentId ? '0 0 0 3px rgba(49, 46, 129, 0.1)' : 'none',
+                boxShadow: studentId ? '0 0 0 3px rgba(20, 184, 166, 0.1)' : 'none',
               }}
             >
               <option value="">Choose a student from your roster</option>
@@ -663,10 +663,7 @@ export default function UploadPage() {
               style={{
                 background: (!studentId || !file)
                   ? undefined
-                  : `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryLight} 100%)`,
-                boxShadow: (!studentId || !file)
-                  ? undefined
-                  : '0 4px 16px rgba(49, 46, 129, 0.25)',
+                  : COLORS.primary,
               }}
             >
               {uploading ? 'Uploading...' : analyzing ? 'Analyzing...' : 'Run AI Analysis'}
