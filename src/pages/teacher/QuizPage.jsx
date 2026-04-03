@@ -9,31 +9,37 @@ import toast from 'react-hot-toast'
 import { useAuth } from '../../context/AuthContext'
 
 // ════════════════════════════════════════════════════════════════
-// DESIGN SYSTEM COLORS
+// DESIGN SYSTEM - Matching reference exactly
 // ════════════════════════════════════════════════════════════════
 const COLORS = {
-  primary: '#312E81',
-  primaryLight: '#4338CA',
-  primaryLighter: '#6366F1',
-  primaryBg: '#EEF2FF',
-  secondary: '#14B8A6',
-  secondaryDark: '#0D9488',
-  secondaryBg: '#CCFBF1',
-  riskHigh: '#B91C1C',
-  riskHighBg: '#FEF2F2',
-  riskMedium: '#B45309',
-  riskMediumBg: '#FFFBEB',
-  riskLow: '#047857',
-  riskLowBg: '#ECFDF5',
-  textPrimary: '#1E293B',
-  textSecondary: '#475569',
-  textMuted: '#64748B',
-  textLight: '#94A3B8',
+  sidebar: '#312E81',
+  primary: '#14B8A6',
+  primaryLight: '#0D9488',
+  primaryBg: 'rgba(20, 184, 166, 0.1)',
+
+  secondary: '#6366F1',
+  secondaryDark: '#4F46E5',
+  secondaryBg: 'rgba(99, 102, 241, 0.1)',
+
   bgBase: '#F8FAFC',
   bgSurface: '#FFFFFF',
   bgSubtle: '#F1F5F9',
+
+  textPrimary: '#0F172A',
+  textSecondary: '#475569',
+  textMuted: '#64748B',
+  textLight: '#94A3B8',
+
   border: '#E2E8F0',
   borderLight: '#F1F5F9',
+
+  // Risk colors
+  riskHigh: '#ef4444',
+  riskHighBg: 'rgba(239, 68, 68, 0.1)',
+  riskMedium: '#f59e0b',
+  riskMediumBg: 'rgba(245, 158, 11, 0.1)',
+  riskLow: '#22c55e',
+  riskLowBg: 'rgba(34, 197, 94, 0.1)',
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -296,7 +302,7 @@ const DistributeModal = ({ quiz, students, onClose, onDistribute }) => {
               disabled={sending}
               style={{
                 padding: '10px 18px', borderRadius: 10, border: 'none',
-                background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryLight} 100%)`,
+                background: COLORS.primary,
                 color: 'white', fontWeight: 600,
                 cursor: sending ? 'not-allowed' : 'pointer', opacity: sending ? 0.7 : 1,
                 display: 'flex', alignItems: 'center', gap: 8,
@@ -531,7 +537,7 @@ export default function QuizPage() {
             style={{
               display: 'flex', alignItems: 'center', gap: 8, padding: '10px 18px', fontWeight: 600,
               borderRadius: 10, border: 'none',
-              background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryLight} 100%)`,
+              background: COLORS.primary,
               color: 'white', cursor: creating ? 'not-allowed' : 'pointer', opacity: creating ? 0.7 : 1,
               fontFamily: "'Inter', sans-serif", fontSize: 14, boxShadow: '0 4px 14px rgba(49, 46, 129, 0.25)'
             }}
@@ -655,7 +661,7 @@ export default function QuizPage() {
                   style={{
                     display: 'flex', alignItems: 'center', gap: 6, padding: '10px 16px',
                     borderRadius: 10, border: 'none',
-                    background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryLight} 100%)`,
+                    background: COLORS.primary,
                     color: 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer',
                     fontFamily: "'Inter', sans-serif", boxShadow: '0 4px 14px rgba(49, 46, 129, 0.2)'
                   }}

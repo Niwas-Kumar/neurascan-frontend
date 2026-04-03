@@ -10,34 +10,37 @@ import { useDebounce } from '../../hooks'
 import { Button, Input, Modal, Badge } from '../../components/shared/UI'
 
 // ════════════════════════════════════════════════════════════════
-// DESIGN SYSTEM COLORS
+// DESIGN SYSTEM - Matching reference exactly
 // ════════════════════════════════════════════════════════════════
 const COLORS = {
-  primary: '#312E81',
-  primaryLight: '#4338CA',
-  primaryBg: '#EEF2FF',
+  sidebar: '#312E81',
+  primary: '#14B8A6',
+  primaryLight: '#0D9488',
+  primaryBg: 'rgba(20, 184, 166, 0.1)',
 
-  secondary: '#14B8A6',
-  secondaryDark: '#0D9488',
-  secondaryBg: '#CCFBF1',
-
-  success: '#059669',
-  successBg: '#D1FAE5',
-  warning: '#D97706',
-  warningBg: '#FEF3C7',
-  danger: '#B91C1C',
-  dangerBg: '#FEE2E2',
-
-  textPrimary: '#1E293B',
-  textSecondary: '#334155',
-  textMuted: '#64748B',
-  textLight: '#94A3B8',
+  secondary: '#6366F1',
+  secondaryDark: '#4F46E5',
+  secondaryBg: 'rgba(99, 102, 241, 0.1)',
 
   bgBase: '#F8FAFC',
   bgSurface: '#FFFFFF',
   bgSubtle: '#F1F5F9',
+
+  textPrimary: '#0F172A',
+  textSecondary: '#475569',
+  textMuted: '#64748B',
+  textLight: '#94A3B8',
+
   border: '#E2E8F0',
   borderStrong: '#CBD5E1',
+
+  // Risk/Status colors
+  success: '#22c55e',
+  successBg: 'rgba(34, 197, 94, 0.1)',
+  warning: '#f59e0b',
+  warningBg: 'rgba(245, 158, 11, 0.1)',
+  danger: '#ef4444',
+  dangerBg: 'rgba(239, 68, 68, 0.1)',
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -505,8 +508,7 @@ export default function StudentsPage() {
           icon={<UserPlus size={18} />}
           onClick={() => setModal('add')}
           style={{
-            background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryLight} 100%)`,
-            boxShadow: '0 4px 16px rgba(49, 46, 129, 0.25)',
+            background: COLORS.primary,
           }}
         >
           Add Student

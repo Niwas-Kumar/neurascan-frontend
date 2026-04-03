@@ -11,35 +11,42 @@ import { useAuth } from '../../context/AuthContext'
 import { Button, RiskBadge, Alert, ScoreBar } from '../../components/shared/UI'
 
 // ════════════════════════════════════════════════════════════════
-// DESIGN SYSTEM COLORS
+// DESIGN SYSTEM - Matching reference exactly
 // ════════════════════════════════════════════════════════════════
 const COLORS = {
-  primary: '#312E81',
-  primaryLight: '#4338CA',
-  primaryLighter: '#6366F1',
-  primaryBg: '#EEF2FF',
+  sidebar: '#312E81',
+  primary: '#14B8A6',
+  primaryHover: '#0D9488',
+  primaryBg: 'rgba(20, 184, 166, 0.1)',
 
-  secondary: '#14B8A6',
-  secondaryDark: '#0D9488',
-  secondaryBg: '#CCFBF1',
-
-  success: '#059669',
-  successBg: '#D1FAE5',
-  warning: '#D97706',
-  warningBg: '#FEF3C7',
-  danger: '#B91C1C',
-  dangerBg: '#FEE2E2',
-
-  textPrimary: '#1E293B',
-  textSecondary: '#334155',
-  textMuted: '#64748B',
-  textLight: '#94A3B8',
+  secondary: '#6366F1',
+  secondaryBg: 'rgba(99, 102, 241, 0.1)',
 
   bgBase: '#F8FAFC',
   bgSurface: '#FFFFFF',
   bgSubtle: '#F1F5F9',
+
+  textPrimary: '#0F172A',
+  textSecondary: '#475569',
+  textMuted: '#64748B',
+  textLight: '#94A3B8',
+
   border: '#E2E8F0',
   borderStrong: '#CBD5E1',
+
+  // Risk colors
+  riskHigh: '#ef4444',
+  riskHighBg: 'rgba(239, 68, 68, 0.1)',
+  danger: '#ef4444',
+  dangerBg: 'rgba(239, 68, 68, 0.1)',
+  riskMedium: '#f59e0b',
+  riskMediumBg: 'rgba(245, 158, 11, 0.1)',
+  warning: '#f59e0b',
+  warningBg: 'rgba(245, 158, 11, 0.1)',
+  riskLow: '#22c55e',
+  riskLowBg: 'rgba(34, 197, 94, 0.1)',
+  success: '#22c55e',
+  successBg: 'rgba(34, 197, 94, 0.1)',
 }
 
 const STEPS = ['Select Student', 'Upload Sample', 'AI Analysis', 'View Results']
