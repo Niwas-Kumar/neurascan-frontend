@@ -10,36 +10,24 @@ import PremiumNavbar from '../components/landing/PremiumNavbar.jsx'
 import PremiumFooter from '../components/landing/PremiumFooter.jsx'
 import '../styles/designSystem.css'
 
-// ════════════════════════════════════════════════════════════════
-// DESIGN SYSTEM COLORS
-// ════════════════════════════════════════════════════════════════
+
+
+// Design system colors matching NeuraScan v3.0
 const COLORS = {
-  // Primary: Deep Indigo
   primary: '#312E81',
   primaryLight: '#4338CA',
-  primaryLighter: '#6366F1',
   primaryBg: '#EEF2FF',
-
-  // Secondary: Soft Teal
   secondary: '#14B8A6',
-  secondaryDark: '#0D9488',
   secondaryLight: '#2DD4BF',
   secondaryBg: '#CCFBF1',
-
-  // Neutrals
+  sidebar: '#312E81',
   textPrimary: '#1E293B',
   textSecondary: '#475569',
   textMuted: '#64748B',
-  textLight: '#94A3B8',
-
-  // Backgrounds
   bgBase: '#F8FAFC',
   bgSurface: '#FFFFFF',
   bgSubtle: '#F1F5F9',
-
-  // Borders
   border: '#E2E8F0',
-  borderLight: '#F1F5F9',
 }
 
 const containerVariants = {
