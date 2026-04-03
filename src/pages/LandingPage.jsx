@@ -1,883 +1,240 @@
-import React from 'react'
 import { Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
 import {
-  Brain, Zap, Shield, BarChart3, TrendingUp, Users, Award, CheckCircle,
-  ArrowRight, Play, Quote, Sparkles, FileSearch, ClipboardCheck, LineChart
+  Brain,
+  Upload,
+  BarChart3,
+  ClipboardList,
+  Shield,
+  Zap,
+  Users,
+  ArrowRight,
+  CheckCircle2,
+  Star,
 } from 'lucide-react'
-import { NeuraScanLogo, NeuraScanLogoAnimated } from '../components/shared/Logo.jsx'
-import PremiumNavbar from '../components/landing/PremiumNavbar.jsx'
-import PremiumFooter from '../components/landing/PremiumFooter.jsx'
-import '../styles/designSystem.css'
 
-
-
-// Design system colors matching NeuraScan v3.0
+// ════════════════════════════════════════════════════════════════
+// DESIGN SYSTEM - Matching reference exactly
+// ════════════════════════════════════════════════════════════════
 const COLORS = {
-  primary: '#312E81',
-  primaryLight: '#4338CA',
-  primaryBg: '#EEF2FF',
-  secondary: '#14B8A6',
-  secondaryLight: '#2DD4BF',
-  secondaryBg: '#CCFBF1',
-  sidebar: '#312E81',
-  textPrimary: '#1E293B',
+  sidebar: '#312E81',       // Deep indigo
+  primary: '#14B8A6',       // Soft teal
+  primaryHover: '#0D9488',
+  indigo: '#6366F1',
+  violet: '#7C3AED',
+  emerald: '#059669',
+  amber: '#D97706',
+  rose: '#E11D48',
+
+  bgBase: '#F8FAFC',
+  bgCard: '#FFFFFF',
+  bgMuted: '#F1F5F9',
+
+  textPrimary: '#0F172A',
   textSecondary: '#475569',
   textMuted: '#64748B',
-  bgBase: '#F8FAFC',
-  bgSurface: '#FFFFFF',
-  bgSubtle: '#F1F5F9',
+  textLight: '#94A3B8',
+
   border: '#E2E8F0',
+
+  // Feature icon backgrounds
+  primaryBg: 'rgba(20, 184, 166, 0.1)',
+  indigoBg: '#EEF2FF',
+  violetBg: '#F5F3FF',
+  emeraldBg: '#ECFDF5',
+  amberBg: '#FFFBEB',
+  roseBg: '#FFF1F2',
 }
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.2 } },
-}
+const features = [
+  {
+    icon: Upload,
+    title: 'AI Handwriting Analysis',
+    description: 'Upload student test papers and get instant AI-powered analysis detecting dyslexia and dysgraphia patterns.',
+    color: COLORS.primary,
+    bg: COLORS.primaryBg,
+  },
+  {
+    icon: BarChart3,
+    title: 'Detailed Analytics',
+    description: 'Track progress over time with trend charts, risk distributions, and class-wide insights.',
+    color: COLORS.indigo,
+    bg: COLORS.indigoBg,
+  },
+  {
+    icon: ClipboardList,
+    title: 'AI-Generated Quizzes',
+    description: 'Create targeted quizzes for students, distribute via email, and track learning gaps automatically.',
+    color: COLORS.violet,
+    bg: COLORS.violetBg,
+  },
+  {
+    icon: Shield,
+    title: 'Privacy First',
+    description: 'Secure data handling with role-based access. Teachers and parents each see only what they need.',
+    color: COLORS.emerald,
+    bg: COLORS.emeraldBg,
+  },
+  {
+    icon: Zap,
+    title: 'Instant Results',
+    description: 'Get dyslexia and dysgraphia scores within seconds of upload, with actionable AI commentary.',
+    color: COLORS.amber,
+    bg: COLORS.amberBg,
+  },
+  {
+    icon: Users,
+    title: 'Parent Collaboration',
+    description: 'Keep parents informed with a dedicated portal to view progress reports and quiz results.',
+    color: COLORS.rose,
+    bg: COLORS.roseBg,
+  },
+]
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.2, 0, 0, 1] } },
-}
+const stats = [
+  { value: '95%', label: 'Detection Accuracy' },
+  { value: '3s', label: 'Avg. Analysis Time' },
+  { value: '10K+', label: 'Papers Analyzed' },
+  { value: '500+', label: 'Schools Trust Us' },
+]
+
+const testimonials = [
+  {
+    name: 'Sarah Mitchell',
+    role: 'Special Education Teacher',
+    school: 'Riverside Elementary',
+    quote: 'NeuraScan helped me identify 3 students who needed early intervention. The AI analysis is remarkably accurate.',
+    rating: 5,
+  },
+  {
+    name: 'Dr. Priya Sharma',
+    role: 'School Psychologist',
+    school: 'Westlake Academy',
+    quote: 'The handwriting analysis complements our traditional assessments beautifully. A game-changer for early detection.',
+    rating: 5,
+  },
+  {
+    name: 'Marcus Johnson',
+    role: 'Parent',
+    school: 'Lincoln Elementary',
+    quote: "Being able to track my daughter's progress in real-time has been incredibly reassuring. Highly recommended.",
+    rating: 5,
+  },
+]
+
+const howItWorks = [
+  {
+    step: '1',
+    title: 'Upload Handwriting',
+    desc: "Take a photo or scan of any student's handwriting sample — tests, homework, or dictation.",
+  },
+  {
+    step: '2',
+    title: 'AI Analyzes Patterns',
+    desc: 'Our model scans for 30+ dyslexia and dysgraphia indicators including letter reversals and spacing anomalies.',
+  },
+  {
+    step: '3',
+    title: 'Get Actionable Insights',
+    desc: "Receive risk scores, AI commentary, and recommendations to support each student's unique needs.",
+  },
+]
 
 // ════════════════════════════════════════════════════════════════
-// REUSABLE COMPONENTS
+// BUTTON COMPONENT
 // ════════════════════════════════════════════════════════════════
-function Badge({ children, variant = 'primary' }) {
-  const styles = {
-    primary: {
-      background: COLORS.primaryBg,
-      color: COLORS.primary,
-      border: `1px solid rgba(49, 46, 129, 0.15)`,
-    },
-    secondary: {
-      background: COLORS.secondaryBg,
-      color: COLORS.secondaryDark,
-      border: `1px solid rgba(20, 184, 166, 0.15)`,
-    },
+function Button({ children, variant = 'primary', size = 'md', style = {}, ...props }) {
+  const baseStyle = {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    fontFamily: "'Inter', sans-serif",
+    fontWeight: 500,
+    borderRadius: 8,
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    textDecoration: 'none',
+    border: 'none',
   }
 
-  return (
-    <span style={{
-      display: 'inline-flex',
-      alignItems: 'center',
-      gap: 6,
-      padding: '6px 14px',
-      borderRadius: 100,
-      fontSize: 13,
-      fontWeight: 600,
-      ...styles[variant],
-    }}>
-      {children}
-    </span>
-  )
-}
-
-function PremiumButton({ children, variant = 'primary', size = 'md', ...props }) {
   const sizeStyles = {
-    sm: { padding: '10px 18px', fontSize: 13 },
-    md: { padding: '12px 24px', fontSize: 14 },
-    lg: { padding: '16px 32px', fontSize: 15 },
+    sm: { padding: '8px 16px', fontSize: 13 },
+    md: { padding: '10px 20px', fontSize: 14 },
+    lg: { padding: '14px 32px', fontSize: 15 },
   }
 
   const variantStyles = {
     primary: {
-      background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryLight} 100%)`,
+      background: COLORS.primary,
       color: 'white',
-      border: 'none',
-      boxShadow: '0 4px 14px rgba(49, 46, 129, 0.25)',
-    },
-    secondary: {
-      background: `linear-gradient(135deg, ${COLORS.secondary} 0%, ${COLORS.secondaryLight} 100%)`,
-      color: 'white',
-      border: 'none',
-      boxShadow: '0 4px 14px rgba(20, 184, 166, 0.25)',
-    },
-    outline: {
-      background: 'transparent',
-      color: COLORS.primary,
-      border: `2px solid ${COLORS.primary}`,
-      boxShadow: 'none',
     },
     ghost: {
       background: 'transparent',
       color: COLORS.textSecondary,
-      border: 'none',
-      boxShadow: 'none',
+    },
+    outline: {
+      background: 'rgba(255, 255, 255, 0.1)',
+      color: 'white',
+      border: '1px solid rgba(255, 255, 255, 0.2)',
     },
   }
 
   return (
-    <motion.button
-      whileHover={{ y: -2 }}
-      whileTap={{ scale: 0.98 }}
+    <button
       style={{
+        ...baseStyle,
         ...sizeStyles[size],
         ...variantStyles[variant],
-        borderRadius: 12,
-        fontWeight: 600,
-        cursor: 'pointer',
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 8,
-        transition: 'all 0.2s ease',
-        fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
+        ...style,
       }}
       {...props}
     >
       {children}
-    </motion.button>
+    </button>
   )
 }
 
-function FeatureCard({ icon: Icon, title, description, color = 'primary' }) {
-  const colorMap = {
-    primary: { bg: COLORS.primaryBg, icon: COLORS.primary },
-    secondary: { bg: COLORS.secondaryBg, icon: COLORS.secondary },
-  }
-  const c = colorMap[color] || colorMap.primary
-
+// ════════════════════════════════════════════════════════════════
+// CARD COMPONENT
+// ════════════════════════════════════════════════════════════════
+function Card({ children, style = {}, hover = false }) {
   return (
-    <motion.div
-      whileHover={{ y: -4, boxShadow: '0 12px 40px rgba(49, 46, 129, 0.12)' }}
+    <div
       style={{
-        background: COLORS.bgSurface,
+        background: COLORS.bgCard,
         border: `1px solid ${COLORS.border}`,
-        borderRadius: 20,
-        padding: 32,
-        transition: 'all 0.3s ease',
+        borderRadius: 12,
+        transition: hover ? 'box-shadow 0.2s ease, transform 0.2s ease' : 'none',
+        ...style,
       }}
+      className={hover ? 'card-hover' : ''}
     >
-      <div style={{
-        width: 52,
-        height: 52,
-        borderRadius: 14,
-        background: c.bg,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: 20,
-      }}>
-        <Icon size={24} color={c.icon} strokeWidth={2} />
-      </div>
-      <h3 style={{
-        fontSize: 18,
-        fontWeight: 700,
-        color: COLORS.textPrimary,
-        marginBottom: 10,
-        fontFamily: "'Plus Jakarta Sans', sans-serif",
-      }}>
-        {title}
-      </h3>
-      <p style={{
-        fontSize: 14,
-        color: COLORS.textSecondary,
-        lineHeight: 1.7,
-      }}>
-        {description}
-      </p>
-    </motion.div>
-  )
-}
-
-// ════════════════════════════════════════════════════════════════
-// HERO SECTION
-// ════════════════════════════════════════════════════════════════
-function HeroSection() {
-  return (
-    <div style={{
-      background: '#FFFFFF',
-      minHeight: '92vh',
-      display: 'flex',
-      alignItems: 'center',
-      position: 'relative',
-      overflow: 'hidden',
-    }}>
-      {/* Background decorative elements */}
-      <div style={{
-        position: 'absolute',
-        top: '5%',
-        right: '5%',
-        width: 400,
-        height: 400,
-        background: `radial-gradient(circle, ${COLORS.primaryBg} 0%, transparent 70%)`,
-        borderRadius: '50%',
-        opacity: 0.4,
-        pointerEvents: 'none',
-      }} />
-      <div style={{
-        position: 'absolute',
-        bottom: '10%',
-        left: '0%',
-        width: 300,
-        height: 300,
-        background: `radial-gradient(circle, ${COLORS.secondaryBg} 0%, transparent 70%)`,
-        borderRadius: '50%',
-        opacity: 0.3,
-        pointerEvents: 'none',
-      }} />
-
-      <div style={{ maxWidth: 1280, width: '100%', margin: '0 auto', padding: '80px 40px' }}>
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 80, alignItems: 'center' }}
-        >
-          {/* Left: Copy */}
-          <div>
-            <motion.div variants={itemVariants}>
-              <Badge variant="primary">
-                <Sparkles size={14} />
-                AI-Powered Learning Assessment
-              </Badge>
-              <div style={{ height: 28 }} />
-            </motion.div>
-
-            <motion.h1
-              variants={itemVariants}
-              style={{
-                fontSize: 52,
-                fontWeight: 800,
-                letterSpacing: '-0.03em',
-                marginBottom: 24,
-                lineHeight: 1.1,
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
-                color: COLORS.textPrimary,
-              }}
-            >
-              Identify learning disorders{' '}
-              <span style={{
-                background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.secondary} 100%)`,
-                backgroundClip: 'text',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-              }}>
-                with precision.
-              </span>
-            </motion.h1>
-
-            <motion.p
-              variants={itemVariants}
-              style={{
-                fontSize: 18,
-                color: COLORS.textSecondary,
-                lineHeight: 1.75,
-                marginBottom: 40,
-                maxWidth: 520,
-              }}
-            >
-              Equip educators and parents with clinically-validated AI analysis that detects dyslexia, dysgraphia, and learning disabilities through handwriting assessment.
-            </motion.p>
-
-            <motion.div variants={itemVariants} style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-              <Link to="/register" style={{ textDecoration: 'none' }}>
-                <PremiumButton size="lg">
-                  Start Assessment <ArrowRight size={18} />
-                </PremiumButton>
-              </Link>
-              <PremiumButton size="lg" variant="outline">
-                <Play size={18} /> Watch Overview
-              </PremiumButton>
-            </motion.div>
-
-            <motion.div
-              variants={itemVariants}
-              style={{
-                marginTop: 56,
-                display: 'flex',
-                gap: 40,
-                paddingTop: 32,
-                borderTop: `1px solid ${COLORS.border}`,
-              }}
-            >
-              {[
-                { num: '12,400+', label: 'Students assessed' },
-                { num: '340+', label: 'Schools partnered' },
-                { num: '94%', label: 'Detection accuracy' },
-              ].map(({ num, label }) => (
-                <div key={label}>
-                  <div style={{
-                    fontSize: 32,
-                    fontWeight: 800,
-                    color: COLORS.primary,
-                    fontFamily: "'Plus Jakarta Sans', sans-serif",
-                  }}>
-                    {num}
-                  </div>
-                  <div style={{
-                    fontSize: 13,
-                    color: COLORS.textMuted,
-                    marginTop: 4,
-                    fontWeight: 500,
-                  }}>
-                    {label}
-                  </div>
-                </div>
-              ))}
-            </motion.div>
-          </div>
-
-          {/* Right: Visual */}
-          <motion.div
-            variants={itemVariants}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              height: 520,
-              background: `linear-gradient(135deg, ${COLORS.primaryBg} 0%, ${COLORS.secondaryBg} 100%)`,
-              borderRadius: 24,
-              border: `1px solid ${COLORS.border}`,
-              position: 'relative',
-              overflow: 'hidden',
-            }}
-          >
-            <div style={{
-              position: 'absolute',
-              inset: 0,
-              background: `linear-gradient(135deg, ${COLORS.primary}08 0%, ${COLORS.secondary}08 100%)`,
-            }} />
-
-            {/* Neural network visualization placeholder */}
-            <div style={{
-              position: 'relative',
-              zIndex: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: 24,
-            }}>
-              <NeuraScanLogoAnimated size={120} />
-              <div style={{
-                fontSize: 16,
-                color: COLORS.textMuted,
-                fontWeight: 500,
-                textAlign: 'center',
-              }}>
-                AI-Powered Analysis Engine
-              </div>
-            </div>
-
-            {/* Floating stats cards */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.8, duration: 0.5 }}
-              style={{
-                position: 'absolute',
-                top: 40,
-                right: 30,
-                background: COLORS.bgSurface,
-                borderRadius: 16,
-                padding: '16px 20px',
-                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
-                border: `1px solid ${COLORS.border}`,
-              }}
-            >
-              <div style={{ fontSize: 12, color: COLORS.textMuted, marginBottom: 4 }}>Analysis Speed</div>
-              <div style={{ fontSize: 20, fontWeight: 700, color: COLORS.secondary }}>Under 30s</div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 1, duration: 0.5 }}
-              style={{
-                position: 'absolute',
-                bottom: 50,
-                left: 30,
-                background: COLORS.bgSurface,
-                borderRadius: 16,
-                padding: '16px 20px',
-                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
-                border: `1px solid ${COLORS.border}`,
-              }}
-            >
-              <div style={{ fontSize: 12, color: COLORS.textMuted, marginBottom: 4 }}>Disorders Detected</div>
-              <div style={{ fontSize: 20, fontWeight: 700, color: COLORS.primary }}>Dyslexia, Dysgraphia +3</div>
-            </motion.div>
-          </motion.div>
-        </motion.div>
-      </div>
+      {children}
     </div>
   )
 }
 
 // ════════════════════════════════════════════════════════════════
-// FEATURES SECTION
+// BADGE COMPONENT
 // ════════════════════════════════════════════════════════════════
-function FeaturesSection() {
-  const features = [
-    {
-      icon: Zap,
-      title: 'Rapid AI Analysis',
-      description: 'Process handwriting samples in under 30 seconds with our specialized neural networks trained on clinical data.',
-      color: 'primary',
-    },
-    {
-      icon: Shield,
-      title: 'FERPA Compliant',
-      description: 'All student data encrypted with AES-256. Enterprise-grade security with full regulatory compliance.',
-      color: 'secondary',
-    },
-    {
-      icon: BarChart3,
-      title: 'Comprehensive Reports',
-      description: 'Detailed analysis with actionable recommendations designed for educators and intervention specialists.',
-      color: 'primary',
-    },
-    {
-      icon: TrendingUp,
-      title: 'Progress Tracking',
-      description: 'Monitor student development over time with longitudinal data visualization and milestone tracking.',
-      color: 'secondary',
-    },
-    {
-      icon: Users,
-      title: 'Collaborative Platform',
-      description: 'Share assessment results securely between teachers, parents, and learning specialists.',
-      color: 'primary',
-    },
-    {
-      icon: Award,
-      title: 'Research-Validated',
-      description: 'Developed in collaboration with educational psychologists and validated against clinical standards.',
-      color: 'secondary',
-    },
-  ]
-
+function Badge({ children }) {
   return (
-    <section id="features" style={{
-      padding: '120px 40px',
-      background: COLORS.bgSurface,
-      borderTop: `1px solid ${COLORS.border}`,
-    }}>
-      <div style={{ maxWidth: 1280, margin: '0 auto' }}>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          viewport={{ once: true, margin: '-100px' }}
-          style={{ textAlign: 'center', marginBottom: 72 }}
-        >
-          <Badge variant="secondary">Platform Capabilities</Badge>
-          <h2 style={{
-            fontSize: 40,
-            fontWeight: 800,
-            marginTop: 20,
-            marginBottom: 16,
-            color: COLORS.textPrimary,
-            fontFamily: "'Plus Jakarta Sans', sans-serif",
-          }}>
-            Clinical-grade assessment tools
-          </h2>
-          <p style={{
-            fontSize: 17,
-            color: COLORS.textSecondary,
-            maxWidth: 600,
-            margin: '0 auto',
-            lineHeight: 1.7,
-          }}>
-            Comprehensive features designed to support early identification and intervention for learning disorders.
-          </p>
-        </motion.div>
-
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: '-100px' }}
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
-            gap: 28,
-          }}
-        >
-          {features.map((feature) => (
-            <motion.div key={feature.title} variants={itemVariants}>
-              <FeatureCard {...feature} />
-            </motion.div>
-          ))}
-        </motion.div>
-      </div>
-    </section>
-  )
-}
-
-// ════════════════════════════════════════════════════════════════
-// HOW IT WORKS SECTION
-// ════════════════════════════════════════════════════════════════
-function HowItWorksSection() {
-  const steps = [
-    {
-      num: '01',
-      icon: FileSearch,
-      title: 'Upload Sample',
-      description: 'Scan or photograph student handwriting samples and upload to our secure platform.',
-    },
-    {
-      num: '02',
-      icon: Brain,
-      title: 'AI Analysis',
-      description: 'Our neural network analyzes stroke patterns, letter formations, and spatial relationships.',
-    },
-    {
-      num: '03',
-      icon: ClipboardCheck,
-      title: 'Review Results',
-      description: 'Receive comprehensive reports with risk indicators and specific pattern observations.',
-    },
-    {
-      num: '04',
-      icon: LineChart,
-      title: 'Track Progress',
-      description: 'Monitor development over time and measure intervention effectiveness.',
-    },
-  ]
-
-  return (
-    <section style={{
-      padding: '120px 40px',
-      background: COLORS.bgBase,
-    }}>
-      <div style={{ maxWidth: 1280, margin: '0 auto' }}>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          viewport={{ once: true, margin: '-100px' }}
-          style={{ textAlign: 'center', marginBottom: 72 }}
-        >
-          <h2 style={{
-            fontSize: 40,
-            fontWeight: 800,
-            marginBottom: 16,
-            color: COLORS.textPrimary,
-            fontFamily: "'Plus Jakarta Sans', sans-serif",
-          }}>
-            Assessment workflow
-          </h2>
-          <p style={{
-            fontSize: 17,
-            color: COLORS.textSecondary,
-            maxWidth: 540,
-            margin: '0 auto',
-            lineHeight: 1.7,
-          }}>
-            A streamlined process from sample collection to actionable insights.
-          </p>
-        </motion.div>
-
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: '-100px' }}
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(4, 1fr)',
-            gap: 32,
-          }}
-        >
-          {steps.map((step, idx) => (
-            <motion.div
-              key={step.title}
-              variants={itemVariants}
-              style={{ position: 'relative' }}
-            >
-              {/* Connector line */}
-              {idx < steps.length - 1 && (
-                <div style={{
-                  position: 'absolute',
-                  top: 44,
-                  left: '60%',
-                  width: '80%',
-                  height: 2,
-                  background: `linear-gradient(90deg, ${COLORS.primary} 0%, ${COLORS.secondary} 100%)`,
-                  opacity: 0.3,
-                }} />
-              )}
-
-              <div style={{
-                width: 88,
-                height: 88,
-                borderRadius: 24,
-                background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryLight} 100%)`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: 24,
-                boxShadow: '0 8px 24px rgba(49, 46, 129, 0.2)',
-                position: 'relative',
-              }}>
-                <step.icon size={36} color="white" strokeWidth={1.5} />
-                <div style={{
-                  position: 'absolute',
-                  top: -8,
-                  right: -8,
-                  width: 28,
-                  height: 28,
-                  borderRadius: 8,
-                  background: COLORS.secondary,
-                  color: 'white',
-                  fontSize: 11,
-                  fontWeight: 700,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}>
-                  {step.num}
-                </div>
-              </div>
-
-              <h3 style={{
-                fontSize: 20,
-                fontWeight: 700,
-                marginBottom: 10,
-                color: COLORS.textPrimary,
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
-              }}>
-                {step.title}
-              </h3>
-              <p style={{
-                color: COLORS.textSecondary,
-                lineHeight: 1.7,
-                fontSize: 14,
-              }}>
-                {step.description}
-              </p>
-            </motion.div>
-          ))}
-        </motion.div>
-      </div>
-    </section>
-  )
-}
-
-// ════════════════════════════════════════════════════════════════
-// TESTIMONIALS SECTION
-// ════════════════════════════════════════════════════════════════
-function TestimonialsSection() {
-  const testimonials = [
-    {
-      author: 'Dr. Sarah Mitchell',
-      role: 'Learning Specialist, Westbrook Academy',
-      text: 'NeuraScan identified three students in my class with early signs of dysgraphia that traditional screening missed. The detailed reports made it straightforward to develop targeted intervention plans.',
-      initials: 'SM',
-    },
-    {
-      author: 'James Rodriguez',
-      role: 'Elementary School Principal',
-      text: 'We reduced our assessment processing time by 70% while improving early detection rates. The platform has become an essential part of our student support infrastructure.',
-      initials: 'JR',
-    },
-    {
-      author: 'Emily Chen',
-      role: 'Parent',
-      text: 'After months of uncertainty, NeuraScan provided the evidence we needed to get proper support for our son. The assessment report helped us communicate effectively with his school.',
-      initials: 'EC',
-    },
-  ]
-
-  return (
-    <section style={{
-      padding: '120px 40px',
-      background: COLORS.bgSurface,
-      borderTop: `1px solid ${COLORS.border}`,
-    }}>
-      <div style={{ maxWidth: 1280, margin: '0 auto' }}>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          viewport={{ once: true, margin: '-100px' }}
-          style={{ textAlign: 'center', marginBottom: 72 }}
-        >
-          <h2 style={{
-            fontSize: 40,
-            fontWeight: 800,
-            marginBottom: 16,
-            color: COLORS.textPrimary,
-            fontFamily: "'Plus Jakarta Sans', sans-serif",
-          }}>
-            Trusted by educators nationwide
-          </h2>
-        </motion.div>
-
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: '-100px' }}
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))',
-            gap: 28,
-          }}
-        >
-          {testimonials.map((testimonial) => (
-            <motion.div key={testimonial.author} variants={itemVariants}>
-              <div style={{
-                background: `linear-gradient(135deg, ${COLORS.primaryBg} 0%, ${COLORS.bgSurface} 100%)`,
-                border: `1px solid ${COLORS.border}`,
-                borderRadius: 20,
-                padding: 32,
-                height: '100%',
-              }}>
-                <Quote size={24} color={COLORS.primary} style={{ opacity: 0.3, marginBottom: 16 }} />
-                <p style={{
-                  fontSize: 15,
-                  color: COLORS.textSecondary,
-                  lineHeight: 1.8,
-                  marginBottom: 28,
-                }}>
-                  "{testimonial.text}"
-                </p>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                  <div style={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: 14,
-                    background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryLight} 100%)`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: 'white',
-                    fontWeight: 700,
-                    fontSize: 14,
-                  }}>
-                    {testimonial.initials}
-                  </div>
-                  <div>
-                    <div style={{
-                      fontWeight: 700,
-                      color: COLORS.textPrimary,
-                      fontSize: 15,
-                    }}>
-                      {testimonial.author}
-                    </div>
-                    <div style={{
-                      fontSize: 13,
-                      color: COLORS.textMuted,
-                      marginTop: 2,
-                    }}>
-                      {testimonial.role}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </motion.div>
-      </div>
-    </section>
-  )
-}
-
-// ════════════════════════════════════════════════════════════════
-// CTA SECTION
-// ════════════════════════════════════════════════════════════════
-function CTASection() {
-  return (
-    <section style={{
-      padding: '100px 40px',
-      background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryLight} 50%, ${COLORS.secondary} 100%)`,
-      position: 'relative',
-      overflow: 'hidden',
-    }}>
-      {/* Background pattern */}
-      <div style={{
-        position: 'absolute',
-        inset: 0,
-        backgroundImage: `radial-gradient(rgba(255,255,255,0.1) 1px, transparent 1px)`,
-        backgroundSize: '32px 32px',
-        pointerEvents: 'none',
-      }} />
-
-      <div style={{ maxWidth: 800, margin: '0 auto', textAlign: 'center', position: 'relative', zIndex: 1 }}>
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          viewport={{ once: true }}
-          style={{
-            fontSize: 42,
-            fontWeight: 800,
-            marginBottom: 20,
-            color: 'white',
-            fontFamily: "'Plus Jakarta Sans', sans-serif",
-          }}
-        >
-          Early detection enables better outcomes
-        </motion.h2>
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          viewport={{ once: true }}
-          style={{
-            fontSize: 18,
-            marginBottom: 40,
-            color: 'rgba(255, 255, 255, 0.9)',
-            lineHeight: 1.7,
-          }}
-        >
-          Join over 340 schools using NeuraScan to identify and support students with learning differences.
-        </motion.p>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          viewport={{ once: true }}
-          style={{ display: 'flex', gap: 16, justifyContent: 'center', flexWrap: 'wrap' }}
-        >
-          <Link to="/register" style={{ textDecoration: 'none' }}>
-            <motion.button
-              whileHover={{ y: -2, boxShadow: '0 8px 24px rgba(0, 0, 0, 0.2)' }}
-              whileTap={{ scale: 0.98 }}
-              style={{
-                padding: '16px 36px',
-                fontSize: 16,
-                fontWeight: 700,
-                background: 'white',
-                color: COLORS.primary,
-                border: 'none',
-                borderRadius: 12,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
-                boxShadow: '0 4px 14px rgba(0, 0, 0, 0.15)',
-              }}
-            >
-              Begin Free Assessment <ArrowRight size={18} />
-            </motion.button>
-          </Link>
-          <Link to="/pricing" style={{ textDecoration: 'none' }}>
-            <motion.button
-              whileHover={{ background: 'rgba(255, 255, 255, 0.15)' }}
-              whileTap={{ scale: 0.98 }}
-              style={{
-                padding: '16px 36px',
-                fontSize: 16,
-                fontWeight: 600,
-                background: 'transparent',
-                color: 'white',
-                border: '2px solid rgba(255, 255, 255, 0.4)',
-                borderRadius: 12,
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
-              }}
-            >
-              View Pricing
-            </motion.button>
-          </Link>
-        </motion.div>
-      </div>
-    </section>
+    <span
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 6,
+        padding: '6px 14px',
+        borderRadius: 100,
+        fontSize: 13,
+        fontWeight: 500,
+        background: 'rgba(20, 184, 166, 0.2)',
+        color: 'white',
+        border: '1px solid rgba(20, 184, 166, 0.3)',
+      }}
+    >
+      {children}
+    </span>
   )
 }
 
@@ -886,14 +243,536 @@ function CTASection() {
 // ════════════════════════════════════════════════════════════════
 export default function LandingPage() {
   return (
-    <div style={{ background: COLORS.bgBase }}>
-      <PremiumNavbar />
-      <HeroSection />
-      <FeaturesSection />
-      <HowItWorksSection />
-      <TestimonialsSection />
-      <CTASection />
-      <PremiumFooter />
+    <div style={{ minHeight: '100vh', background: COLORS.bgBase }}>
+      {/* ══════════════════════════════════════════════════════════
+          NAVBAR
+          ══════════════════════════════════════════════════════════ */}
+      <header
+        style={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 50,
+          borderBottom: `1px solid ${COLORS.border}`,
+          background: 'rgba(248, 250, 252, 0.8)',
+          backdropFilter: 'blur(12px)',
+        }}
+      >
+        <div
+          style={{
+            maxWidth: 1280,
+            margin: '0 auto',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '16px 24px',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 10,
+                background: COLORS.sidebar,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Brain size={20} color={COLORS.primary} />
+            </div>
+            <span
+              style={{
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                fontSize: 20,
+                fontWeight: 700,
+                color: COLORS.textPrimary,
+              }}
+            >
+              NeuraScan
+            </span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <Link to="/login" style={{ textDecoration: 'none' }}>
+              <Button variant="ghost">Sign In</Button>
+            </Link>
+            <Link to="/register" style={{ textDecoration: 'none' }}>
+              <Button>Get Started</Button>
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      {/* ══════════════════════════════════════════════════════════
+          HERO SECTION
+          ══════════════════════════════════════════════════════════ */}
+      <section
+        style={{
+          position: 'relative',
+          overflow: 'hidden',
+          background: `linear-gradient(to bottom, ${COLORS.sidebar}, rgba(49, 46, 129, 0.8))`,
+          padding: '80px 24px 112px',
+        }}
+      >
+        {/* Background decoration */}
+        <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+          <div
+            style={{
+              position: 'absolute',
+              top: -160,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              width: 320,
+              height: 320,
+              borderRadius: '50%',
+              background: 'rgba(20, 184, 166, 0.1)',
+              filter: 'blur(80px)',
+            }}
+          />
+          <div
+            style={{
+              position: 'absolute',
+              bottom: 0,
+              right: 0,
+              width: 256,
+              height: 256,
+              borderRadius: '50%',
+              background: 'rgba(99, 102, 241, 0.1)',
+              filter: 'blur(80px)',
+            }}
+          />
+        </div>
+
+        <div style={{ position: 'relative', maxWidth: 900, margin: '0 auto', textAlign: 'center' }}>
+          <Badge>
+            <Zap size={12} />
+            AI-Powered Learning Disability Detection
+          </Badge>
+
+          <h1
+            style={{
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontSize: 'clamp(32px, 5vw, 56px)',
+              fontWeight: 700,
+              lineHeight: 1.1,
+              color: 'white',
+              marginTop: 24,
+            }}
+          >
+            Identify Dyslexia &{' '}
+            <span style={{ color: COLORS.primary }}>Dysgraphia</span>
+            <br />
+            Before They Hold Students Back
+          </h1>
+
+          <p
+            style={{
+              fontSize: 18,
+              color: '#A5B4FC',
+              lineHeight: 1.7,
+              maxWidth: 640,
+              margin: '24px auto 0',
+            }}
+          >
+            NeuraScan uses advanced AI to analyze student handwriting, detect learning disability
+            patterns early, and help teachers take action when it matters most.
+          </p>
+
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 16,
+              marginTop: 40,
+            }}
+          >
+            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
+              <Link to="/register" style={{ textDecoration: 'none' }}>
+                <Button size="lg">
+                  Start Free Trial
+                  <ArrowRight size={16} />
+                </Button>
+              </Link>
+              <Link to="/login" style={{ textDecoration: 'none' }}>
+                <Button variant="outline" size="lg">
+                  Sign In
+                </Button>
+              </Link>
+            </div>
+            <p style={{ fontSize: 14, color: '#818CF8' }}>
+              No credit card required · Free for up to 10 students
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════
+          STATS SECTION
+          ══════════════════════════════════════════════════════════ */}
+      <section
+        style={{
+          borderBottom: `1px solid ${COLORS.border}`,
+          background: COLORS.bgCard,
+          padding: '48px 24px',
+        }}
+      >
+        <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
+              gap: 32,
+            }}
+          >
+            {stats.map((stat) => (
+              <div key={stat.label} style={{ textAlign: 'center' }}>
+                <p
+                  style={{
+                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    fontSize: 36,
+                    fontWeight: 700,
+                    color: COLORS.primary,
+                  }}
+                >
+                  {stat.value}
+                </p>
+                <p style={{ marginTop: 4, fontSize: 14, color: COLORS.textMuted }}>
+                  {stat.label}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════
+          FEATURES SECTION
+          ══════════════════════════════════════════════════════════ */}
+      <section style={{ padding: '80px 24px' }}>
+        <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 48 }}>
+            <h2
+              style={{
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                fontSize: 'clamp(24px, 4vw, 36px)',
+                fontWeight: 700,
+                color: COLORS.textPrimary,
+              }}
+            >
+              Everything you need for early intervention
+            </h2>
+            <p
+              style={{
+                marginTop: 16,
+                fontSize: 16,
+                color: COLORS.textMuted,
+                maxWidth: 640,
+                margin: '16px auto 0',
+              }}
+            >
+              Powerful tools designed for teachers and parents working together to support students
+              with learning differences.
+            </p>
+          </div>
+
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+              gap: 24,
+            }}
+          >
+            {features.map((feature) => {
+              const Icon = feature.icon
+              return (
+                <Card key={feature.title} hover style={{ padding: 24 }}>
+                  <div
+                    style={{
+                      width: 48,
+                      height: 48,
+                      borderRadius: 12,
+                      background: feature.bg,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginBottom: 16,
+                    }}
+                  >
+                    <Icon size={24} color={feature.color} />
+                  </div>
+                  <h3
+                    style={{
+                      fontFamily: "'Plus Jakarta Sans', sans-serif",
+                      fontSize: 18,
+                      fontWeight: 600,
+                      color: COLORS.textPrimary,
+                    }}
+                  >
+                    {feature.title}
+                  </h3>
+                  <p
+                    style={{
+                      marginTop: 8,
+                      fontSize: 14,
+                      color: COLORS.textMuted,
+                      lineHeight: 1.6,
+                    }}
+                  >
+                    {feature.description}
+                  </p>
+                </Card>
+              )
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════
+          HOW IT WORKS SECTION
+          ══════════════════════════════════════════════════════════ */}
+      <section style={{ background: COLORS.bgMuted, padding: '80px 24px' }}>
+        <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 48 }}>
+            <h2
+              style={{
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                fontSize: 'clamp(24px, 4vw, 36px)',
+                fontWeight: 700,
+                color: COLORS.textPrimary,
+              }}
+            >
+              How it works
+            </h2>
+          </div>
+
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+              gap: 32,
+            }}
+          >
+            {howItWorks.map((item) => (
+              <div key={item.step} style={{ textAlign: 'center' }}>
+                <div
+                  style={{
+                    width: 56,
+                    height: 56,
+                    borderRadius: '50%',
+                    background: COLORS.sidebar,
+                    color: 'white',
+                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    fontSize: 20,
+                    fontWeight: 700,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    margin: '0 auto 16px',
+                  }}
+                >
+                  {item.step}
+                </div>
+                <h3
+                  style={{
+                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    fontSize: 18,
+                    fontWeight: 600,
+                    color: COLORS.textPrimary,
+                  }}
+                >
+                  {item.title}
+                </h3>
+                <p
+                  style={{
+                    marginTop: 8,
+                    fontSize: 14,
+                    color: COLORS.textMuted,
+                    lineHeight: 1.6,
+                  }}
+                >
+                  {item.desc}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════
+          TESTIMONIALS SECTION
+          ══════════════════════════════════════════════════════════ */}
+      <section style={{ padding: '80px 24px' }}>
+        <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 48 }}>
+            <h2
+              style={{
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                fontSize: 'clamp(24px, 4vw, 36px)',
+                fontWeight: 700,
+                color: COLORS.textPrimary,
+              }}
+            >
+              Trusted by educators
+            </h2>
+          </div>
+
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+              gap: 24,
+            }}
+          >
+            {testimonials.map((t) => (
+              <Card key={t.name} style={{ padding: 24 }}>
+                <div style={{ display: 'flex', gap: 4, marginBottom: 16 }}>
+                  {Array.from({ length: t.rating }).map((_, i) => (
+                    <Star key={i} size={16} fill="#FBBF24" color="#FBBF24" />
+                  ))}
+                </div>
+                <p
+                  style={{
+                    fontSize: 14,
+                    color: COLORS.textMuted,
+                    fontStyle: 'italic',
+                    lineHeight: 1.6,
+                  }}
+                >
+                  "{t.quote}"
+                </p>
+                <div
+                  style={{
+                    marginTop: 16,
+                    paddingTop: 16,
+                    borderTop: `1px solid ${COLORS.border}`,
+                  }}
+                >
+                  <p style={{ fontWeight: 500, fontSize: 14, color: COLORS.textPrimary }}>
+                    {t.name}
+                  </p>
+                  <p style={{ fontSize: 12, color: COLORS.textMuted }}>
+                    {t.role} · {t.school}
+                  </p>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════
+          CTA SECTION
+          ══════════════════════════════════════════════════════════ */}
+      <section style={{ background: COLORS.sidebar, padding: '64px 24px' }}>
+        <div style={{ maxWidth: 800, margin: '0 auto', textAlign: 'center' }}>
+          <h2
+            style={{
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontSize: 'clamp(24px, 4vw, 36px)',
+              fontWeight: 700,
+              color: 'white',
+            }}
+          >
+            Ready to support every learner?
+          </h2>
+          <p style={{ marginTop: 16, fontSize: 16, color: '#A5B4FC' }}>
+            Join hundreds of schools using NeuraScan to detect learning disabilities early and make
+            a real difference.
+          </p>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              marginTop: 32,
+            }}
+          >
+            <Link to="/register" style={{ textDecoration: 'none' }}>
+              <Button size="lg">
+                Create Free Account
+                <ArrowRight size={16} />
+              </Button>
+            </Link>
+          </div>
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+              gap: 24,
+              marginTop: 24,
+              fontSize: 14,
+              color: '#818CF8',
+            }}
+          >
+            {['Free for 10 students', 'No credit card', 'Cancel anytime'].map((item) => (
+              <span key={item} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <CheckCircle2 size={16} color={COLORS.primary} />
+                {item}
+              </span>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════
+          FOOTER
+          ══════════════════════════════════════════════════════════ */}
+      <footer
+        style={{
+          borderTop: `1px solid ${COLORS.border}`,
+          background: COLORS.bgCard,
+          padding: '32px 24px',
+        }}
+      >
+        <div
+          style={{
+            maxWidth: 1280,
+            margin: '0 auto',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 16,
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div
+              style={{
+                width: 28,
+                height: 28,
+                borderRadius: 6,
+                background: COLORS.sidebar,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Brain size={16} color={COLORS.primary} />
+            </div>
+            <span
+              style={{
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                fontWeight: 700,
+                color: COLORS.textPrimary,
+              }}
+            >
+              NeuraScan
+            </span>
+          </div>
+          <p style={{ fontSize: 14, color: COLORS.textMuted }}>
+            © 2024 NeuraScan. All rights reserved.
+          </p>
+        </div>
+      </footer>
+
+      {/* Hover styles */}
+      <style>{`
+        .card-hover:hover {
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+          transform: translateY(-2px);
+        }
+      `}</style>
     </div>
   )
 }

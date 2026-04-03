@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { User, Lock, Bell, Palette, Save, Check, Moon, Sun, Monitor, Info } from 'lucide-react'
+import { User, Lock, Save, Check, Eye, EyeOff } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { authAPI } from '../services/api'
 import toast from 'react-hot-toast'
@@ -9,13 +9,14 @@ import toast from 'react-hot-toast'
 // DESIGN SYSTEM COLORS
 // ════════════════════════════════════════════════════════════════
 const COLORS = {
-  primary: '#312E81',
-  primaryLight: '#4338CA',
-  primaryLighter: '#6366F1',
-  primaryBg: '#EEF2FF',
-  secondary: '#14B8A6',
-  secondaryDark: '#0D9488',
-  secondaryBg: '#CCFBF1',
+  sidebar: '#312E81',
+  primary: '#14B8A6',
+  primaryDark: '#0D9488',
+  primaryLight: '#2DD4BF',
+  primaryBg: '#CCFBF1',
+  accent: '#312E81',
+  accentLight: '#4338CA',
+  accentBg: '#EEF2FF',
   textPrimary: '#1E293B',
   textSecondary: '#475569',
   textMuted: '#64748B',
@@ -26,11 +27,19 @@ const COLORS = {
   borderLight: '#F1F5F9',
   success: '#047857',
   successBg: '#ECFDF5',
-  error: '#B91C1C',
+  error: '#DC2626',
   errorBg: '#FEF2F2',
-  warning: '#B45309',
+  warning: '#D97706',
   warningBg: '#FFFBEB',
 }
+
+// ════════════════════════════════════════════════════════════════
+// TAB CONFIGURATION
+// ════════════════════════════════════════════════════════════════
+const TABS = [
+  { id: 'profile', label: 'Profile', icon: User },
+  { id: 'password', label: 'Password', icon: Lock },
+]
 
 // ════════════════════════════════════════════════════════════════
 // REUSABLE COMPONENTS
@@ -59,10 +68,10 @@ const PageHeader = ({ title, subtitle }) => (
 const Button = ({ children, variant = 'primary', loading, disabled, onClick, icon, fullWidth, type = 'button', style = {} }) => {
   const variants = {
     primary: {
-      background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryLight} 100%)`,
+      background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
       color: 'white',
       border: 'none',
-      boxShadow: '0 4px 14px rgba(49, 46, 129, 0.25)',
+      boxShadow: '0 4px 14px rgba(20, 184, 166, 0.3)',
     },
     success: {
       background: `linear-gradient(135deg, ${COLORS.success} 0%, #059669 100%)`,
@@ -82,13 +91,13 @@ const Button = ({ children, variant = 'primary', loading, disabled, onClick, ico
   return (
     <motion.button
       type={type}
-      whileHover={!loading && !disabled ? { y: -1 } : {}}
+      whileHover={!loading && !disabled ? { y: -1, boxShadow: '0 6px 20px rgba(20, 184, 166, 0.35)' } : {}}
       whileTap={!loading && !disabled ? { scale: 0.98 } : {}}
       onClick={onClick}
       disabled={loading || disabled}
       style={{
         ...v,
-        padding: '12px 20px',
+        padding: '12px 24px',
         borderRadius: 10,
         fontSize: 14,
         fontWeight: 600,
@@ -104,17 +113,30 @@ const Button = ({ children, variant = 'primary', loading, disabled, onClick, ico
         ...style,
       }}
     >
-      {icon}
+      {loading ? (
+        <div style={{
+          width: 16,
+          height: 16,
+          border: '2px solid rgba(255,255,255,0.3)',
+          borderTopColor: 'white',
+          borderRadius: '50%',
+          animation: 'spin 0.8s linear infinite',
+        }} />
+      ) : icon}
       {loading ? 'Saving...' : children}
     </motion.button>
   )
 }
 
-const Input = ({ label, type = 'text', placeholder, value, onChange, error, hint, disabled, style = {} }) => {
+const Input = ({ label, type = 'text', placeholder, value, onChange, error, hint, disabled, required, style = {} }) => {
   const [isFocused, setIsFocused] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+
+  const isPassword = type === 'password'
+  const inputType = isPassword ? (showPassword ? 'text' : 'password') : type
 
   return (
-    <div style={{ marginBottom: 20 }}>
+    <div style={{ marginBottom: 20, ...style }}>
       {label && (
         <label style={{
           display: 'block',
@@ -124,36 +146,61 @@ const Input = ({ label, type = 'text', placeholder, value, onChange, error, hint
           marginBottom: 8,
         }}>
           {label}
+          {required && <span style={{ color: COLORS.error, marginLeft: 4 }}>*</span>}
         </label>
       )}
-      <input
-        type={type}
-        placeholder={placeholder}
-        value={value}
-        onChange={onChange}
-        disabled={disabled}
-        style={{
-          width: '100%',
-          padding: '12px 14px',
-          fontSize: 14,
-          border: error
-            ? `2px solid ${COLORS.error}`
-            : isFocused
-              ? `2px solid ${COLORS.primary}`
-              : `1px solid ${COLORS.border}`,
-          borderRadius: 10,
-          background: disabled ? COLORS.bgSubtle : COLORS.bgSurface,
-          color: COLORS.textPrimary,
-          transition: 'all 0.2s ease',
-          boxSizing: 'border-box',
-          fontFamily: "'Inter', sans-serif",
-          boxShadow: isFocused ? `0 0 0 3px ${COLORS.primaryBg}` : 'none',
-          opacity: disabled ? 0.6 : 1,
-          ...style,
-        }}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
-      />
+      <div style={{ position: 'relative' }}>
+        <input
+          type={inputType}
+          placeholder={placeholder}
+          value={value}
+          onChange={onChange}
+          disabled={disabled}
+          style={{
+            width: '100%',
+            padding: isPassword ? '12px 44px 12px 14px' : '12px 14px',
+            fontSize: 14,
+            border: error
+              ? `2px solid ${COLORS.error}`
+              : isFocused
+                ? `2px solid ${COLORS.primary}`
+                : `1px solid ${COLORS.border}`,
+            borderRadius: 10,
+            background: disabled ? COLORS.bgSubtle : COLORS.bgSurface,
+            color: COLORS.textPrimary,
+            transition: 'all 0.2s ease',
+            boxSizing: 'border-box',
+            fontFamily: "'Inter', sans-serif",
+            boxShadow: isFocused ? `0 0 0 3px ${COLORS.primaryBg}` : 'none',
+            opacity: disabled ? 0.7 : 1,
+            cursor: disabled ? 'not-allowed' : 'text',
+          }}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+        />
+        {isPassword && (
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            style={{
+              position: 'absolute',
+              right: 12,
+              top: '50%',
+              transform: 'translateY(-50%)',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: 4,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: COLORS.textMuted,
+            }}
+          >
+            {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+          </button>
+        )}
+      </div>
       {error && (
         <div style={{ color: COLORS.error, fontSize: 12, marginTop: 6, fontWeight: 500 }}>
           {error}
@@ -168,40 +215,10 @@ const Input = ({ label, type = 'text', placeholder, value, onChange, error, hint
   )
 }
 
-const Alert = ({ type = 'info', children, style = {} }) => {
-  const styles = {
-    info: { bg: COLORS.primaryBg, border: `${COLORS.primary}30`, text: COLORS.primary, icon: Info },
-    success: { bg: COLORS.successBg, border: `${COLORS.success}30`, text: COLORS.success, icon: Check },
-    warning: { bg: COLORS.warningBg, border: `${COLORS.warning}30`, text: COLORS.warning, icon: Info },
-    error: { bg: COLORS.errorBg, border: `${COLORS.error}30`, text: COLORS.error, icon: Info },
-  }
-  const s = styles[type] || styles.info
-  const Icon = s.icon
-
-  return (
-    <div style={{
-      background: s.bg,
-      border: `1px solid ${s.border}`,
-      borderRadius: 12,
-      padding: '14px 16px',
-      fontSize: 14,
-      color: s.text,
-      display: 'flex',
-      alignItems: 'center',
-      gap: 12,
-      lineHeight: 1.6,
-      ...style,
-    }}>
-      <Icon size={18} style={{ flexShrink: 0 }} />
-      <span>{children}</span>
-    </div>
-  )
-}
-
 const Badge = ({ children, color = 'primary' }) => {
   const colors = {
-    primary: { bg: COLORS.primaryBg, text: COLORS.primary },
-    secondary: { bg: COLORS.secondaryBg, text: COLORS.secondaryDark },
+    primary: { bg: COLORS.primaryBg, text: COLORS.primaryDark },
+    accent: { bg: COLORS.accentBg, text: COLORS.accent },
   }
   const c = colors[color] || colors.primary
 
@@ -222,44 +239,62 @@ const Badge = ({ children, color = 'primary' }) => {
   )
 }
 
+const SectionTitle = ({ children }) => (
+  <h3 style={{
+    fontSize: 16,
+    fontWeight: 700,
+    color: COLORS.textPrimary,
+    marginBottom: 20,
+    fontFamily: "'Plus Jakarta Sans', sans-serif",
+  }}>
+    {children}
+  </h3>
+)
+
 // ════════════════════════════════════════════════════════════════
-// SECTION COMPONENTS
+// PROFILE TAB
 // ════════════════════════════════════════════════════════════════
 
-function ProfileSection({ user, isTeacher }) {
+function ProfileTab({ user, isTeacher }) {
   const { updateUser } = useAuth()
   const [form, setForm] = useState({
     name: user?.name || '',
     email: user?.email || '',
     school: user?.school || '',
-    studentId: localStorage.getItem('ns_studentId') || ''
   })
   const [loading, setLoading] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [errors, setErrors] = useState({})
+
+  const validate = () => {
+    const e = {}
+    if (!form.name.trim()) e.name = 'Name is required'
+    setErrors(e)
+    return Object.keys(e).length === 0
+  }
 
   const handleSave = async () => {
+    if (!validate()) return
+
     setLoading(true)
     try {
       const updateData = {
-        name: form.name,
-        school: isTeacher ? form.school : undefined,
-        studentId: !isTeacher ? form.studentId : undefined
+        name: form.name.trim(),
+        school: form.school.trim() || undefined,
       }
       const res = await authAPI.updateProfile(updateData)
 
       if (res.data?.success) {
         const profileData = res.data.data || {}
-        if (!isTeacher && form.studentId) {
-          localStorage.setItem('ns_studentId', form.studentId)
-          profileData.studentId = profileData.studentId || form.studentId
-        }
         updateUser(profileData)
+        setSaved(true)
+        toast.success('Profile updated successfully!')
+        setTimeout(() => setSaved(false), 2500)
+      } else {
+        toast.error(res.data?.message || 'Update failed')
       }
-      setSaved(true)
-      toast.success('Profile updated!')
-      setTimeout(() => setSaved(false), 2500)
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Update failed')
+      toast.error(err.response?.data?.message || 'Failed to update profile')
     } finally {
       setLoading(false)
     }
@@ -269,122 +304,141 @@ function ProfileSection({ user, isTeacher }) {
 
   return (
     <div>
+      <SectionTitle>Profile Information</SectionTitle>
+
       {/* Avatar Section */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
         gap: 20,
         padding: '20px 24px',
-        background: COLORS.bgSubtle,
-        borderRadius: 14,
+        background: `linear-gradient(135deg, ${COLORS.primaryBg} 0%, ${COLORS.bgSubtle} 100%)`,
+        borderRadius: 16,
         marginBottom: 28,
         border: `1px solid ${COLORS.border}`,
       }}>
         <div style={{
-          width: 72,
-          height: 72,
+          width: 80,
+          height: 80,
           borderRadius: 16,
-          background: user?.picture ? 'transparent' : `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryLight} 100%)`,
+          background: user?.picture ? 'transparent' : `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryDark} 100%)`,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           fontFamily: "'Plus Jakarta Sans', sans-serif",
           fontWeight: 800,
-          fontSize: 24,
+          fontSize: 26,
           color: 'white',
           overflow: 'hidden',
-          boxShadow: '0 4px 14px rgba(49, 46, 129, 0.2)',
+          boxShadow: '0 4px 14px rgba(20, 184, 166, 0.25)',
+          flexShrink: 0,
         }}>
           {user?.picture ? (
             <img src={user.picture} alt={user.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           ) : initials}
         </div>
-        <div>
+        <div style={{ minWidth: 0 }}>
           <div style={{
             fontFamily: "'Plus Jakarta Sans', sans-serif",
             fontSize: 20,
             fontWeight: 700,
             color: COLORS.textPrimary,
             marginBottom: 4,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
           }}>
-            {user?.name}
+            {user?.name || 'User'}
           </div>
-          <div style={{ fontSize: 13, color: COLORS.textMuted, marginBottom: 8 }}>
+          <div style={{
+            fontSize: 14,
+            color: COLORS.textMuted,
+            marginBottom: 10,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}>
             {user?.email}
           </div>
-          <Badge color={isTeacher ? 'primary' : 'secondary'}>
+          <Badge color={isTeacher ? 'accent' : 'primary'}>
             {isTeacher ? 'Teacher' : 'Parent'}
           </Badge>
         </div>
       </div>
 
       {/* Form Fields */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+        gap: 16,
+      }}>
         <Input
           label="Full Name"
           value={form.name}
           onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-          placeholder="Your name"
+          placeholder="Enter your full name"
+          error={errors.name}
+          required
         />
         <Input
-          label="Email"
+          label="Email Address"
           value={form.email}
           disabled
-          hint="Contact support to change email"
+          hint="Email cannot be changed. Contact support for assistance."
         />
       </div>
 
-      {isTeacher && (
-        <Input
-          label="School / Institution"
-          value={form.school}
-          onChange={e => setForm(f => ({ ...f, school: e.target.value }))}
-          placeholder="Springfield Elementary"
-        />
-      )}
-
-      {!isTeacher && (
-        <div style={{
-          marginBottom: 20,
-          padding: 20,
-          background: COLORS.primaryBg,
-          borderRadius: 14,
-          border: `1px solid ${COLORS.primary}20`,
-        }}>
-          <Input
-            label="Child's Student ID"
-            value={form.studentId}
-            onChange={e => setForm(f => ({ ...f, studentId: e.target.value }))}
-            placeholder="Enter your child's student ID"
-          />
-          <div style={{ fontSize: 13, color: COLORS.textSecondary, lineHeight: 1.6 }}>
-            <strong>How to find Student ID:</strong> Ask the teacher or check the documents from school. It's a unique identifier assigned to each student.
-          </div>
-        </div>
-      )}
+      <Input
+        label="School / Institution"
+        value={form.school}
+        onChange={e => setForm(f => ({ ...f, school: e.target.value }))}
+        placeholder="Enter your school or institution name"
+        style={{ marginBottom: 28 }}
+      />
 
       <Button
         onClick={handleSave}
         loading={loading}
         variant={saved ? 'success' : 'primary'}
-        icon={saved ? <Check size={16} /> : <Save size={16} />}
+        icon={saved ? <Check size={18} /> : <Save size={18} />}
       >
-        {saved ? 'Saved!' : 'Save changes'}
+        {saved ? 'Saved!' : 'Save Changes'}
       </Button>
     </div>
   )
 }
 
-function PasswordSection() {
-  const [form, setForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' })
+// ════════════════════════════════════════════════════════════════
+// PASSWORD TAB
+// ════════════════════════════════════════════════════════════════
+
+function PasswordTab() {
+  const [form, setForm] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  })
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState({})
 
   const validate = () => {
     const e = {}
-    if (!form.currentPassword) e.currentPassword = 'Current password is required'
-    if (!form.newPassword || form.newPassword.length < 6) e.newPassword = 'Minimum 6 characters required'
-    if (form.newPassword !== form.confirmPassword) e.confirmPassword = 'Passwords do not match'
+    if (!form.currentPassword) {
+      e.currentPassword = 'Current password is required'
+    }
+    if (!form.newPassword) {
+      e.newPassword = 'New password is required'
+    } else if (form.newPassword.length < 6) {
+      e.newPassword = 'Password must be at least 6 characters'
+    }
+    if (!form.confirmPassword) {
+      e.confirmPassword = 'Please confirm your new password'
+    } else if (form.newPassword !== form.confirmPassword) {
+      e.confirmPassword = 'Passwords do not match'
+    }
+    if (form.currentPassword && form.newPassword && form.currentPassword === form.newPassword) {
+      e.newPassword = 'New password must be different from current password'
+    }
     setErrors(e)
     return Object.keys(e).length === 0
   }
@@ -392,13 +446,23 @@ function PasswordSection() {
   const handleSubmit = async (ev) => {
     ev.preventDefault()
     if (!validate()) return
+
     setLoading(true)
     try {
-      await authAPI.changePassword({ currentPassword: form.currentPassword, newPassword: form.newPassword })
+      await authAPI.changePassword({
+        currentPassword: form.currentPassword,
+        newPassword: form.newPassword,
+      })
       toast.success('Password changed successfully!')
       setForm({ currentPassword: '', newPassword: '', confirmPassword: '' })
+      setErrors({})
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to change password')
+      const errorMsg = err.response?.data?.message || 'Failed to change password'
+      if (errorMsg.toLowerCase().includes('current') || errorMsg.toLowerCase().includes('incorrect')) {
+        setErrors({ currentPassword: errorMsg })
+      } else {
+        toast.error(errorMsg)
+      }
     } finally {
       setLoading(false)
     }
@@ -406,9 +470,25 @@ function PasswordSection() {
 
   return (
     <form onSubmit={handleSubmit}>
-      <Alert type="info" style={{ marginBottom: 24 }}>
-        For password reset via email, use the <strong>Forgot Password</strong> link on the login page.
-      </Alert>
+      <SectionTitle>Change Password</SectionTitle>
+
+      {/* Info Box */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: 12,
+        padding: '14px 16px',
+        background: COLORS.primaryBg,
+        borderRadius: 12,
+        marginBottom: 24,
+        border: `1px solid ${COLORS.primary}20`,
+      }}>
+        <Lock size={18} style={{ color: COLORS.primary, flexShrink: 0, marginTop: 2 }} />
+        <div style={{ fontSize: 13, color: COLORS.textSecondary, lineHeight: 1.6 }}>
+          For your security, please enter your current password before setting a new one.
+          If you forgot your password, use the <strong>Forgot Password</strong> link on the login page.
+        </div>
+      </div>
 
       <Input
         label="Current Password"
@@ -416,10 +496,15 @@ function PasswordSection() {
         value={form.currentPassword}
         onChange={e => setForm(f => ({ ...f, currentPassword: e.target.value }))}
         error={errors.currentPassword}
-        placeholder="Enter current password"
+        placeholder="Enter your current password"
+        required
       />
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+        gap: 16,
+      }}>
         <Input
           label="New Password"
           type="password"
@@ -427,181 +512,26 @@ function PasswordSection() {
           onChange={e => setForm(f => ({ ...f, newPassword: e.target.value }))}
           error={errors.newPassword}
           placeholder="Min. 6 characters"
+          hint={!errors.newPassword ? 'Use a strong password with letters, numbers, and symbols' : undefined}
+          required
         />
         <Input
-          label="Confirm Password"
+          label="Confirm New Password"
           type="password"
           value={form.confirmPassword}
           onChange={e => setForm(f => ({ ...f, confirmPassword: e.target.value }))}
           error={errors.confirmPassword}
-          placeholder="Repeat password"
+          placeholder="Repeat your new password"
+          required
         />
       </div>
 
-      <Button type="submit" loading={loading} icon={<Lock size={16} />}>
-        Update Password
-      </Button>
+      <div style={{ marginTop: 8 }}>
+        <Button type="submit" loading={loading} icon={<Lock size={18} />}>
+          Update Password
+        </Button>
+      </div>
     </form>
-  )
-}
-
-function NotificationsSection() {
-  const [prefs, setPrefs] = useState({
-    emailReports: true,
-    emailAtRisk: true,
-    inAppAll: true,
-    weeklyDigest: false,
-  })
-  const [saved, setSaved] = useState(false)
-
-  const toggle = (key) => setPrefs(p => ({ ...p, [key]: !p[key] }))
-
-  const save = () => {
-    setSaved(true)
-    toast.success('Notification preferences saved')
-    setTimeout(() => setSaved(false), 2000)
-  }
-
-  const items = [
-    { key: 'emailReports', label: 'New analysis report', desc: 'Get emailed when an analysis is completed' },
-    { key: 'emailAtRisk', label: 'At-risk student alert', desc: 'Immediate alert when a high-risk result is found' },
-    { key: 'inAppAll', label: 'In-app notifications', desc: 'Show notifications inside the dashboard' },
-    { key: 'weeklyDigest', label: 'Weekly summary digest', desc: 'Receive a weekly email summarizing activity' },
-  ]
-
-  return (
-    <div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 28 }}>
-        {items.map(({ key, label, desc }) => (
-          <div
-            key={key}
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              padding: '18px 20px',
-              background: COLORS.bgSubtle,
-              borderRadius: 12,
-              border: `1px solid ${COLORS.border}`,
-              gap: 16,
-            }}
-          >
-            <div>
-              <div style={{ fontWeight: 600, fontSize: 14, color: COLORS.textPrimary, marginBottom: 4 }}>
-                {label}
-              </div>
-              <div style={{ fontSize: 13, color: COLORS.textMuted }}>
-                {desc}
-              </div>
-            </div>
-            <button
-              onClick={() => toggle(key)}
-              style={{
-                width: 48,
-                height: 26,
-                borderRadius: 13,
-                border: 'none',
-                cursor: 'pointer',
-                flexShrink: 0,
-                background: prefs[key] ? COLORS.primary : COLORS.bgSurface,
-                transition: 'background 0.2s ease',
-                position: 'relative',
-                boxShadow: prefs[key] ? '0 2px 8px rgba(49, 46, 129, 0.25)' : `inset 0 0 0 1px ${COLORS.border}`,
-              }}
-            >
-              <div style={{
-                width: 20,
-                height: 20,
-                borderRadius: '50%',
-                background: '#fff',
-                position: 'absolute',
-                top: 3,
-                left: prefs[key] ? 25 : 3,
-                transition: 'left 0.2s ease',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
-              }} />
-            </button>
-          </div>
-        ))}
-      </div>
-
-      <Button
-        onClick={save}
-        variant={saved ? 'success' : 'primary'}
-        icon={saved ? <Check size={16} /> : <Bell size={16} />}
-      >
-        {saved ? 'Saved!' : 'Save preferences'}
-      </Button>
-    </div>
-  )
-}
-
-function AppearanceSection() {
-  const { theme, toggleTheme } = useAuth()
-  const options = [
-    { id: 'dark', icon: Moon, label: 'Dark', desc: 'Easy on the eyes' },
-    { id: 'light', icon: Sun, label: 'Light', desc: 'Bright and clean' },
-    { id: 'system', icon: Monitor, label: 'System', desc: 'Follows OS setting' },
-  ]
-
-  return (
-    <div>
-      <div style={{ marginBottom: 24 }}>
-        <h3 style={{
-          fontSize: 15,
-          fontWeight: 700,
-          color: COLORS.textPrimary,
-          marginBottom: 6,
-        }}>
-          Color Theme
-        </h3>
-        <p style={{ fontSize: 13, color: COLORS.textMuted, marginBottom: 20 }}>
-          Choose how NeuraScan looks to you.
-        </p>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
-          {options.map(({ id, icon: Icon, label, desc }) => (
-            <motion.div
-              key={id}
-              whileHover={{ y: -2 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => (id === 'dark' || id === 'light') && theme !== id && toggleTheme?.()}
-              style={{
-                padding: '24px 16px',
-                textAlign: 'center',
-                cursor: 'pointer',
-                background: theme === id ? COLORS.primaryBg : COLORS.bgSubtle,
-                border: theme === id ? `2px solid ${COLORS.primary}` : `1px solid ${COLORS.border}`,
-                borderRadius: 14,
-                transition: 'all 0.2s ease',
-                boxShadow: theme === id ? '0 4px 14px rgba(49, 46, 129, 0.15)' : 'none',
-              }}
-            >
-              <Icon
-                size={24}
-                color={theme === id ? COLORS.primary : COLORS.textMuted}
-                style={{ marginBottom: 12 }}
-              />
-              <div style={{
-                fontWeight: 600,
-                fontSize: 14,
-                color: theme === id ? COLORS.textPrimary : COLORS.textSecondary,
-                marginBottom: 4,
-              }}>
-                {label}
-              </div>
-              <div style={{ fontSize: 12, color: COLORS.textMuted }}>
-                {desc}
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-
-      <Alert type="info">
-        The current design is optimized for light mode. Dark mode support is coming soon.
-      </Alert>
-    </div>
   )
 }
 
@@ -609,83 +539,111 @@ function AppearanceSection() {
 // MAIN SETTINGS PAGE
 // ════════════════════════════════════════════════════════════════
 
-const TABS = [
-  { id: 'profile', label: 'Profile', icon: User },
-  { id: 'password', label: 'Password', icon: Lock },
-  { id: 'notifications', label: 'Notifications', icon: Bell },
-  { id: 'appearance', label: 'Appearance', icon: Palette },
-]
-
 export default function SettingsPage() {
   const { user, isTeacher } = useAuth()
-  const [tab, setTab] = useState('profile')
+  const [activeTab, setActiveTab] = useState('profile')
 
   return (
-    <div>
+    <div style={{ minHeight: '100%' }}>
+      {/* CSS Animation for loading spinner */}
+      <style>
+        {`
+          @keyframes spin {
+            to { transform: rotate(360deg); }
+          }
+        `}
+      </style>
+
       <PageHeader
         title="Settings"
-        subtitle="Manage your account, preferences, and security."
+        subtitle="Manage your account settings and preferences"
       />
 
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 24, alignItems: 'flex-start' }}>
-        {/* Side Navigation */}
+      <div style={{
+        display: 'flex',
+        gap: 24,
+        alignItems: 'flex-start',
+        flexWrap: 'wrap',
+      }}>
+        {/* Tab Navigation - Side Panel */}
         <div style={{
-          flex: '1 1 220px',
-          maxWidth: 240,
+          flex: '0 0 220px',
           background: COLORS.bgSurface,
           border: `1px solid ${COLORS.border}`,
-          borderRadius: 14,
+          borderRadius: 16,
           padding: 8,
           position: 'sticky',
-          top: 80,
+          top: 24,
         }}>
-          {TABS.map(({ id, label, icon: Icon }) => (
-            <button
-              key={id}
-              onClick={() => setTab(id)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                width: '100%',
-                padding: '12px 14px',
-                borderRadius: 10,
-                border: 'none',
-                background: tab === id ? COLORS.primaryBg : 'transparent',
-                color: tab === id ? COLORS.primary : COLORS.textMuted,
-                fontFamily: "'Inter', sans-serif",
-                fontSize: 14,
-                fontWeight: tab === id ? 600 : 500,
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                textAlign: 'left',
-              }}
-            >
-              <Icon size={18} strokeWidth={tab === id ? 2 : 1.5} />
-              {label}
-            </button>
-          ))}
+          {TABS.map(({ id, label, icon: Icon }) => {
+            const isActive = activeTab === id
+            return (
+              <motion.button
+                key={id}
+                onClick={() => setActiveTab(id)}
+                whileHover={{ x: isActive ? 0 : 2 }}
+                whileTap={{ scale: 0.98 }}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 12,
+                  width: '100%',
+                  padding: '14px 16px',
+                  borderRadius: 12,
+                  border: 'none',
+                  background: isActive
+                    ? `linear-gradient(135deg, ${COLORS.primaryBg} 0%, ${COLORS.primary}15 100%)`
+                    : 'transparent',
+                  color: isActive ? COLORS.primary : COLORS.textMuted,
+                  fontFamily: "'Inter', sans-serif",
+                  fontSize: 14,
+                  fontWeight: isActive ? 600 : 500,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  textAlign: 'left',
+                  marginBottom: 4,
+                }}
+              >
+                <div style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 8,
+                  background: isActive ? COLORS.primary : COLORS.bgSubtle,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.2s ease',
+                }}>
+                  <Icon
+                    size={18}
+                    color={isActive ? 'white' : COLORS.textMuted}
+                    strokeWidth={isActive ? 2 : 1.5}
+                  />
+                </div>
+                {label}
+              </motion.button>
+            )
+          })}
         </div>
 
         {/* Content Panel */}
         <motion.div
-          key={tab}
-          initial={{ opacity: 0, y: 8 }}
+          key={activeTab}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.2 }}
+          transition={{ duration: 0.25, ease: 'easeOut' }}
           style={{
-            flex: '3 1 500px',
+            flex: '1 1 500px',
             minWidth: 0,
             background: COLORS.bgSurface,
             border: `1px solid ${COLORS.border}`,
-            borderRadius: 14,
+            borderRadius: 16,
             padding: '28px 32px',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
           }}
         >
-          {tab === 'profile' && <ProfileSection user={user} isTeacher={isTeacher} />}
-          {tab === 'password' && <PasswordSection />}
-          {tab === 'notifications' && <NotificationsSection />}
-          {tab === 'appearance' && <AppearanceSection />}
+          {activeTab === 'profile' && <ProfileTab user={user} isTeacher={isTeacher} />}
+          {activeTab === 'password' && <PasswordTab />}
         </motion.div>
       </div>
     </div>

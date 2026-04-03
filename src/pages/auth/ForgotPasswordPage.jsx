@@ -1,62 +1,244 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
-import { Brain, Mail, ArrowLeft, CheckCircle } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
 import { authAPI } from '../../services/api'
 import toast from 'react-hot-toast'
 
+// Color constants
+const COLORS = {
+  primary: '#14B8A6',
+  primaryDark: '#0D9488',
+  sidebar: '#312E81',
+  textPrimary: '#1F2937',
+  textSecondary: '#6B7280',
+  textMuted: '#9CA3AF',
+  border: '#E5E7EB',
+  bgBase: '#F9FAFB',
+  bgSurface: '#FFFFFF',
+  danger: '#EF4444',
+  success: '#10B981',
+}
+
+// Font constants
+const FONTS = {
+  display: "'Plus Jakarta Sans', sans-serif",
+  body: "'Inter', sans-serif",
+}
+
+// Input component
 const Input = ({ label, type = 'text', value, onChange, placeholder, error, required }) => {
   const [isFocused, setIsFocused] = useState(false)
+
   return (
-    <div style={{ marginBottom: 18 }}>
-      {label && <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6 }}>{label}</label>}
-      <input 
-        type={type} 
-        value={value} 
-        onChange={onChange} 
-        placeholder={placeholder} 
-        required={required} 
-        style={{ 
-          width: '100%', 
-          padding: '12px 14px', 
-          border: isFocused ? '2px solid var(--primary)' : `1px solid ${error ? 'var(--danger)' : 'var(--border)'}`, 
-          borderRadius: 'var(--radius-lg)', 
-          fontSize: 14, 
-          color: 'var(--text-primary)', 
-          background: 'var(--bg-surface)', 
-          transition: 'all 0.3s ease',
-          boxShadow: isFocused ? '0 0 0 3px rgba(26, 115, 232, 0.15)' : 'none'
-        }} 
+    <div style={{ marginBottom: 20 }}>
+      {label && (
+        <label
+          style={{
+            display: 'block',
+            fontSize: 14,
+            fontWeight: 500,
+            fontFamily: FONTS.body,
+            color: COLORS.textSecondary,
+            marginBottom: 8,
+          }}
+        >
+          {label}
+        </label>
+      )}
+      <input
+        type={type}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        required={required}
+        style={{
+          width: '100%',
+          padding: '12px 16px',
+          border: isFocused
+            ? `2px solid ${COLORS.primary}`
+            : `1px solid ${error ? COLORS.danger : COLORS.border}`,
+          borderRadius: 8,
+          fontSize: 14,
+          fontFamily: FONTS.body,
+          color: COLORS.textPrimary,
+          backgroundColor: COLORS.bgSurface,
+          outline: 'none',
+          transition: 'all 0.2s ease',
+          boxSizing: 'border-box',
+          boxShadow: isFocused ? `0 0 0 3px ${COLORS.primary}20` : 'none',
+        }}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
       />
-      {error && <div style={{ marginTop: 4, fontSize: 12, color: 'var(--danger)' }}>{error}</div>}
+      {error && (
+        <div
+          style={{
+            marginTop: 6,
+            fontSize: 12,
+            fontFamily: FONTS.body,
+            color: COLORS.danger,
+          }}
+        >
+          {error}
+        </div>
+      )}
     </div>
   )
 }
 
-const Button = ({ fullWidth, size = 'md', loading, children, onClick, disabled, type = 'button' }) => {
-  const sizeMap = { lg: { padding: '14px 20px', fontSize: 15 }, md: { padding: '10px 16px', fontSize: 14 } }
-  const sz = sizeMap[size]
-  return (<button type={type} onClick={onClick} disabled={loading || disabled} style={{ ...sz, width: fullWidth ? '100%' : 'auto', background: 'var(--primary)', color: 'white', border: 'none', borderRadius: 'var(--radius-lg)', fontWeight: 600, cursor: loading || disabled ? 'not-allowed' : 'pointer', transition: 'all 0.3s cubic-bezier(0.2, 0, 0, 1)', opacity: loading || disabled ? 0.6 : 1 }} onMouseEnter={e => { if (!loading && !disabled) { e.target.style.background = 'var(--primary-dark)'; e.target.style.transform = 'translateY(-1px)' } }} onMouseLeave={e => { e.target.style.background = 'var(--primary)'; e.target.style.transform = 'translateY(0)' }}>{children}</button>)
+// Button component
+const Button = ({ children, onClick, type = 'button', loading, disabled, fullWidth }) => {
+  const [isHovered, setIsHovered] = useState(false)
+
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      disabled={loading || disabled}
+      style={{
+        width: fullWidth ? '100%' : 'auto',
+        padding: '14px 24px',
+        backgroundColor: isHovered && !loading && !disabled ? COLORS.primaryDark : COLORS.primary,
+        color: '#FFFFFF',
+        border: 'none',
+        borderRadius: 8,
+        fontSize: 15,
+        fontWeight: 600,
+        fontFamily: FONTS.body,
+        cursor: loading || disabled ? 'not-allowed' : 'pointer',
+        opacity: loading || disabled ? 0.6 : 1,
+        transition: 'all 0.2s ease',
+        transform: isHovered && !loading && !disabled ? 'translateY(-1px)' : 'translateY(0)',
+      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {loading ? 'Sending...' : children}
+    </button>
+  )
 }
 
-const Alert = ({ type, children }) => {
-  const colorMap = { danger: 'var(--danger)', warning: 'var(--warning)' }
-  const bgMap = { danger: 'rgba(239, 68, 68, 0.08)', warning: 'rgba(245, 158, 11, 0.08)' }
-  return (<div style={{ padding: '12px 14px', background: bgMap[type], border: `1px solid ${colorMap[type]}40`, borderRadius: 'var(--radius-md)', color: colorMap[type], fontSize: 13, marginBottom: 18, lineHeight: 1.6 }}>{children}</div>)
+// Alert component
+const Alert = ({ type, children, onClose }) => {
+  const bgColor = type === 'danger' ? `${COLORS.danger}10` : `${COLORS.success}10`
+  const borderColor = type === 'danger' ? `${COLORS.danger}40` : `${COLORS.success}40`
+  const textColor = type === 'danger' ? COLORS.danger : COLORS.success
+
+  return (
+    <div
+      style={{
+        padding: '12px 16px',
+        backgroundColor: bgColor,
+        border: `1px solid ${borderColor}`,
+        borderRadius: 8,
+        color: textColor,
+        fontSize: 13,
+        fontFamily: FONTS.body,
+        marginBottom: 20,
+        lineHeight: 1.6,
+      }}
+    >
+      {children}
+    </div>
+  )
 }
+
+// Mail Icon component
+const MailIcon = ({ size = 24, color = COLORS.primary }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke={color}
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <rect x="2" y="4" width="20" height="16" rx="2" />
+    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+  </svg>
+)
+
+// Check Circle Icon component
+const CheckCircleIcon = ({ size = 32, color = COLORS.success }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke={color}
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <circle cx="12" cy="12" r="10" />
+    <path d="m9 12 2 2 4-4" />
+  </svg>
+)
+
+// Arrow Left Icon component
+const ArrowLeftIcon = ({ size = 14, color = COLORS.textSecondary }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke={color}
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="m12 19-7-7 7-7" />
+    <path d="M19 12H5" />
+  </svg>
+)
+
+// Brain Icon component
+const BrainIcon = ({ size = 18, color = '#FFFFFF' }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke={color}
+    strokeWidth="2.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z" />
+    <path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z" />
+  </svg>
+)
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
   const [error, setError] = useState('')
+  const navigate = useNavigate()
+
+  const validateEmail = (email) => {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    return re.test(email)
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!email) { setError('Email is required'); return }
+
+    // Form validation
+    if (!email) {
+      setError('Email is required')
+      return
+    }
+
+    if (!validateEmail(email)) {
+      setError('Please enter a valid email address')
+      return
+    }
+
     setLoading(true)
+    setError('')
+
     try {
       await authAPI.forgotPassword({ email })
       setSent(true)
@@ -64,101 +246,259 @@ export default function ForgotPasswordPage() {
     } catch (err) {
       const msg = err.response?.data?.message || 'Failed to send reset email'
       setError(msg)
+      toast.error(msg)
     } finally {
       setLoading(false)
     }
   }
 
-  return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-base)', padding: 20, position: 'relative' }}>
+  const handleResend = () => {
+    setSent(false)
+    setError('')
+  }
 
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
+  return (
+    <div
+      style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: COLORS.bgBase,
+        padding: 20,
+        fontFamily: FONTS.body,
+      }}
+    >
+      {/* Card Container */}
+      <div
         style={{
-          width: '100%', maxWidth: 440,
-          background: '#fff', border: '1px solid #e8eaed',
-          borderRadius: 16, overflow: 'hidden',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04)',
+          width: '100%',
+          maxWidth: 440,
+          backgroundColor: COLORS.bgSurface,
+          borderRadius: 16,
+          boxShadow: '0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.05)',
+          border: `1px solid ${COLORS.border}`,
+          overflow: 'hidden',
         }}
       >
-        <div style={{ height: 4, background: 'var(--primary)' }} />
+        {/* Top accent bar */}
+        <div
+          style={{
+            height: 4,
+            backgroundColor: COLORS.primary,
+          }}
+        />
+
+        {/* Card Content */}
         <div style={{ padding: '36px 40px' }}>
-          {/* Logo - Clickable to go home */}
-          <Link to="/" style={{ textDecoration: 'none', display: 'inline-flex', cursor: 'pointer' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 40, transition: 'all 0.3s ease' }}
-              onMouseEnter={e => e.currentTarget.style.opacity = '0.8'}
-              onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+          {/* Logo */}
+          <Link
+            to="/"
+            style={{
+              textDecoration: 'none',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 10,
+              marginBottom: 40,
+            }}
+          >
+            <div
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 9,
+                backgroundColor: COLORS.sidebar,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
             >
-              <div style={{ width: 36, height: 36, borderRadius: 9, background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Brain size={18} color="#fff" strokeWidth={2.5} />
-              </div>
-              <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 17, color: 'var(--text-primary)' }}>NeuraScan</span>
+              <BrainIcon size={18} color="#FFFFFF" />
             </div>
+            <span
+              style={{
+                fontFamily: FONTS.display,
+                fontWeight: 700,
+                fontSize: 17,
+                color: COLORS.textPrimary,
+              }}
+            >
+              NeuraScan
+            </span>
           </Link>
 
           {!sent ? (
             <>
+              {/* Header Section */}
               <div style={{ marginBottom: 28 }}>
-                <div style={{ width: 52, height: 52, borderRadius: 13, background: 'rgba(26, 115, 232, 0.08)', border: '1px solid rgba(26, 115, 232, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 18 }}>
-                  <Mail size={24} color="var(--primary)" />
+                <div
+                  style={{
+                    width: 52,
+                    height: 52,
+                    borderRadius: 13,
+                    backgroundColor: `${COLORS.primary}15`,
+                    border: `1px solid ${COLORS.primary}30`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: 18,
+                  }}
+                >
+                  <MailIcon size={24} color={COLORS.primary} />
                 </div>
-                <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 700, letterSpacing: '-0.5px', marginBottom: 8, color: 'var(--text-primary)' }}>
+                <h1
+                  style={{
+                    fontFamily: FONTS.display,
+                    fontSize: 24,
+                    fontWeight: 700,
+                    letterSpacing: '-0.5px',
+                    marginBottom: 8,
+                    marginTop: 0,
+                    color: COLORS.textPrimary,
+                  }}
+                >
                   Forgot password?
                 </h1>
-                <p style={{ color: 'var(--text-secondary)', fontSize: 14, lineHeight: 1.7 }}>
-                  No worries — enter your email and we'll send you a reset link.
+                <p
+                  style={{
+                    color: COLORS.textSecondary,
+                    fontSize: 14,
+                    lineHeight: 1.7,
+                    margin: 0,
+                    fontFamily: FONTS.body,
+                  }}
+                >
+                  No worries - enter your email and we'll send you a reset link.
                 </p>
               </div>
 
-              {error && <Alert type="danger" onClose={() => setError('')}>{error}</Alert>}
+              {/* Error Alert */}
+              {error && (
+                <Alert type="danger" onClose={() => setError('')}>
+                  {error}
+                </Alert>
+              )}
 
+              {/* Form */}
               <form onSubmit={handleSubmit}>
                 <Input
                   label="Email address"
                   type="email"
                   value={email}
-                  onChange={e => { setEmail(e.target.value); setError('') }}
+                  onChange={(e) => {
+                    setEmail(e.target.value)
+                    setError('')
+                  }}
                   placeholder="you@school.edu"
                   required
                   error={error && !email ? 'Email is required' : ''}
                 />
-                <Button type="submit" fullWidth size="lg" loading={loading} style={{ marginTop: 8 }}>
-                  Send reset link
-                </Button>
+                <div style={{ marginTop: 8 }}>
+                  <Button type="submit" fullWidth loading={loading}>
+                    Send reset link
+                  </Button>
+                </div>
               </form>
-
-              {/* Calls POST /api/auth/forgot-password → backend generates token and sends email (or logs link to console) */}
             </>
           ) : (
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} style={{ textAlign: 'center', paddingTop: 8 }}>
-              <motion.div
-                initial={{ scale: 0 }} animate={{ scale: 1 }}
-                transition={{ type: 'spring', damping: 18, stiffness: 300, delay: 0.1 }}
-                style={{ width: 72, height: 72, borderRadius: '50%', background: 'rgba(16, 185, 129, 0.08)', border: '2px solid var(--success)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}
+            /* Success State */
+            <div style={{ textAlign: 'center', paddingTop: 8 }}>
+              <div
+                style={{
+                  width: 72,
+                  height: 72,
+                  borderRadius: '50%',
+                  backgroundColor: `${COLORS.success}10`,
+                  border: `2px solid ${COLORS.success}`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto 20px',
+                }}
               >
-                <CheckCircle size={32} color="var(--success)" />
-              </motion.div>
-              <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 22, fontWeight: 700, marginBottom: 8, color: 'var(--text-primary)' }}>Check your email</h2>
-              <p style={{ color: 'var(--text-secondary)', fontSize: 14, lineHeight: 1.7, marginBottom: 24 }}>
-                We've sent a password reset link to <strong style={{ color: 'var(--text-primary)' }}>{email}</strong>. Check your inbox and follow the instructions.
+                <CheckCircleIcon size={32} color={COLORS.success} />
+              </div>
+              <h2
+                style={{
+                  fontFamily: FONTS.display,
+                  fontSize: 22,
+                  fontWeight: 700,
+                  marginBottom: 8,
+                  marginTop: 0,
+                  color: COLORS.textPrimary,
+                }}
+              >
+                Check your email
+              </h2>
+              <p
+                style={{
+                  color: COLORS.textSecondary,
+                  fontSize: 14,
+                  fontFamily: FONTS.body,
+                  lineHeight: 1.7,
+                  marginBottom: 24,
+                }}
+              >
+                We've sent a password reset link to{' '}
+                <strong style={{ color: COLORS.textPrimary }}>{email}</strong>.
+                Check your inbox and follow the instructions.
               </p>
-              <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 20 }}>
+              <p
+                style={{
+                  fontSize: 12,
+                  fontFamily: FONTS.body,
+                  color: COLORS.textMuted,
+                  marginBottom: 20,
+                }}
+              >
                 Didn't receive it?{' '}
-                <button onClick={() => setSent(false)} style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', fontSize: 12, fontWeight: 600, transition: 'all 0.3s ease' }} onMouseEnter={e => e.target.style.textDecoration = 'underline'} onMouseLeave={e => e.target.style.textDecoration = 'none'}>
+                <button
+                  onClick={handleResend}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: COLORS.primary,
+                    cursor: 'pointer',
+                    fontSize: 12,
+                    fontWeight: 600,
+                    fontFamily: FONTS.body,
+                    padding: 0,
+                  }}
+                >
                   Resend
                 </button>
               </p>
-            </motion.div>
+            </div>
           )}
 
-          <div style={{ marginTop: 24, paddingTop: 20, borderTop: '1px solid var(--border)', textAlign: 'center' }}>
-            <Link to="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-secondary)', textDecoration: 'none', fontWeight: 500 }}>
-              <ArrowLeft size={14} /> Back to Home
+          {/* Back to Home Link */}
+          <div
+            style={{
+              marginTop: 24,
+              paddingTop: 20,
+              borderTop: `1px solid ${COLORS.border}`,
+              textAlign: 'center',
+            }}
+          >
+            <Link
+              to="/"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                fontSize: 13,
+                fontFamily: FONTS.body,
+                color: COLORS.textSecondary,
+                textDecoration: 'none',
+                fontWeight: 500,
+              }}
+            >
+              <ArrowLeftIcon size={14} color={COLORS.textSecondary} />
+              Back to Home
             </Link>
           </div>
         </div>
-      </motion.div>
+      </div>
     </div>
   )
 }
