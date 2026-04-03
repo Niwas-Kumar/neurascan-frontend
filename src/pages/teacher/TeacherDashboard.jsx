@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
 import {
   Users, FileText, AlertTriangle, TrendingUp, Upload,
   Brain, Clock, ChevronRight, BarChart3, PieChart as PieChartIcon
@@ -13,84 +12,92 @@ import {
 } from 'recharts'
 import { format, formatDistanceToNow } from 'date-fns'
 import toast from 'react-hot-toast'
-import { Button, RiskBadge } from '../../components/shared/UI'
 
 // ════════════════════════════════════════════════════════════════
-// DESIGN SYSTEM COLORS - Deep Indigo + Soft Teal
+// DESIGN SYSTEM - Matching reference exactly
 // ════════════════════════════════════════════════════════════════
 const COLORS = {
-  primary: '#312E81',
-  primaryLight: '#4338CA',
-  primaryLighter: '#6366F1',
-  primaryBg: '#EEF2FF',
+  sidebar: '#312E81',
+  primary: '#14B8A6',
+  primaryHover: '#0D9488',
+  primaryBg: 'rgba(20, 184, 166, 0.1)',
 
-  secondary: '#14B8A6',
-  secondaryDark: '#0D9488',
-  secondaryLight: '#2DD4BF',
-  secondaryBg: '#CCFBF1',
+  bgBase: '#F8FAFC',
+  bgCard: '#FFFFFF',
+  bgMuted: '#F1F5F9',
 
-  success: '#059669',
-  successBg: '#D1FAE5',
-  warning: '#D97706',
-  warningBg: '#FEF3C7',
-  danger: '#B91C1C',
-  dangerBg: '#FEE2E2',
-
-  textPrimary: '#1E293B',
-  textSecondary: '#334155',
+  textPrimary: '#0F172A',
+  textSecondary: '#475569',
   textMuted: '#64748B',
   textLight: '#94A3B8',
 
-  bgBase: '#F8FAFC',
-  bgSurface: '#FFFFFF',
-  bgSubtle: '#F1F5F9',
   border: '#E2E8F0',
-  borderStrong: '#CBD5E1',
+
+  // Chart colors
+  chartDyslexia: '#14B8A6',
+  chartDysgraphia: '#6366F1',
+
+  // Risk colors
+  riskHigh: '#ef4444',
+  riskHighBg: 'rgba(239, 68, 68, 0.1)',
+  riskMedium: '#f59e0b',
+  riskMediumBg: 'rgba(245, 158, 11, 0.1)',
+  riskLow: '#22c55e',
+  riskLowBg: 'rgba(34, 197, 94, 0.1)',
 }
 
 // ════════════════════════════════════════════════════════════════
-// CUSTOM TOOLTIP - Bespoke styled
+// RISK BADGE COMPONENT
 // ════════════════════════════════════════════════════════════════
-const CustomTooltip = ({ active, payload, label }) => {
+function RiskBadge({ level }) {
+  const styles = {
+    LOW: { bg: COLORS.riskLowBg, color: COLORS.riskLow, border: 'rgba(34, 197, 94, 0.2)' },
+    MEDIUM: { bg: COLORS.riskMediumBg, color: COLORS.riskMedium, border: 'rgba(245, 158, 11, 0.2)' },
+    HIGH: { bg: COLORS.riskHighBg, color: COLORS.riskHigh, border: 'rgba(239, 68, 68, 0.2)' },
+  }
+  const labels = { LOW: 'Low', MEDIUM: 'Medium', HIGH: 'High' }
+  const s = styles[level] || styles.LOW
+
+  return (
+    <span
+      style={{
+        display: 'inline-block',
+        padding: '4px 12px',
+        borderRadius: 9999,
+        fontSize: 12,
+        fontWeight: 500,
+        background: s.bg,
+        color: s.color,
+        border: `1px solid ${s.border}`,
+      }}
+    >
+      {labels[level] || level}
+    </span>
+  )
+}
+
+// ════════════════════════════════════════════════════════════════
+// CUSTOM TOOLTIP
+// ════════════════════════════════════════════════════════════════
+function CustomTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null
   return (
-    <div style={{
-      background: COLORS.bgSurface,
-      border: `1px solid ${COLORS.border}`,
-      borderRadius: 10,
-      padding: '12px 16px',
-      fontSize: 13,
-      boxShadow: '0 4px 16px rgba(15, 23, 42, 0.1)',
-    }}>
-      <p style={{
-        color: COLORS.textMuted,
-        marginBottom: 8,
-        fontWeight: 500,
-        fontSize: 12,
-      }}>{label}</p>
-      {payload.map(p => (
-        <div key={p.name} style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-          marginBottom: 4,
-        }}>
-          <div style={{
-            width: 10,
-            height: 10,
-            borderRadius: 3,
-            background: p.color
-          }} />
-          <span style={{ color: COLORS.textSecondary, fontWeight: 500 }}>
-            {p.name}:
-          </span>
-          <span style={{
-            fontWeight: 700,
-            color: COLORS.textPrimary,
-            fontFamily: 'var(--font-display)'
-          }}>
-            {p.value?.toFixed(1)}%
-          </span>
+    <div
+      style={{
+        background: COLORS.bgCard,
+        border: `1px solid ${COLORS.border}`,
+        borderRadius: 8,
+        padding: '12px 16px',
+        fontSize: 13,
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+      }}
+    >
+      {label && <p style={{ color: COLORS.textMuted, marginBottom: 8, fontWeight: 500 }}>{label}</p>}
+      {payload.map((p) => (
+        <div key={p.name} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+          <div style={{ width: 10, height: 10, borderRadius: 3, background: p.color }} />
+          <span style={{ color: COLORS.textSecondary }}>{p.name}:</span>
+          <span style={{ fontWeight: 600, color: COLORS.textPrimary }}>{p.value?.toFixed(1)}%</span>
         </div>
       ))}
     </div>
@@ -98,112 +105,129 @@ const CustomTooltip = ({ active, payload, label }) => {
 }
 
 // ════════════════════════════════════════════════════════════════
-// SKELETON LOADER - Shimmer effect
+// STAT CARD COMPONENT
 // ════════════════════════════════════════════════════════════════
-const SkeletonBox = ({ height = 140, style = {} }) => (
-  <div
-    className="skeleton"
-    style={{
-      height,
-      borderRadius: 12,
-      ...style,
-    }}
-  />
-)
-
-const StatCardSkeleton = () => (
-  <div style={{
-    background: COLORS.bgSurface,
-    border: `1px solid ${COLORS.border}`,
-    borderRadius: 12,
-    padding: 24,
-  }}>
-    <div className="skeleton" style={{ width: 48, height: 48, borderRadius: 10, marginBottom: 16 }} />
-    <div className="skeleton" style={{ width: '40%', height: 12, marginBottom: 12 }} />
-    <div className="skeleton" style={{ width: '60%', height: 28 }} />
-  </div>
-)
-
-// ════════════════════════════════════════════════════════════════
-// STAT CARD COMPONENT - Bespoke Design
-// ════════════════════════════════════════════════════════════════
-const DashboardStatCard = ({ icon: Icon, label, value, color, delay = 0, subtitle }) => {
+function StatCard({ icon: Icon, label, value, color = 'primary', subtitle }) {
   const colorMap = {
     primary: { icon: COLORS.primary, bg: COLORS.primaryBg },
-    secondary: { icon: COLORS.secondary, bg: COLORS.secondaryBg },
-    warning: { icon: COLORS.warning, bg: COLORS.warningBg },
-    danger: { icon: COLORS.danger, bg: COLORS.dangerBg },
-    success: { icon: COLORS.success, bg: COLORS.successBg },
+    danger: { icon: COLORS.riskHigh, bg: COLORS.riskHighBg },
+    warning: { icon: COLORS.riskMedium, bg: COLORS.riskMediumBg },
+    success: { icon: COLORS.riskLow, bg: COLORS.riskLowBg },
   }
   const c = colorMap[color] || colorMap.primary
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: delay * 0.08, duration: 0.4, ease: [0.2, 0, 0, 1] }}
+    <div
       style={{
-        background: COLORS.bgSurface,
+        background: COLORS.bgCard,
         border: `1px solid ${COLORS.border}`,
         borderRadius: 12,
-        padding: 24,
-        transition: 'all 0.2s ease',
-        cursor: 'default',
-      }}
-      whileHover={{
-        y: -4,
-        boxShadow: '0 8px 24px rgba(15, 23, 42, 0.08)',
-        borderColor: COLORS.borderStrong,
+        padding: 20,
       }}
     >
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        marginBottom: 16,
-      }}>
-        <div style={{
-          width: 48,
-          height: 48,
+      <div
+        style={{
+          width: 44,
+          height: 44,
           borderRadius: 10,
           background: c.bg,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-        }}>
-          <Icon size={24} color={c.icon} strokeWidth={1.75} />
-        </div>
+          marginBottom: 16,
+        }}
+      >
+        <Icon size={22} color={c.icon} />
       </div>
-      <p style={{
-        fontSize: 12,
-        color: COLORS.textMuted,
-        fontWeight: 600,
-        textTransform: 'uppercase',
-        letterSpacing: '0.05em',
-        marginBottom: 8,
-      }}>
+      <p
+        style={{
+          fontSize: 12,
+          color: COLORS.textMuted,
+          fontWeight: 500,
+          textTransform: 'uppercase',
+          letterSpacing: '0.05em',
+          marginBottom: 6,
+        }}
+      >
         {label}
       </p>
-      <p style={{
-        fontSize: 32,
-        fontWeight: 700,
-        color: COLORS.textPrimary,
-        fontFamily: 'var(--font-display)',
-        lineHeight: 1,
-      }}>
+      <p
+        style={{
+          fontSize: 28,
+          fontWeight: 700,
+          color: COLORS.textPrimary,
+          fontFamily: "'Plus Jakarta Sans', sans-serif",
+          lineHeight: 1,
+        }}
+      >
         {value}
       </p>
       {subtitle && (
-        <p style={{
-          fontSize: 12,
-          color: COLORS.textLight,
-          marginTop: 6,
-        }}>
-          {subtitle}
-        </p>
+        <p style={{ fontSize: 12, color: COLORS.textMuted, marginTop: 6 }}>{subtitle}</p>
       )}
-    </motion.div>
+    </div>
   )
+}
+
+// ════════════════════════════════════════════════════════════════
+// CARD COMPONENT
+// ════════════════════════════════════════════════════════════════
+function Card({ children, style = {} }) {
+  return (
+    <div
+      style={{
+        background: COLORS.bgCard,
+        border: `1px solid ${COLORS.border}`,
+        borderRadius: 12,
+        overflow: 'hidden',
+        ...style,
+      }}
+    >
+      {children}
+    </div>
+  )
+}
+
+function CardHeader({ title, description, icon: Icon, iconBg }) {
+  return (
+    <div style={{ padding: '20px 24px', borderBottom: `1px solid ${COLORS.border}` }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        {Icon && (
+          <div
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: 8,
+              background: iconBg || COLORS.primaryBg,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Icon size={18} color={COLORS.primary} />
+          </div>
+        )}
+        <div>
+          <h3
+            style={{
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontSize: 16,
+              fontWeight: 600,
+              color: COLORS.textPrimary,
+              marginBottom: description ? 2 : 0,
+            }}
+          >
+            {title}
+          </h3>
+          {description && <p style={{ fontSize: 13, color: COLORS.textMuted }}>{description}</p>}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function CardContent({ children, style = {} }) {
+  return <div style={{ padding: 24, ...style }}>{children}</div>
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -215,53 +239,29 @@ export default function TeacherDashboard() {
   const [dash, setDash] = useState(null)
   const [reports, setReports] = useState([])
   const [loading, setLoading] = useState(true)
-  const [dashLoading, setDashLoading] = useState(true)
-  const [reportsLoading, setReportsLoading] = useState(true)
 
   useEffect(() => {
-    // Don't fetch if user is not available yet
-    if (!user?.userId) {
-      return
-    }
+    if (!user?.userId) return
 
     setLoading(true)
-    setDashLoading(true)
-    setReportsLoading(true)
 
-    // Fetch dashboard data
-    optimizedAnalysisAPI.getDashboard()
-      .then(d => {
+    Promise.all([
+      optimizedAnalysisAPI.getDashboard(),
+      optimizedAnalysisAPI.getReports(),
+    ])
+      .then(([d, r]) => {
         setDash(d.data.data)
+        setReports(r.data.data || [])
         if ((d.data.data?.studentsAtRisk || 0) > 0) {
           addNotification({
             type: 'warning',
             title: 'Attention Required',
-            body: `${d.data.data.studentsAtRisk} student(s) flagged for follow-up assessment.`
+            body: `${d.data.data.studentsAtRisk} student(s) flagged for follow-up assessment.`,
           })
         }
       })
-      .catch(err => {
-        console.error('Dashboard error:', err)
-        toast.error('Unable to load dashboard metrics')
-      })
-      .finally(() => {
-        setDashLoading(false)
-      })
-
-    // Fetch reports data independently
-    optimizedAnalysisAPI.getReports()
-      .then(r => {
-        setReports(r.data.data || [])
-      })
-      .catch(err => {
-        console.error('Reports error:', err)
-        toast.error('Unable to load recent reports')
-      })
-      .finally(() => {
-        setReportsLoading(false)
-        setLoading(false)
-      })
-
+      .catch(() => toast.error('Unable to load dashboard'))
+      .finally(() => setLoading(false))
   }, [user?.userId])
 
   const greeting = (() => {
@@ -270,13 +270,16 @@ export default function TeacherDashboard() {
   })()
 
   // Chart data — last 8 reports reversed for chronological order
-  const chartData = [...reports].reverse().slice(-8).map(r => ({
-    date: format(new Date(r.uploadDate || r.createdAt), 'MMM d'),
-    Dyslexia: +r.dyslexiaScore?.toFixed(1),
-    Dysgraphia: +r.dysgraphiaScore?.toFixed(1),
-  }))
+  const chartData = [...reports]
+    .reverse()
+    .slice(-8)
+    .map((r) => ({
+      date: format(new Date(r.uploadDate || r.createdAt), 'MMM d'),
+      Dyslexia: +(r.dyslexiaScore || 0).toFixed(1),
+      Dysgraphia: +(r.dysgraphiaScore || 0).toFixed(1),
+    }))
 
-  // Pie: risk distribution with realistic percentages
+  // Pie: risk distribution
   const riskCounts = reports.reduce((acc, r) => {
     acc[r.riskLevel] = (acc[r.riskLevel] || 0) + 1
     return acc
@@ -287,564 +290,478 @@ export default function TeacherDashboard() {
     {
       name: 'Low Risk',
       value: riskCounts.LOW || 0,
-      color: COLORS.success,
-      percentage: totalReports ? ((riskCounts.LOW || 0) / totalReports * 100).toFixed(1) : 0
+      color: COLORS.riskLow,
+      percentage: totalReports ? (((riskCounts.LOW || 0) / totalReports) * 100).toFixed(1) : 0,
     },
     {
       name: 'Medium Risk',
       value: riskCounts.MEDIUM || 0,
-      color: COLORS.warning,
-      percentage: totalReports ? ((riskCounts.MEDIUM || 0) / totalReports * 100).toFixed(1) : 0
+      color: COLORS.riskMedium,
+      percentage: totalReports ? (((riskCounts.MEDIUM || 0) / totalReports) * 100).toFixed(1) : 0,
     },
     {
       name: 'High Risk',
       value: riskCounts.HIGH || 0,
-      color: COLORS.danger,
-      percentage: totalReports ? ((riskCounts.HIGH || 0) / totalReports * 100).toFixed(1) : 0
+      color: COLORS.riskHigh,
+      percentage: totalReports ? (((riskCounts.HIGH || 0) / totalReports) * 100).toFixed(1) : 0,
     },
-  ].filter(d => d.value > 0)
+  ].filter((d) => d.value > 0)
 
-  // ════════════════════════════════════════════════════════════════
-  // FULL LOADING STATE
-  // ════════════════════════════════════════════════════════════════
-  if (!user?.userId || (loading && dashLoading && reportsLoading)) return (
-    <div style={{
-      minHeight: '100vh',
-      background: COLORS.bgBase,
-      padding: '32px 40px',
-    }}>
-      {/* Header Skeleton */}
-      <div style={{ marginBottom: 40 }}>
-        <div className="skeleton" style={{ width: 280, height: 32, marginBottom: 12 }} />
-        <div className="skeleton" style={{ width: 360, height: 18 }} />
+  // Loading State
+  if (loading || !user?.userId) {
+    return (
+      <div style={{ padding: '16px 24px' }}>
+        <div style={{ marginBottom: 32 }}>
+          <div style={{ height: 32, width: 280, background: COLORS.bgMuted, borderRadius: 8, marginBottom: 8 }} />
+          <div style={{ height: 18, width: 200, background: COLORS.bgMuted, borderRadius: 6 }} />
+        </div>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: 16,
+            marginBottom: 24,
+          }}
+        >
+          {[0, 1, 2, 3].map((i) => (
+            <div
+              key={i}
+              style={{
+                background: COLORS.bgCard,
+                border: `1px solid ${COLORS.border}`,
+                borderRadius: 12,
+                padding: 20,
+                height: 140,
+              }}
+            />
+          ))}
+        </div>
+        <style>{`@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }`}</style>
       </div>
+    )
+  }
 
-      {/* Stats Skeleton */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-        gap: 20,
-        marginBottom: 40,
-      }}>
-        {[0, 1, 2, 3].map(i => <StatCardSkeleton key={i} />)}
-      </div>
-
-      {/* Charts Skeleton */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(480px, 1fr))',
-        gap: 24,
-      }}>
-        <SkeletonBox height={380} />
-        <SkeletonBox height={380} />
-      </div>
-    </div>
-  )
-
-  // ════════════════════════════════════════════════════════════════
-  // MAIN RENDER
-  // ════════════════════════════════════════════════════════════════
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: COLORS.bgBase,
-      padding: '32px 40px',
-    }}>
-      {/* ─── HEADER SECTION ─── */}
-      <motion.div
-        initial={{ opacity: 0, y: -16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        style={{ marginBottom: 40 }}
-      >
-        <div style={{
+    <div style={{ padding: '16px 24px' }}>
+      {/* Header */}
+      <div
+        style={{
           display: 'flex',
-          justifyContent: 'space-between',
+          flexDirection: 'row',
           alignItems: 'flex-start',
+          justifyContent: 'space-between',
           marginBottom: 32,
+          gap: 16,
           flexWrap: 'wrap',
-          gap: 20,
-        }}>
-          <div>
-            <h1 style={{
+        }}
+      >
+        <div>
+          <h1
+            style={{
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
               fontSize: 28,
               fontWeight: 700,
               color: COLORS.textPrimary,
-              letterSpacing: '-0.02em',
-              marginBottom: 8,
-              fontFamily: 'var(--font-display)',
-            }}>
-              {greeting}, <span style={{ color: COLORS.primary }}>
-                {user?.name?.split(' ')[0] || 'Teacher'}
-              </span>
-            </h1>
-            <p style={{
-              fontSize: 15,
-              color: COLORS.textMuted,
-              lineHeight: 1.5,
-            }}>
-              Classroom risk overview for {format(new Date(), 'EEEE, MMMM d, yyyy')}
-            </p>
-          </div>
-
-          <Link to="/teacher/upload" style={{ textDecoration: 'none' }}>
-            <Button
-              variant="primary"
-              size="lg"
-              icon={<Upload size={18} />}
-              style={{
-                background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryLight} 100%)`,
-                boxShadow: '0 4px 16px rgba(49, 46, 129, 0.25)',
-              }}
-            >
-              Upload Handwriting Sample
-            </Button>
-          </Link>
+              marginBottom: 4,
+            }}
+          >
+            {greeting}, <span style={{ color: COLORS.primary }}>{user?.name?.split(' ')[0] || 'Teacher'}</span>
+          </h1>
+          <p style={{ color: COLORS.textMuted, fontSize: 14 }}>
+            Classroom overview for {format(new Date(), 'EEEE, MMMM d, yyyy')}
+          </p>
         </div>
 
-        {/* ─── STATS CARDS ─── */}
-        {dashLoading ? (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-            gap: 20,
-          }}>
-            {[0, 1, 2, 3].map(i => <StatCardSkeleton key={i} />)}
-          </div>
-        ) : (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-            gap: 20,
-          }}>
-            <DashboardStatCard
-              icon={Users}
-              label="Total Students"
-              value={dash?.totalStudents ?? 0}
-              color="primary"
-              delay={1}
-              subtitle="Active in classroom"
-            />
-            <DashboardStatCard
-              icon={FileText}
-              label="Samples Analyzed"
-              value={dash?.totalPapersUploaded ?? 0}
-              color="secondary"
-              delay={2}
-              subtitle="Handwriting assessments"
-            />
-            <DashboardStatCard
-              icon={AlertTriangle}
-              label="Requires Attention"
-              value={dash?.studentsAtRisk ?? 0}
-              color="danger"
-              delay={3}
-              subtitle="Flagged for follow-up"
-            />
-            <DashboardStatCard
-              icon={Brain}
-              label="Avg. Dyslexia Score"
-              value={`${dash?.averageDyslexiaScore?.toFixed(1) ?? 0}%`}
-              color="primary"
-              delay={4}
-              subtitle="Classroom average"
-            />
-          </div>
-        )}
-      </motion.div>
+        <Link to="/teacher/upload" style={{ textDecoration: 'none' }}>
+          <button
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '12px 20px',
+              background: COLORS.primary,
+              color: 'white',
+              border: 'none',
+              borderRadius: 8,
+              fontSize: 14,
+              fontWeight: 500,
+              cursor: 'pointer',
+              fontFamily: "'Inter', sans-serif",
+            }}
+          >
+            <Upload size={18} />
+            Upload Sample
+          </button>
+        </Link>
+      </div>
 
-      {/* ─── CHARTS SECTION ─── */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.15, duration: 0.4 }}
+      {/* Stats Cards */}
+      <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(480px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: 16,
+          marginBottom: 32,
+        }}
+      >
+        <StatCard
+          icon={Users}
+          label="Total Students"
+          value={dash?.totalStudents ?? 0}
+          color="primary"
+          subtitle="Active in classroom"
+        />
+        <StatCard
+          icon={FileText}
+          label="Samples Analyzed"
+          value={dash?.totalPapersUploaded ?? 0}
+          color="primary"
+          subtitle="Handwriting assessments"
+        />
+        <StatCard
+          icon={AlertTriangle}
+          label="Requires Attention"
+          value={dash?.studentsAtRisk ?? 0}
+          color="danger"
+          subtitle="Flagged for follow-up"
+        />
+        <StatCard
+          icon={Brain}
+          label="Avg. Dyslexia Score"
+          value={`${(dash?.averageDyslexiaScore || 0).toFixed(1)}%`}
+          color="primary"
+          subtitle="Classroom average"
+        />
+      </div>
+
+      {/* Charts Section */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
           gap: 24,
-          marginBottom: 40,
+          marginBottom: 32,
         }}
       >
         {/* Trend Chart */}
-        <div style={{
-          background: COLORS.bgSurface,
-          border: `1px solid ${COLORS.border}`,
-          borderRadius: 12,
-          padding: 28,
-        }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-            marginBottom: 24,
-          }}>
-            <div style={{
-              width: 36,
-              height: 36,
-              borderRadius: 8,
-              background: COLORS.primaryBg,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-              <TrendingUp size={18} color={COLORS.primary} />
-            </div>
-            <div>
-              <h3 style={{
-                fontSize: 16,
-                fontWeight: 600,
-                color: COLORS.textPrimary,
-                fontFamily: 'var(--font-display)',
-              }}>
-                Analysis Trend
-              </h3>
-              <p style={{ fontSize: 12, color: COLORS.textMuted }}>
-                Recent assessment scores
-              </p>
-            </div>
-          </div>
-
-          {reportsLoading ? (
-            <SkeletonBox height={280} />
-          ) : chartData.length === 0 ? (
-            <div style={{
-              height: 280,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: COLORS.textMuted,
-              background: COLORS.bgSubtle,
-              borderRadius: 8,
-            }}>
-              <BarChart3 size={40} strokeWidth={1.5} style={{ marginBottom: 12, opacity: 0.5 }} />
-              <p style={{ fontSize: 14, fontWeight: 500 }}>No data yet</p>
-              <p style={{ fontSize: 13 }}>Upload samples to see trends</p>
-            </div>
-          ) : (
-            <ResponsiveContainer width="100%" height={280}>
-              <AreaChart data={chartData} margin={{ top: 10, right: 20, left: -20, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="dyslexiaGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={COLORS.primary} stopOpacity={0.25} />
-                    <stop offset="100%" stopColor={COLORS.primary} stopOpacity={0} />
-                  </linearGradient>
-                  <linearGradient id="dysgraphiaGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={COLORS.secondary} stopOpacity={0.25} />
-                    <stop offset="100%" stopColor={COLORS.secondary} stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke={COLORS.border} vertical={false} />
-                <XAxis
-                  dataKey="date"
-                  stroke={COLORS.textLight}
-                  style={{ fontSize: 12 }}
-                  tickLine={false}
-                  axisLine={{ stroke: COLORS.border }}
-                />
-                <YAxis
-                  stroke={COLORS.textLight}
-                  style={{ fontSize: 12 }}
-                  tickLine={false}
-                  axisLine={false}
-                  tickFormatter={(v) => `${v}%`}
-                />
-                <ReTooltip content={<CustomTooltip />} />
-                <Area
-                  type="monotone"
-                  name="Dyslexia"
-                  dataKey="Dyslexia"
-                  stroke={COLORS.primary}
-                  strokeWidth={2.5}
-                  fillOpacity={1}
-                  fill="url(#dyslexiaGrad)"
-                  dot={{ fill: COLORS.primary, strokeWidth: 0, r: 4 }}
-                  activeDot={{ r: 6, stroke: COLORS.bgSurface, strokeWidth: 2 }}
-                />
-                <Area
-                  type="monotone"
-                  name="Dysgraphia"
-                  dataKey="Dysgraphia"
-                  stroke={COLORS.secondary}
-                  strokeWidth={2.5}
-                  fillOpacity={1}
-                  fill="url(#dysgraphiaGrad)"
-                  dot={{ fill: COLORS.secondary, strokeWidth: 0, r: 4 }}
-                  activeDot={{ r: 6, stroke: COLORS.bgSurface, strokeWidth: 2 }}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          )}
-
-          {/* Legend */}
-          {chartData.length > 0 && (
-            <div style={{
-              display: 'flex',
-              justifyContent: 'center',
-              gap: 24,
-              marginTop: 16,
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div style={{ width: 12, height: 12, borderRadius: 3, background: COLORS.primary }} />
-                <span style={{ fontSize: 13, color: COLORS.textMuted, fontWeight: 500 }}>Dyslexia</span>
+        <Card>
+          <CardHeader title="Analysis Trend" description="Recent assessment scores" icon={TrendingUp} />
+          <CardContent>
+            {chartData.length === 0 ? (
+              <div
+                style={{
+                  height: 256,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: COLORS.textMuted,
+                  background: COLORS.bgMuted,
+                  borderRadius: 8,
+                }}
+              >
+                <BarChart3 size={40} style={{ marginBottom: 12, opacity: 0.5 }} />
+                <p style={{ fontSize: 14, fontWeight: 500 }}>No data yet</p>
+                <p style={{ fontSize: 13 }}>Upload samples to see trends</p>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div style={{ width: 12, height: 12, borderRadius: 3, background: COLORS.secondary }} />
-                <span style={{ fontSize: 13, color: COLORS.textMuted, fontWeight: 500 }}>Dysgraphia</span>
-              </div>
-            </div>
-          )}
-        </div>
+            ) : (
+              <>
+                <div style={{ height: 256 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={chartData} margin={{ top: 10, right: 20, left: -20, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="dyslexiaGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor={COLORS.chartDyslexia} stopOpacity={0.25} />
+                          <stop offset="100%" stopColor={COLORS.chartDyslexia} stopOpacity={0} />
+                        </linearGradient>
+                        <linearGradient id="dysgraphiaGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor={COLORS.chartDysgraphia} stopOpacity={0.25} />
+                          <stop offset="100%" stopColor={COLORS.chartDysgraphia} stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke={COLORS.border} vertical={false} />
+                      <XAxis
+                        dataKey="date"
+                        stroke={COLORS.border}
+                        tick={{ fontSize: 12, fill: COLORS.textMuted }}
+                        tickLine={false}
+                      />
+                      <YAxis
+                        stroke={COLORS.border}
+                        tick={{ fontSize: 12, fill: COLORS.textMuted }}
+                        tickLine={false}
+                        axisLine={false}
+                        tickFormatter={(v) => `${v}%`}
+                      />
+                      <ReTooltip content={<CustomTooltip />} />
+                      <Area
+                        type="monotone"
+                        name="Dyslexia"
+                        dataKey="Dyslexia"
+                        stroke={COLORS.chartDyslexia}
+                        strokeWidth={2.5}
+                        fillOpacity={1}
+                        fill="url(#dyslexiaGrad)"
+                        dot={{ fill: COLORS.chartDyslexia, strokeWidth: 0, r: 4 }}
+                        activeDot={{ r: 6, stroke: COLORS.bgCard, strokeWidth: 2 }}
+                      />
+                      <Area
+                        type="monotone"
+                        name="Dysgraphia"
+                        dataKey="Dysgraphia"
+                        stroke={COLORS.chartDysgraphia}
+                        strokeWidth={2.5}
+                        fillOpacity={1}
+                        fill="url(#dysgraphiaGrad)"
+                        dot={{ fill: COLORS.chartDysgraphia, strokeWidth: 0, r: 4 }}
+                        activeDot={{ r: 6, stroke: COLORS.bgCard, strokeWidth: 2 }}
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+
+                {/* Legend */}
+                <div style={{ display: 'flex', justifyContent: 'center', gap: 24, marginTop: 16 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{ width: 12, height: 12, borderRadius: 3, background: COLORS.chartDyslexia }} />
+                    <span style={{ fontSize: 13, color: COLORS.textMuted, fontWeight: 500 }}>Dyslexia</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{ width: 12, height: 12, borderRadius: 3, background: COLORS.chartDysgraphia }} />
+                    <span style={{ fontSize: 13, color: COLORS.textMuted, fontWeight: 500 }}>Dysgraphia</span>
+                  </div>
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Risk Distribution */}
-        <div style={{
-          background: COLORS.bgSurface,
-          border: `1px solid ${COLORS.border}`,
-          borderRadius: 12,
-          padding: 28,
-        }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-            marginBottom: 24,
-          }}>
-            <div style={{
-              width: 36,
-              height: 36,
-              borderRadius: 8,
-              background: COLORS.secondaryBg,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}>
-              <PieChartIcon size={18} color={COLORS.secondary} />
-            </div>
-            <div>
-              <h3 style={{
-                fontSize: 16,
-                fontWeight: 600,
-                color: COLORS.textPrimary,
-                fontFamily: 'var(--font-display)',
-              }}>
-                Risk Distribution
-              </h3>
-              <p style={{ fontSize: 12, color: COLORS.textMuted }}>
-                Classroom breakdown
-              </p>
-            </div>
-          </div>
-
-          {dashLoading ? (
-            <SkeletonBox height={280} />
-          ) : pieData.length === 0 ? (
-            <div style={{
-              height: 280,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: COLORS.textMuted,
-              background: COLORS.bgSubtle,
-              borderRadius: 8,
-            }}>
-              <PieChartIcon size={40} strokeWidth={1.5} style={{ marginBottom: 12, opacity: 0.5 }} />
-              <p style={{ fontSize: 14, fontWeight: 500 }}>No assessments</p>
-              <p style={{ fontSize: 13 }}>Data will appear here</p>
-            </div>
-          ) : (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
-              <ResponsiveContainer width="50%" height={250}>
-                <PieChart>
-                  <Pie
-                    data={pieData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={50}
-                    outerRadius={85}
-                    paddingAngle={4}
-                    dataKey="value"
-                  >
-                    {pieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
-                    ))}
-                  </Pie>
-                </PieChart>
-              </ResponsiveContainer>
-
-              {/* Custom Legend */}
-              <div style={{ flex: 1 }}>
-                {pieData.map((item, i) => (
-                  <div
-                    key={i}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      padding: '12px 0',
-                      borderBottom: i < pieData.length - 1 ? `1px solid ${COLORS.border}` : 'none',
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <div style={{
-                        width: 12,
-                        height: 12,
-                        borderRadius: 3,
-                        background: item.color,
-                      }} />
-                      <span style={{
-                        fontSize: 14,
-                        color: COLORS.textSecondary,
-                        fontWeight: 500,
-                      }}>
-                        {item.name}
-                      </span>
-                    </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <span style={{
-                        fontSize: 16,
-                        fontWeight: 700,
-                        color: COLORS.textPrimary,
-                        fontFamily: 'var(--font-display)',
-                      }}>
-                        {item.value}
-                      </span>
-                      <span style={{
-                        fontSize: 12,
-                        color: COLORS.textMuted,
-                        marginLeft: 6,
-                      }}>
-                        ({item.percentage}%)
-                      </span>
-                    </div>
-                  </div>
-                ))}
+        <Card>
+          <CardHeader
+            title="Risk Distribution"
+            description="Classroom breakdown"
+            icon={PieChartIcon}
+            iconBg={COLORS.riskLowBg}
+          />
+          <CardContent>
+            {pieData.length === 0 ? (
+              <div
+                style={{
+                  height: 256,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: COLORS.textMuted,
+                  background: COLORS.bgMuted,
+                  borderRadius: 8,
+                }}
+              >
+                <PieChartIcon size={40} style={{ marginBottom: 12, opacity: 0.5 }} />
+                <p style={{ fontSize: 14, fontWeight: 500 }}>No assessments</p>
+                <p style={{ fontSize: 13 }}>Data will appear here</p>
               </div>
-            </div>
-          )}
-        </div>
-      </motion.div>
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
+                <div style={{ width: '45%', height: 220 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={pieData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={45}
+                        outerRadius={80}
+                        paddingAngle={4}
+                        dataKey="value"
+                      >
+                        {pieData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} stroke="none" />
+                        ))}
+                      </Pie>
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
 
-      {/* ─── RECENT REPORTS SECTION ─── */}
+                {/* Custom Legend */}
+                <div style={{ flex: 1 }}>
+                  {pieData.map((item, i) => (
+                    <div
+                      key={i}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '12px 0',
+                        borderBottom: i < pieData.length - 1 ? `1px solid ${COLORS.border}` : 'none',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <div style={{ width: 12, height: 12, borderRadius: 3, background: item.color }} />
+                        <span style={{ fontSize: 14, color: COLORS.textSecondary, fontWeight: 500 }}>{item.name}</span>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <span
+                          style={{
+                            fontSize: 16,
+                            fontWeight: 700,
+                            color: COLORS.textPrimary,
+                            fontFamily: "'Plus Jakarta Sans', sans-serif",
+                          }}
+                        >
+                          {item.value}
+                        </span>
+                        <span style={{ fontSize: 12, color: COLORS.textMuted, marginLeft: 6 }}>
+                          ({item.percentage}%)
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Recent Reports Section */}
       {reports.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.25, duration: 0.4 }}
-        >
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            marginBottom: 20,
-          }}>
-            <h3 style={{
-              fontSize: 18,
-              fontWeight: 600,
-              color: COLORS.textPrimary,
-              fontFamily: 'var(--font-display)',
-            }}>
-              Recent Assessments
-            </h3>
-            <Button
-              variant="outline"
-              size="sm"
-              iconRight={<ChevronRight size={16} />}
-              onClick={() => navigate('/teacher/reports')}
+        <div>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: 16,
+            }}
+          >
+            <h2
+              style={{
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                fontSize: 20,
+                fontWeight: 700,
+                color: COLORS.textPrimary,
+              }}
             >
-              View All Reports
-            </Button>
+              Recent Assessments
+            </h2>
+            <button
+              onClick={() => navigate('/teacher/reports')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                padding: '8px 16px',
+                border: `1px solid ${COLORS.border}`,
+                borderRadius: 8,
+                background: COLORS.bgCard,
+                color: COLORS.textPrimary,
+                fontSize: 14,
+                fontWeight: 500,
+                cursor: 'pointer',
+                fontFamily: "'Inter', sans-serif",
+              }}
+            >
+              View All
+              <ChevronRight size={16} />
+            </button>
           </div>
 
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 12,
-          }}>
-            {reports.slice(0, 5).map((r, index) => (
-              <motion.div
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {reports.slice(0, 5).map((r) => (
+              <div
                 key={r.reportId}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 + index * 0.05 }}
                 onClick={() => navigate(`/teacher/reports?id=${r.reportId}`)}
                 style={{
-                  background: COLORS.bgSurface,
+                  background: COLORS.bgCard,
                   border: `1px solid ${COLORS.border}`,
-                  borderRadius: 10,
-                  padding: '16px 20px',
+                  borderRadius: 12,
+                  padding: 16,
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
                   cursor: 'pointer',
                   transition: 'all 0.15s ease',
                 }}
-                whileHover={{
-                  y: -2,
-                  boxShadow: '0 4px 12px rgba(15, 23, 42, 0.06)',
-                  borderColor: COLORS.primary,
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = COLORS.primary
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.05)'
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = COLORS.border
+                  e.currentTarget.style.boxShadow = 'none'
                 }}
               >
-                <div>
-                  <p style={{
-                    fontWeight: 600,
-                    fontSize: 15,
-                    color: COLORS.textPrimary,
-                    marginBottom: 4,
-                  }}>
-                    {r.studentName}
-                  </p>
-                  <p style={{
-                    fontSize: 13,
-                    color: COLORS.textMuted,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 6,
-                  }}>
-                    <Clock size={14} />
-                    {formatDistanceToNow(new Date(r.createdAt), { addSuffix: true })}
-                  </p>
-                </div>
-                <div style={{
-                  display: 'flex',
-                  gap: 12,
-                  alignItems: 'center',
-                }}>
-                  <div style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'flex-end',
-                    gap: 4,
-                  }}>
-                    <div style={{
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div
+                    style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: '50%',
                       background: COLORS.primaryBg,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontWeight: 600,
+                      fontSize: 16,
                       color: COLORS.primary,
-                      padding: '4px 10px',
-                      borderRadius: 6,
-                      fontSize: 12,
-                      fontWeight: 700,
-                      fontFamily: 'var(--font-display)',
-                    }}>
-                      D: {r.dyslexiaScore.toFixed(1)}%
-                    </div>
-                    <div style={{
-                      background: COLORS.secondaryBg,
-                      color: COLORS.secondaryDark,
-                      padding: '4px 10px',
-                      borderRadius: 6,
-                      fontSize: 12,
-                      fontWeight: 700,
-                      fontFamily: 'var(--font-display)',
-                    }}>
-                      G: {r.dysgraphiaScore.toFixed(1)}%
-                    </div>
+                    }}
+                  >
+                    {r.studentName?.charAt(0) || '?'}
+                  </div>
+                  <div>
+                    <p style={{ fontWeight: 500, fontSize: 14, color: COLORS.textPrimary }}>{r.studentName}</p>
+                    <p
+                      style={{
+                        fontSize: 12,
+                        color: COLORS.textMuted,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 4,
+                      }}
+                    >
+                      <Clock size={12} />
+                      {formatDistanceToNow(new Date(r.createdAt), { addSuffix: true })}
+                    </p>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <span
+                      style={{
+                        background: COLORS.primaryBg,
+                        color: COLORS.primary,
+                        padding: '4px 10px',
+                        borderRadius: 6,
+                        fontSize: 12,
+                        fontWeight: 600,
+                        fontFamily: 'monospace',
+                      }}
+                    >
+                      D: {(r.dyslexiaScore || 0).toFixed(1)}%
+                    </span>
+                    <span
+                      style={{
+                        background: 'rgba(99, 102, 241, 0.1)',
+                        color: COLORS.chartDysgraphia,
+                        padding: '4px 10px',
+                        borderRadius: 6,
+                        fontSize: 12,
+                        fontWeight: 600,
+                        fontFamily: 'monospace',
+                      }}
+                    >
+                      G: {(r.dysgraphiaScore || 0).toFixed(1)}%
+                    </span>
                   </div>
                   <RiskBadge level={r.riskLevel} />
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
-        </motion.div>
+        </div>
       )}
     </div>
   )
