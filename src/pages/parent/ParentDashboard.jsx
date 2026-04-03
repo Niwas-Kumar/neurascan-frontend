@@ -1,242 +1,674 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
-import { Brain, AlertCircle, CheckCircle, ArrowRight, Calendar, Zap } from 'lucide-react'
+import { TrendingDown, TrendingUp, AlertTriangle, CheckCircle2, FileText, Brain, Calendar } from 'lucide-react'
 import { optimizedAnalysisAPI } from '../../services/optimizedApi'
 import { useAuth } from '../../context/AuthContext'
 import toast from 'react-hot-toast'
-import { format, formatDistanceToNow } from 'date-fns'
+import { format } from 'date-fns'
 
 // ════════════════════════════════════════════════════════════════
-// DESIGN SYSTEM COLORS
+// DESIGN SYSTEM - Matching reference exactly
 // ════════════════════════════════════════════════════════════════
 const COLORS = {
-  primary: '#312E81',
-  primaryLight: '#4338CA',
-  primaryBg: '#EEF2FF',
-  secondary: '#14B8A6',
-  secondaryBg: '#CCFBF1',
-  riskHigh: '#B91C1C',
-  riskHighBg: '#FEF2F2',
-  riskMedium: '#B45309',
-  riskMediumBg: '#FFFBEB',
-  riskLow: '#047857',
-  riskLowBg: '#ECFDF5',
-  textPrimary: '#1E293B',
+  sidebar: '#312E81',
+  primary: '#14B8A6',
+  primaryHover: '#0D9488',
+
+  bgBase: '#F8FAFC',
+  bgCard: '#FFFFFF',
+  bgMuted: '#F1F5F9',
+
+  textPrimary: '#0F172A',
   textSecondary: '#475569',
   textMuted: '#64748B',
-  bgSurface: '#FFFFFF',
-  bgSubtle: '#F1F5F9',
+
   border: '#E2E8F0',
+
+  riskHigh: '#ef4444',
+  riskHighBg: 'rgba(239, 68, 68, 0.1)',
+  riskMedium: '#f59e0b',
+  riskMediumBg: 'rgba(245, 158, 11, 0.1)',
+  riskLow: '#22c55e',
+  riskLowBg: 'rgba(34, 197, 94, 0.1)',
 }
 
-const StatCard = ({ icon: Icon, label, value, color = 'primary', delay = 0, sub }) => {
-  const colorMap = {
-    primary: { bg: COLORS.primaryBg, icon: COLORS.primary, border: `${COLORS.primary}30` },
-    secondary: { bg: COLORS.secondaryBg, icon: COLORS.secondary, border: `${COLORS.secondary}30` },
-    success: { bg: COLORS.riskLowBg, icon: COLORS.riskLow, border: `${COLORS.riskLow}30` },
-    warning: { bg: COLORS.riskMediumBg, icon: COLORS.riskMedium, border: `${COLORS.riskMedium}30` },
-    danger: { bg: COLORS.riskHighBg, icon: COLORS.riskHigh, border: `${COLORS.riskHigh}30` },
+function RiskBadge({ risk }) {
+  const styles = {
+    LOW: { bg: COLORS.riskLowBg, color: COLORS.riskLow, border: 'rgba(34, 197, 94, 0.2)' },
+    MEDIUM: { bg: COLORS.riskMediumBg, color: COLORS.riskMedium, border: 'rgba(245, 158, 11, 0.2)' },
+    HIGH: { bg: COLORS.riskHighBg, color: COLORS.riskHigh, border: 'rgba(239, 68, 68, 0.2)' },
   }
-  const c = colorMap[color] || colorMap.primary
+  const labels = { LOW: 'Low Risk', MEDIUM: 'Medium Risk', HIGH: 'High Risk' }
+  const s = styles[risk] || styles.LOW
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay }}
+    <span
       style={{
-        background: COLORS.bgSurface,
-        border: `1px solid ${c.border}`,
-        borderRadius: 16,
-        padding: '20px 22px',
+        display: 'inline-block',
+        padding: '4px 12px',
+        borderRadius: 9999,
+        fontSize: 12,
+        fontWeight: 500,
+        background: s.bg,
+        color: s.color,
+        border: `1px solid ${s.border}`,
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
-        <div style={{
-          width: 44, height: 44, borderRadius: 12, background: c.bg,
-          display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-        }}>
-          <Icon size={22} color={c.icon} strokeWidth={2} />
-        </div>
-        <div style={{ flex: 1 }}>
-          <div style={{ fontSize: 13, color: COLORS.textMuted, fontWeight: 500, marginBottom: 4 }}>{label}</div>
-          <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 24, fontWeight: 800, color: COLORS.textPrimary }}>{value}</div>
-          {sub && <div style={{ fontSize: 12, color: COLORS.textMuted, marginTop: 4 }}>{sub}</div>}
-        </div>
-      </div>
-    </motion.div>
+      {labels[risk] || risk}
+    </span>
   )
 }
 
-const ScoreBar = ({ label, value }) => {
+function ProgressBar({ value, className }) {
   const percentage = Math.min(Math.max(value || 0, 0), 100)
-  const getColor = (v) => v >= 70 ? COLORS.riskHigh : v >= 45 ? COLORS.riskMedium : COLORS.riskLow
-  const barColor = getColor(percentage)
-
   return (
-    <div style={{ marginBottom: 20 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-        <span style={{ fontSize: 14, color: COLORS.textSecondary, fontWeight: 500 }}>{label}</span>
-        <span style={{ fontSize: 16, fontWeight: 700, color: barColor }}>{percentage.toFixed(1)}%</span>
-      </div>
-      <div style={{ height: 10, background: COLORS.bgSubtle, borderRadius: 5, overflow: 'hidden', border: `1px solid ${COLORS.border}` }}>
-        <motion.div
-          initial={{ width: 0 }}
-          animate={{ width: `${percentage}%` }}
-          transition={{ duration: 1, ease: 'easeOut' }}
-          style={{ height: '100%', background: barColor, borderRadius: 5 }}
-        />
-      </div>
+    <div
+      style={{
+        height: 12,
+        background: COLORS.bgMuted,
+        borderRadius: 9999,
+        overflow: 'hidden',
+      }}
+    >
+      <div
+        style={{
+          height: '100%',
+          width: `${percentage}%`,
+          background: COLORS.primary,
+          borderRadius: 9999,
+          transition: 'width 0.5s ease',
+        }}
+      />
     </div>
   )
 }
 
-const RiskBadge = ({ level }) => {
-  const styles = {
-    LOW: { bg: COLORS.riskLow }, MEDIUM: { bg: COLORS.riskMedium }, HIGH: { bg: COLORS.riskHigh },
-  }
-  const s = styles[level] || styles.LOW
-  return (
-    <span style={{ background: s.bg, color: 'white', padding: '6px 14px', borderRadius: 8, fontSize: 12, fontWeight: 700, textTransform: 'uppercase' }}>{level}</span>
-  )
+function formatDate(iso) {
+  if (!iso) return ''
+  return new Date(iso).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
 }
 
-const SkeletonCard = ({ delay = 0 }) => (
-  <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay }}
-    style={{ background: COLORS.bgSurface, border: `1px solid ${COLORS.border}`, borderRadius: 16, padding: 20 }}>
-    <div style={{ background: COLORS.bgSubtle, height: 14, borderRadius: 6, marginBottom: 12, animation: 'shimmer 1.5s infinite' }} />
-    <div style={{ background: COLORS.bgSubtle, height: 28, borderRadius: 6, width: '60%', animation: 'shimmer 1.5s infinite' }} />
-    <style>{`@keyframes shimmer { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }`}</style>
-  </motion.div>
-)
+function formatShort(iso) {
+  if (!iso) return ''
+  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
+function scoreLabel(v) {
+  if (v < 30) return 'Within normal range'
+  if (v < 60) return 'Mild indicators present'
+  return 'Significant indicators'
+}
 
 export default function ParentDashboard() {
   const { user } = useAuth()
   const navigate = useNavigate()
   const [report, setReport] = useState(null)
+  const [previousReports, setPreviousReports] = useState([])
   const [loading, setLoading] = useState(true)
   const [noData, setNoData] = useState(false)
   const [noStudentId, setNoStudentId] = useState(false)
 
   useEffect(() => {
     const sid = user?.studentId || localStorage.getItem('ns_studentId')
-    if (!sid) { setNoStudentId(true); setNoData(true); setLoading(false); return }
+    if (!sid) {
+      setNoStudentId(true)
+      setNoData(true)
+      setLoading(false)
+      return
+    }
     setNoStudentId(false)
+
     optimizedAnalysisAPI.getStudentReport(sid)
-      .then(res => setReport(res.data.data))
+      .then(res => {
+        const data = res.data.data
+        if (Array.isArray(data) && data.length > 0) {
+          // Sort by date descending
+          const sorted = data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+          setReport(sorted[0])
+          setPreviousReports(sorted.slice(1, 4))
+        } else if (data && !Array.isArray(data)) {
+          setReport(data)
+        } else {
+          setNoData(true)
+        }
+      })
       .catch(err => {
         const errorMsg = err.response?.data?.message || err.message || 'Failed to load report'
-        if (errorMsg.includes('Student ID not set')) { setNoStudentId(true); setNoData(true) }
-        else if (err.response?.status === 404 || err.response?.status === 403) setNoData(true)
-        else if (err.response?.status === 401) toast.error('Session expired. Please log in again.')
-        else toast.error(errorMsg)
+        if (errorMsg.includes('Student ID not set')) {
+          setNoStudentId(true)
+          setNoData(true)
+        } else if (err.response?.status === 404 || err.response?.status === 403) {
+          setNoData(true)
+        } else if (err.response?.status === 401) {
+          toast.error('Session expired. Please log in again.')
+        } else {
+          toast.error(errorMsg)
+        }
       })
       .finally(() => setLoading(false))
   }, [user?.userId, user?.studentId])
 
-  const hour = new Date().getHours()
-  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
+  // Derive child info from report or user
+  const child = report ? {
+    name: report.studentName || 'Your Child',
+    rollNumber: report.rollNumber || user?.studentId || 'N/A',
+    className: report.className || 'N/A',
+    teacherName: report.teacherName || 'Teacher',
+    school: report.schoolName || 'School',
+  } : null
 
-  if (loading) return (
-    <div>
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ marginBottom: 32 }}>
-        <h1 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 32, fontWeight: 800, color: COLORS.textPrimary, marginBottom: 8 }}>{greeting}</h1>
-        <p style={{ fontSize: 15, color: COLORS.textMuted }}>Loading your child's assessment data...</p>
-      </motion.div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
-        {[0, 1, 2, 3].map(i => <SkeletonCard key={i} delay={i * 0.1} />)}
+  // Check if improving (mock - compare latest vs previous if available)
+  const isImproving = previousReports.length > 0 && report &&
+    (report.dyslexiaScore < previousReports[0]?.dyslexiaScore)
+
+  if (loading) {
+    return (
+      <div style={{ padding: '16px 24px' }}>
+        <div style={{ marginBottom: 32 }}>
+          <div
+            style={{
+              height: 32,
+              width: 240,
+              background: COLORS.bgMuted,
+              borderRadius: 8,
+              marginBottom: 8,
+            }}
+          />
+          <div style={{ height: 18, width: 200, background: COLORS.bgMuted, borderRadius: 6 }} />
+        </div>
+        <div
+          style={{
+            background: COLORS.bgCard,
+            border: `1px solid ${COLORS.border}`,
+            borderRadius: 12,
+            padding: 20,
+            animation: 'pulse 1.5s infinite',
+          }}
+        >
+          <div style={{ height: 64, background: COLORS.bgMuted, borderRadius: 8 }} />
+        </div>
+        <style>{`@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }`}</style>
       </div>
-    </div>
-  )
+    )
+  }
 
-  const isAtRisk = report?.riskLevel === 'HIGH' || report?.riskLevel === 'MEDIUM'
-  const riskColorMap = { HIGH: COLORS.riskHigh, MEDIUM: COLORS.riskMedium, LOW: COLORS.riskLow }
-  const riskColor = riskColorMap[report?.riskLevel] || COLORS.riskLow
+  if (noData || !report) {
+    return (
+      <div style={{ padding: '16px 24px' }}>
+        <div style={{ marginBottom: 32 }}>
+          <h1
+            style={{
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontSize: 28,
+              fontWeight: 700,
+              color: COLORS.textPrimary,
+              marginBottom: 4,
+            }}
+          >
+            Welcome
+          </h1>
+          <p style={{ color: COLORS.textMuted, fontSize: 14 }}>
+            {noStudentId ? 'Set up your child\'s account to get started' : 'No assessments available yet'}
+          </p>
+        </div>
+
+        <div
+          style={{
+            background: COLORS.bgCard,
+            border: `1px solid ${COLORS.border}`,
+            borderRadius: 12,
+            padding: 40,
+            textAlign: 'center',
+            maxWidth: 480,
+          }}
+        >
+          <div
+            style={{
+              width: 64,
+              height: 64,
+              borderRadius: '50%',
+              background: `rgba(20, 184, 166, 0.1)`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 20px',
+            }}
+          >
+            <Brain size={28} color={COLORS.primary} />
+          </div>
+          <h2
+            style={{
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontSize: 20,
+              fontWeight: 700,
+              color: COLORS.textPrimary,
+              marginBottom: 8,
+            }}
+          >
+            {noStudentId ? "Set Up Your Child's Account" : 'No Assessments Yet'}
+          </h2>
+          <p
+            style={{
+              fontSize: 14,
+              color: COLORS.textMuted,
+              lineHeight: 1.6,
+              marginBottom: 24,
+            }}
+          >
+            {noStudentId
+              ? "To view your child's progress, link their student ID in settings."
+              : "Once your child's teacher uploads an assessment, results will appear here."}
+          </p>
+          <button
+            onClick={() => navigate(noStudentId ? '/settings?tab=profile' : '/parent/progress')}
+            style={{
+              padding: '12px 24px',
+              background: COLORS.primary,
+              color: 'white',
+              border: 'none',
+              borderRadius: 8,
+              fontSize: 14,
+              fontWeight: 500,
+              cursor: 'pointer',
+              fontFamily: "'Inter', sans-serif",
+            }}
+          >
+            {noStudentId ? 'Go to Settings' : 'View Progress'}
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div>
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} style={{ marginBottom: 32 }}>
-        <h1 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 32, fontWeight: 800, color: COLORS.textPrimary, marginBottom: 8 }}>
-          {greeting},{' '}
-          <span style={{ background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.secondary} 100%)`, backgroundClip: 'text', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{user?.name?.split(' ')[0]}</span>
+    <div style={{ padding: '16px 24px', maxWidth: 900 }}>
+      {/* Page Header */}
+      <div style={{ marginBottom: 32 }}>
+        <h1
+          style={{
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            fontSize: 28,
+            fontWeight: 700,
+            color: COLORS.textPrimary,
+            marginBottom: 4,
+          }}
+        >
+          {child.name}'s Overview
         </h1>
-        {report && <p style={{ fontSize: 15, color: COLORS.textSecondary }}>Latest assessment for <strong>{report.studentName}</strong> in {report.className}</p>}
-      </motion.div>
+        <p style={{ color: COLORS.textMuted, fontSize: 14 }}>
+          {child.className} · {child.school}
+        </p>
+      </div>
 
-      {(noData || !report) ? (
-        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} style={{ maxWidth: 560 }}>
-          <div style={{ background: COLORS.bgSurface, border: `1px solid ${COLORS.border}`, borderRadius: 20, overflow: 'hidden' }}>
-            <div style={{ height: 4, background: `linear-gradient(90deg, ${COLORS.primary} 0%, ${COLORS.secondary} 100%)` }} />
-            <div style={{ padding: '56px 40px', textAlign: 'center' }}>
-              <div style={{ width: 80, height: 80, borderRadius: 20, background: COLORS.primaryBg, border: `1px solid ${COLORS.primary}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
-                <Brain size={36} color={COLORS.primary} strokeWidth={1.5} />
-              </div>
-              <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 24, fontWeight: 700, marginBottom: 12, color: COLORS.textPrimary }}>{noStudentId ? "Set Up Your Child's Account" : 'No Assessments Yet'}</h3>
-              <p style={{ color: COLORS.textSecondary, fontSize: 15, lineHeight: 1.75, marginBottom: 32 }}>
-                {noStudentId ? "To view your child's progress and AI analysis reports, you need to link their student ID in your profile settings." : "Your child's teacher hasn't uploaded an assessment yet. Once they do, the AI analysis results will appear here automatically."}
+      {/* Child Info Card */}
+      <div
+        style={{
+          background: COLORS.bgCard,
+          border: `1px solid ${COLORS.border}`,
+          borderRadius: 12,
+          padding: 20,
+          marginBottom: 32,
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 16,
+            flexWrap: 'wrap',
+          }}
+        >
+          {/* Avatar */}
+          <div
+            style={{
+              width: 64,
+              height: 64,
+              borderRadius: '50%',
+              background: `rgba(20, 184, 166, 0.1)`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontWeight: 700,
+              fontSize: 24,
+              color: COLORS.primary,
+              flexShrink: 0,
+            }}
+          >
+            {child.name.charAt(0)}
+          </div>
+
+          {/* Info Grid */}
+          <div style={{ display: 'flex', gap: 32, flex: 1, flexWrap: 'wrap' }}>
+            <div>
+              <p style={{ fontSize: 12, color: COLORS.textMuted, marginBottom: 2 }}>Roll Number</p>
+              <p style={{ fontSize: 14, fontWeight: 500, fontFamily: 'monospace', color: COLORS.textPrimary }}>
+                {child.rollNumber}
               </p>
-              {noStudentId && (
-                <div style={{ background: COLORS.primaryBg, border: `1px solid ${COLORS.primary}20`, borderRadius: 14, padding: '18px 20px', marginBottom: 28, fontSize: 14, color: COLORS.textSecondary, textAlign: 'left' }}>
-                  <div style={{ marginBottom: 10, fontWeight: 600, color: COLORS.primary }}>How to get your child's Student ID:</div>
-                  <ul style={{ margin: 0, paddingLeft: 20, color: COLORS.textMuted, lineHeight: 1.8 }}>
-                    <li>Ask your child's teacher directly</li>
-                    <li>Check the welcome email from school</li>
-                    <li>Look in your child's assignment notebook</li>
-                  </ul>
-                </div>
-              )}
-              <motion.button whileHover={{ y: -2 }} whileTap={{ scale: 0.98 }} onClick={() => navigate(noStudentId ? '/settings?tab=profile' : '/parent/progress')}
-                style={{ background: `linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.primaryLight} 100%)`, color: 'white', border: 'none', padding: '14px 28px', borderRadius: 12, fontSize: 15, fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 14px rgba(49, 46, 129, 0.25)', display: 'inline-flex', alignItems: 'center', gap: 8, fontFamily: "'Inter', sans-serif" }}>
-                {noStudentId ? 'Go to Settings' : 'View Progress History'}<ArrowRight size={18} />
-              </motion.button>
+            </div>
+            <div>
+              <p style={{ fontSize: 12, color: COLORS.textMuted, marginBottom: 2 }}>Class</p>
+              <p style={{ fontSize: 14, fontWeight: 500, color: COLORS.textPrimary }}>{child.className}</p>
+            </div>
+            <div>
+              <p style={{ fontSize: 12, color: COLORS.textMuted, marginBottom: 2 }}>Teacher</p>
+              <p style={{ fontSize: 14, fontWeight: 500, color: COLORS.textPrimary }}>{child.teacherName}</p>
             </div>
           </div>
-        </motion.div>
-      ) : (
-        <div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 28 }}>
-            <StatCard icon={isAtRisk ? AlertCircle : CheckCircle} label={isAtRisk ? 'Risk Level' : 'Status'} value={report.riskLevel} color={report.riskLevel === 'HIGH' ? 'danger' : report.riskLevel === 'MEDIUM' ? 'warning' : 'success'} delay={0} />
-            <StatCard icon={Brain} label="Dyslexia Indicator" value={`${report.dyslexiaScore?.toFixed(1)}%`} color={report.dyslexiaScore >= 70 ? 'danger' : report.dyslexiaScore >= 45 ? 'warning' : 'success'} delay={0.08} />
-            <StatCard icon={Zap} label="Dysgraphia Indicator" value={`${report.dysgraphiaScore?.toFixed(1)}%`} color={report.dysgraphiaScore >= 70 ? 'danger' : report.dysgraphiaScore >= 45 ? 'warning' : 'success'} delay={0.16} />
-            <StatCard icon={Calendar} label="Last Assessment" value={report.createdAt ? format(new Date(report.createdAt), 'MMM d') : '—'} color="primary" delay={0.24} sub={report.createdAt ? formatDistanceToNow(new Date(report.createdAt), { addSuffix: true }) : ''} />
+
+          {/* Trend Indicator */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              color: isImproving ? COLORS.riskLow : COLORS.textMuted,
+            }}
+          >
+            {isImproving ? <TrendingDown size={20} /> : <TrendingUp size={20} />}
+            <span style={{ fontSize: 14, fontWeight: 500 }}>{isImproving ? 'Improving' : 'Stable'}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Latest Analysis Section */}
+      <div style={{ marginBottom: 32 }}>
+        <h2
+          style={{
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            fontSize: 20,
+            fontWeight: 700,
+            color: COLORS.textPrimary,
+            marginBottom: 16,
+          }}
+        >
+          Latest Analysis
+        </h2>
+
+        <div
+          style={{
+            background: COLORS.bgCard,
+            border: `1px solid ${COLORS.border}`,
+            borderRadius: 12,
+            overflow: 'hidden',
+          }}
+        >
+          {/* Card Header */}
+          <div style={{ padding: '20px 24px', borderBottom: `1px solid ${COLORS.border}` }}>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: 12,
+              }}
+            >
+              <div>
+                <h3
+                  style={{
+                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    fontSize: 18,
+                    fontWeight: 600,
+                    color: COLORS.textPrimary,
+                    marginBottom: 4,
+                  }}
+                >
+                  Handwriting Analysis Report
+                </h3>
+                <p
+                  style={{
+                    fontSize: 13,
+                    color: COLORS.textMuted,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                  }}
+                >
+                  <Calendar size={14} />
+                  {formatDate(report.createdAt)}
+                </p>
+              </div>
+              <RiskBadge risk={report.riskLevel} />
+            </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: 20 }}>
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.32 }} style={{ background: COLORS.bgSurface, border: `1px solid ${isAtRisk ? `${riskColor}40` : COLORS.border}`, borderRadius: 20, overflow: 'hidden' }}>
-              <div style={{ padding: '20px 24px', borderBottom: `1px solid ${COLORS.border}`, background: isAtRisk ? `linear-gradient(135deg, ${riskColor}08 0%, transparent 60%)` : COLORS.bgSubtle, display: 'flex', alignItems: 'center', gap: 14 }}>
-                <div style={{ width: 44, height: 44, borderRadius: 12, background: isAtRisk ? `${riskColor}15` : COLORS.riskLowBg, border: `1px solid ${isAtRisk ? `${riskColor}30` : `${COLORS.riskLow}30`}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {isAtRisk ? <AlertCircle size={22} color={riskColor} /> : <CheckCircle size={22} color={COLORS.riskLow} />}
+          {/* Card Content */}
+          <div style={{ padding: 24 }}>
+            {/* Scores */}
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                gap: 24,
+                marginBottom: 24,
+              }}
+            >
+              {/* Dyslexia Score */}
+              <div>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: 8,
+                  }}
+                >
+                  <p style={{ fontSize: 14, fontWeight: 500, color: COLORS.textMuted }}>Dyslexia Score</p>
+                  <span style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: 16 }}>
+                    {(report.dyslexiaScore || 0).toFixed(0)}%
+                  </span>
                 </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 700, fontSize: 16, color: COLORS.textPrimary }}>{report.studentName}</div>
-                  <div style={{ fontSize: 13, color: COLORS.textMuted }}>{report.className}</div>
-                </div>
-                <RiskBadge level={report.riskLevel} />
+                <ProgressBar value={report.dyslexiaScore} />
+                <p style={{ fontSize: 12, color: COLORS.textMuted, marginTop: 6 }}>
+                  {scoreLabel(report.dyslexiaScore)}
+                </p>
               </div>
-              <div style={{ padding: 24 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: COLORS.textMuted, marginBottom: 24 }}><Calendar size={14} />Analyzed {report.createdAt ? format(new Date(report.createdAt), "MMMM d, yyyy 'at' h:mm a") : '—'}</div>
-                <ScoreBar label="Dyslexia Indicator" value={report.dyslexiaScore} />
-                <ScoreBar label="Dysgraphia Indicator" value={report.dysgraphiaScore} />
-                {isAtRisk && (
-                  <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} style={{ marginTop: 20, padding: '16px 18px', background: COLORS.riskMediumBg, border: `1px solid ${COLORS.riskMedium}30`, borderRadius: 12, fontSize: 14, color: COLORS.textSecondary, lineHeight: 1.7 }}>
-                    <strong style={{ color: COLORS.riskMedium }}>Recommended action:</strong> Schedule a consultation with a learning specialist. Early intervention significantly improves outcomes.
-                  </motion.div>
-                )}
-              </div>
-            </motion.div>
 
-            <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} style={{ background: COLORS.bgSurface, border: `1px solid ${COLORS.border}`, borderRadius: 20, overflow: 'hidden' }}>
-              <div style={{ padding: '20px 24px', borderBottom: `1px solid ${COLORS.border}`, display: 'flex', alignItems: 'center', gap: 12 }}>
-                <div style={{ width: 40, height: 40, borderRadius: 10, background: COLORS.primaryBg, border: `1px solid ${COLORS.primary}20`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Brain size={20} color={COLORS.primary} strokeWidth={2} /></div>
-                <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 700, fontSize: 16, color: COLORS.textPrimary }}>AI Assessment Summary</div>
+              {/* Dysgraphia Score */}
+              <div>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: 8,
+                  }}
+                >
+                  <p style={{ fontSize: 14, fontWeight: 500, color: COLORS.textMuted }}>Dysgraphia Score</p>
+                  <span style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: 16 }}>
+                    {(report.dysgraphiaScore || 0).toFixed(0)}%
+                  </span>
+                </div>
+                <ProgressBar value={report.dysgraphiaScore} />
+                <p style={{ fontSize: 12, color: COLORS.textMuted, marginTop: 6 }}>
+                  {scoreLabel(report.dysgraphiaScore)}
+                </p>
               </div>
-              <div style={{ padding: 24 }}>
-                <p style={{ fontSize: 14, color: COLORS.textSecondary, lineHeight: 1.85, marginBottom: 24 }}>{report.aiComment}</p>
-                <div style={{ padding: '16px 18px', background: COLORS.bgSubtle, border: `1px solid ${COLORS.border}`, borderRadius: 12, fontSize: 13, color: COLORS.textSecondary, lineHeight: 1.7 }}><strong style={{ color: COLORS.textPrimary }}>Note:</strong> This AI assessment is a screening tool, not a clinical diagnosis. Always consult a qualified educational psychologist for a comprehensive evaluation.</div>
-                <motion.button whileHover={{ y: -1 }} whileTap={{ scale: 0.98 }} onClick={() => navigate('/parent/progress')} style={{ width: '100%', marginTop: 20, padding: '14px 16px', background: COLORS.bgSurface, border: `1px solid ${COLORS.border}`, color: COLORS.primary, borderRadius: 12, fontSize: 14, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'all 0.2s ease', fontFamily: "'Inter', sans-serif" }}>View Full Progress History<ArrowRight size={16} /></motion.button>
+            </div>
+
+            {/* AI Analysis */}
+            <div
+              style={{
+                background: `rgba(20, 184, 166, 0.05)`,
+                border: `1px solid rgba(20, 184, 166, 0.15)`,
+                borderRadius: 12,
+                padding: 16,
+                marginBottom: 20,
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  marginBottom: 8,
+                }}
+              >
+                <Brain size={16} color={COLORS.primary} />
+                <p style={{ fontSize: 14, fontWeight: 600, color: COLORS.primary }}>AI Analysis</p>
               </div>
-            </motion.div>
+              <p style={{ fontSize: 14, color: COLORS.textPrimary, lineHeight: 1.6 }}>
+                {report.aiComment || 'No AI commentary available for this assessment.'}
+              </p>
+            </div>
+
+            {/* Recommendation Cards */}
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                gap: 12,
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: 10,
+                  background: COLORS.bgMuted,
+                  borderRadius: 8,
+                  padding: 12,
+                }}
+              >
+                <AlertTriangle size={16} color={COLORS.riskMedium} style={{ marginTop: 2, flexShrink: 0 }} />
+                <div>
+                  <p style={{ fontSize: 12, fontWeight: 600, color: COLORS.textPrimary, marginBottom: 2 }}>
+                    Watch for
+                  </p>
+                  <p style={{ fontSize: 12, color: COLORS.textMuted }}>
+                    Difficulty reading aloud or confusing similar letters
+                  </p>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: 10,
+                  background: COLORS.bgMuted,
+                  borderRadius: 8,
+                  padding: 12,
+                }}
+              >
+                <CheckCircle2 size={16} color={COLORS.riskLow} style={{ marginTop: 2, flexShrink: 0 }} />
+                <div>
+                  <p style={{ fontSize: 12, fontWeight: 600, color: COLORS.textPrimary, marginBottom: 2 }}>
+                    What to do
+                  </p>
+                  <p style={{ fontSize: 12, color: COLORS.textMuted }}>
+                    Practice phonics with games and read together daily
+                  </p>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: 10,
+                  background: COLORS.bgMuted,
+                  borderRadius: 8,
+                  padding: 12,
+                }}
+              >
+                <FileText size={16} color={COLORS.primary} style={{ marginTop: 2, flexShrink: 0 }} />
+                <div>
+                  <p style={{ fontSize: 12, fontWeight: 600, color: COLORS.textPrimary, marginBottom: 2 }}>
+                    Next step
+                  </p>
+                  <p style={{ fontSize: 12, color: COLORS.textMuted }}>
+                    Follow-up assessment recommended in 4-6 weeks
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Previous Reports Section */}
+      {previousReports.length > 0 && (
+        <div>
+          <h2
+            style={{
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontSize: 20,
+              fontWeight: 700,
+              color: COLORS.textPrimary,
+              marginBottom: 16,
+            }}
+          >
+            Previous Reports
+          </h2>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {previousReports.map((r, i) => (
+              <div
+                key={r.reportId || i}
+                style={{
+                  background: COLORS.bgCard,
+                  border: `1px solid ${COLORS.border}`,
+                  borderRadius: 12,
+                  padding: 16,
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 12,
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  {/* File Icon */}
+                  <div
+                    style={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: '50%',
+                      background: COLORS.bgMuted,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                    }}
+                  >
+                    <FileText size={16} color={COLORS.textMuted} />
+                  </div>
+
+                  {/* Date & Label */}
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontSize: 14, fontWeight: 500, color: COLORS.textPrimary }}>
+                      {formatShort(r.createdAt)}
+                    </p>
+                    <p style={{ fontSize: 12, color: COLORS.textMuted }}>Analysis Report</p>
+                  </div>
+
+                  {/* Scores */}
+                  <div style={{ display: 'flex', gap: 24 }}>
+                    <div>
+                      <p style={{ fontSize: 12, color: COLORS.textMuted }}>Dyslexia</p>
+                      <p style={{ fontSize: 14, fontWeight: 500, fontFamily: 'monospace' }}>
+                        {(r.dyslexiaScore || 0).toFixed(0)}%
+                      </p>
+                    </div>
+                    <div>
+                      <p style={{ fontSize: 12, color: COLORS.textMuted }}>Dysgraphia</p>
+                      <p style={{ fontSize: 14, fontWeight: 500, fontFamily: 'monospace' }}>
+                        {(r.dysgraphiaScore || 0).toFixed(0)}%
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Risk Badge */}
+                  <RiskBadge risk={r.riskLevel} />
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}

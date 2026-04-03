@@ -1,212 +1,120 @@
-// ============================================================
-// TEACHER REPORTS PAGE - NeuraScan Design System v3.0
-// ============================================================
-import { useEffect, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { FileText, Search, ChevronDown, ChevronUp, X, Download } from 'lucide-react'
+import { useEffect, useState, useMemo } from 'react'
+import { Search, Filter, FileText, Download, Eye, ChevronUp, ChevronDown, X } from 'lucide-react'
 import { optimizedAnalysisAPI } from '../../services/optimizedApi'
-import toast from 'react-hot-toast'
-import { format } from 'date-fns'
 import { useAuth } from '../../context/AuthContext'
 import { useDebounce } from '../../hooks'
+import { format } from 'date-fns'
+import toast from 'react-hot-toast'
 
 // ════════════════════════════════════════════════════════════════
-// DESIGN SYSTEM COLORS
+// DESIGN SYSTEM - Matching reference exactly
 // ════════════════════════════════════════════════════════════════
 const COLORS = {
-  // Primary: Deep Indigo
-  primary: '#312E81',
-  primaryLight: '#4338CA',
-  primaryLighter: '#6366F1',
-  primaryBg: '#EEF2FF',
+  sidebar: '#312E81',
+  primary: '#14B8A6',
+  primaryHover: '#0D9488',
 
-  // Secondary: Soft Teal
-  secondary: '#14B8A6',
-  secondaryDark: '#0D9488',
-  secondaryBg: '#CCFBF1',
+  bgBase: '#F8FAFC',
+  bgCard: '#FFFFFF',
+  bgMuted: '#F1F5F9',
 
-  // Risk levels (muted clinical)
-  riskHigh: '#B91C1C',
-  riskHighBg: '#FEF2F2',
-  riskMedium: '#B45309',
-  riskMediumBg: '#FFFBEB',
-  riskLow: '#047857',
-  riskLowBg: '#ECFDF5',
-
-  // Neutrals
-  textPrimary: '#1E293B',
+  textPrimary: '#0F172A',
   textSecondary: '#475569',
   textMuted: '#64748B',
-  textLight: '#94A3B8',
 
-  // Backgrounds
-  bgBase: '#F8FAFC',
-  bgSurface: '#FFFFFF',
-  bgSubtle: '#F1F5F9',
-
-  // Borders
   border: '#E2E8F0',
-  borderLight: '#F1F5F9',
+
+  riskHigh: '#ef4444',
+  riskHighBg: 'rgba(239, 68, 68, 0.1)',
+  riskMedium: '#f59e0b',
+  riskMediumBg: 'rgba(245, 158, 11, 0.1)',
+  riskLow: '#22c55e',
+  riskLowBg: 'rgba(34, 197, 94, 0.1)',
 }
 
-// ════════════════════════════════════════════════════════════════
-// REUSABLE COMPONENTS
-// ════════════════════════════════════════════════════════════════
-
-const PageHeader = ({ title, subtitle, action }) => (
-  <div style={{
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 32,
-  }}>
-    <div>
-      <h1 style={{
-        fontFamily: "'Plus Jakarta Sans', sans-serif",
-        fontSize: 28,
-        fontWeight: 800,
-        marginBottom: 8,
-        color: COLORS.textPrimary,
-        letterSpacing: '-0.02em',
-      }}>
-        {title}
-      </h1>
-      {subtitle && (
-        <p style={{
-          fontSize: 15,
-          color: COLORS.textSecondary,
-          lineHeight: 1.6,
-        }}>
-          {subtitle}
-        </p>
-      )}
-    </div>
-    {action}
-  </div>
-)
-
-const RiskBadge = ({ level }) => {
+function RiskBadge({ risk }) {
   const styles = {
-    LOW: { bg: COLORS.riskLowBg, text: COLORS.riskLow },
-    MEDIUM: { bg: COLORS.riskMediumBg, text: COLORS.riskMedium },
-    HIGH: { bg: COLORS.riskHighBg, text: COLORS.riskHigh },
+    LOW: { bg: COLORS.riskLowBg, color: COLORS.riskLow, border: 'rgba(34, 197, 94, 0.2)' },
+    MEDIUM: { bg: COLORS.riskMediumBg, color: COLORS.riskMedium, border: 'rgba(245, 158, 11, 0.2)' },
+    HIGH: { bg: COLORS.riskHighBg, color: COLORS.riskHigh, border: 'rgba(239, 68, 68, 0.2)' },
   }
-  const s = styles[level] || styles.LOW
+  const labels = { LOW: 'Low', MEDIUM: 'Medium', HIGH: 'High' }
+  const s = styles[risk] || styles.LOW
 
   return (
-    <span style={{
-      display: 'inline-block',
-      padding: '5px 12px',
-      borderRadius: 100,
-      fontSize: 12,
-      fontWeight: 600,
-      background: s.bg,
-      color: s.text,
-    }}>
-      {level}
+    <span
+      style={{
+        display: 'inline-block',
+        padding: '4px 12px',
+        borderRadius: 9999,
+        fontSize: 12,
+        fontWeight: 500,
+        background: s.bg,
+        color: s.color,
+        border: `1px solid ${s.border}`,
+      }}
+    >
+      {labels[risk] || risk}
     </span>
   )
 }
 
-const ScoreBar = ({ label, value }) => {
-  const getColor = (v) => {
-    if (v >= 70) return COLORS.riskHigh
-    if (v >= 45) return COLORS.riskMedium
-    return COLORS.riskLow
-  }
-  const color = getColor(value)
-
+function ScoreBar({ value, color }) {
+  const percentage = Math.min(Math.max(value * 100 || 0, 0), 100)
   return (
-    <div style={{ marginBottom: 20 }}>
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 8,
-      }}>
-        <span style={{ fontSize: 13, fontWeight: 600, color: COLORS.textPrimary }}>
-          {label}
-        </span>
-        <span style={{ fontSize: 14, fontWeight: 700, color }}>
-          {value?.toFixed(1)}%
-        </span>
-      </div>
-      <div style={{
-        height: 8,
-        background: COLORS.bgSubtle,
-        borderRadius: 4,
-        overflow: 'hidden',
-      }}>
-        <motion.div
-          initial={{ width: 0 }}
-          animate={{ width: `${value}%` }}
-          transition={{ duration: 0.8, ease: 'easeOut' }}
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 100 }}>
+      <div
+        style={{
+          flex: 1,
+          height: 6,
+          background: COLORS.bgMuted,
+          borderRadius: 9999,
+          overflow: 'hidden',
+        }}
+      >
+        <div
           style={{
             height: '100%',
+            width: `${percentage}%`,
             background: color,
-            borderRadius: 4,
+            borderRadius: 9999,
           }}
         />
       </div>
+      <span style={{ fontSize: 12, fontFamily: 'monospace', color: COLORS.textMuted, width: 32, flexShrink: 0 }}>
+        {percentage.toFixed(0)}%
+      </span>
     </div>
   )
 }
 
-const EmptyState = ({ icon: Icon, title, description }) => (
-  <div style={{
-    padding: '64px 32px',
-    textAlign: 'center',
-    background: COLORS.bgSurface,
-    border: `1px solid ${COLORS.border}`,
-    borderRadius: 16,
-  }}>
-    {Icon && <Icon size={48} color={COLORS.textLight} strokeWidth={1.25} style={{ marginBottom: 20 }} />}
-    <h3 style={{
-      fontFamily: "'Plus Jakarta Sans', sans-serif",
-      fontSize: 18,
-      fontWeight: 700,
-      marginBottom: 10,
-      color: COLORS.textPrimary,
-    }}>
-      {title}
-    </h3>
-    {description && (
-      <p style={{ color: COLORS.textSecondary, fontSize: 14, lineHeight: 1.75, maxWidth: 320, margin: '0 auto' }}>
-        {description}
-      </p>
-    )}
-  </div>
-)
-
-const SkeletonCard = () => (
-  <div style={{
-    border: `1px solid ${COLORS.border}`,
-    borderRadius: 14,
-    padding: '18px 24px',
-    background: COLORS.bgSurface,
-  }}>
-    <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-      <div style={{
-        width: 160,
-        height: 16,
-        background: `linear-gradient(90deg, ${COLORS.bgSubtle} 25%, ${COLORS.bgSurface} 50%, ${COLORS.bgSubtle} 75%)`,
-        backgroundSize: '200% 100%',
-        animation: 'shimmer 1.5s infinite',
-        borderRadius: 6,
-      }} />
-      <div style={{ flex: 1 }} />
-      <div style={{
-        width: 80,
-        height: 16,
-        background: `linear-gradient(90deg, ${COLORS.bgSubtle} 25%, ${COLORS.bgSurface} 50%, ${COLORS.bgSubtle} 75%)`,
-        backgroundSize: '200% 100%',
-        animation: 'shimmer 1.5s infinite',
-        borderRadius: 6,
-      }} />
+function ProgressBar({ value }) {
+  const percentage = Math.min(Math.max(value * 100 || 0, 0), 100)
+  return (
+    <div
+      style={{
+        height: 8,
+        background: COLORS.bgMuted,
+        borderRadius: 9999,
+        overflow: 'hidden',
+      }}
+    >
+      <div
+        style={{
+          height: '100%',
+          width: `${percentage}%`,
+          background: COLORS.primary,
+          borderRadius: 9999,
+        }}
+      />
     </div>
-    <style>{`@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }`}</style>
-  </div>
-)
+  )
+}
+
+function formatDate(iso) {
+  if (!iso) return ''
+  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+}
 
 function downloadCSV(data, filename) {
   const csvStr = data.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n')
@@ -220,371 +128,741 @@ function downloadCSV(data, filename) {
 }
 
 // ════════════════════════════════════════════════════════════════
+// SELECT COMPONENT
+// ════════════════════════════════════════════════════════════════
+function Select({ value, onChange, options, placeholder, icon: Icon }) {
+  return (
+    <div style={{ position: 'relative' }}>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        style={{
+          appearance: 'none',
+          padding: '10px 36px 10px 12px',
+          paddingLeft: Icon ? 36 : 12,
+          border: `1px solid ${COLORS.border}`,
+          borderRadius: 8,
+          background: COLORS.bgCard,
+          color: COLORS.textPrimary,
+          fontSize: 14,
+          fontFamily: "'Inter', sans-serif",
+          cursor: 'pointer',
+          minWidth: 120,
+        }}
+      >
+        {options.map((opt) => (
+          <option key={opt.value} value={opt.value}>
+            {opt.label}
+          </option>
+        ))}
+      </select>
+      {Icon && (
+        <Icon
+          size={16}
+          style={{
+            position: 'absolute',
+            left: 12,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            color: COLORS.textMuted,
+            pointerEvents: 'none',
+          }}
+        />
+      )}
+      <ChevronDown
+        size={16}
+        style={{
+          position: 'absolute',
+          right: 12,
+          top: '50%',
+          transform: 'translateY(-50%)',
+          color: COLORS.textMuted,
+          pointerEvents: 'none',
+        }}
+      />
+    </div>
+  )
+}
+
+// ════════════════════════════════════════════════════════════════
+// DIALOG COMPONENT
+// ════════════════════════════════════════════════════════════════
+function Dialog({ open, onClose, children }) {
+  if (!open) return null
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 50,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'rgba(0, 0, 0, 0.5)',
+        padding: 16,
+      }}
+      onClick={onClose}
+    >
+      <div
+        style={{
+          background: COLORS.bgCard,
+          borderRadius: 12,
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+          maxWidth: 480,
+          width: '100%',
+          maxHeight: '85vh',
+          overflow: 'auto',
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {children}
+      </div>
+    </div>
+  )
+}
+
+// ════════════════════════════════════════════════════════════════
 // MAIN REPORTS PAGE
 // ════════════════════════════════════════════════════════════════
-
 export function ReportsPage() {
   const { user } = useAuth()
   const [reports, setReports] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
-  const [riskFilter, setRisk] = useState('ALL')
-  const [expandedId, setExpId] = useState(null)
+  const [riskFilter, setRiskFilter] = useState('all')
+  const [classFilter, setClassFilter] = useState('all')
+  const [sortKey, setSortKey] = useState('date')
+  const [sortAsc, setSortAsc] = useState(false)
+  const [selectedReport, setSelectedReport] = useState(null)
   const debouncedSearch = useDebounce(search)
 
   useEffect(() => {
     optimizedAnalysisAPI.getReports()
-      .then(r => setReports(r.data.data || []))
+      .then((r) => setReports(r.data.data || []))
       .catch(() => toast.error('Failed to load reports'))
       .finally(() => setLoading(false))
   }, [user?.userId])
 
-  const filtered = reports.filter(r => {
-    const matchSearch = !debouncedSearch || r.studentName?.toLowerCase().includes(debouncedSearch.toLowerCase())
-    const matchRisk = riskFilter === 'ALL' || r.riskLevel === riskFilter
-    return matchSearch && matchRisk
-  })
+  const classes = useMemo(() => {
+    return Array.from(new Set(reports.map((r) => r.className).filter(Boolean))).sort()
+  }, [reports])
 
-  const riskCounts = { ALL: reports.length, LOW: 0, MEDIUM: 0, HIGH: 0 }
-  reports.forEach(r => { if (riskCounts[r.riskLevel] !== undefined) riskCounts[r.riskLevel]++ })
+  const filtered = useMemo(() => {
+    let result = reports.filter((r) => {
+      const matchSearch =
+        !debouncedSearch ||
+        r.studentName?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        r.className?.toLowerCase().includes(debouncedSearch.toLowerCase())
+      const matchRisk = riskFilter === 'all' || r.riskLevel === riskFilter
+      const matchClass = classFilter === 'all' || r.className === classFilter
+      return matchSearch && matchRisk && matchClass
+    })
+
+    result = [...result].sort((a, b) => {
+      let diff = 0
+      if (sortKey === 'date') diff = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+      if (sortKey === 'dyslexia') diff = (a.dyslexiaScore || 0) - (b.dyslexiaScore || 0)
+      if (sortKey === 'dysgraphia') diff = (a.dysgraphiaScore || 0) - (b.dysgraphiaScore || 0)
+      return sortAsc ? diff : -diff
+    })
+
+    return result
+  }, [reports, debouncedSearch, riskFilter, classFilter, sortKey, sortAsc])
+
+  const toggleSort = (key) => {
+    if (sortKey === key) setSortAsc(!sortAsc)
+    else {
+      setSortKey(key)
+      setSortAsc(false)
+    }
+  }
+
+  const SortIcon = ({ k }) =>
+    sortKey === k ? (
+      sortAsc ? (
+        <ChevronUp size={14} style={{ marginLeft: 4 }} />
+      ) : (
+        <ChevronDown size={14} style={{ marginLeft: 4 }} />
+      )
+    ) : null
 
   const handleExport = () => {
     if (filtered.length === 0) return toast.error('No reports to export')
     const headers = ['Report ID', 'Student Name', 'Class Name', 'Dyslexia Score', 'Dysgraphia Score', 'Risk Level', 'Date', 'AI Comment']
-    const data = filtered.map(r => [
+    const data = filtered.map((r) => [
       r.reportId,
       r.studentName,
       r.className,
-      r.dyslexiaScore?.toFixed(1) + '%',
-      r.dysgraphiaScore?.toFixed(1) + '%',
+      ((r.dyslexiaScore || 0) * 100).toFixed(1) + '%',
+      ((r.dysgraphiaScore || 0) * 100).toFixed(1) + '%',
       r.riskLevel,
       r.createdAt ? format(new Date(r.createdAt), 'yyyy-MM-dd') : 'N/A',
-      r.aiComment || ''
+      r.aiComment || '',
     ])
     downloadCSV([headers, ...data], `NeuraScan_Reports_${format(new Date(), 'yyyy-MM-dd')}.csv`)
     toast.success('Export completed')
   }
 
-  const riskFilterColors = {
-    ALL: COLORS.textMuted,
-    LOW: COLORS.riskLow,
-    MEDIUM: COLORS.riskMedium,
-    HIGH: COLORS.riskHigh,
-  }
-
   return (
-    <div>
-      <PageHeader
-        title="Analysis Reports"
-        subtitle={`${reports.length} assessment${reports.length !== 1 ? 's' : ''} completed`}
-        action={
-          <motion.button
-            whileHover={{ y: -1 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={handleExport}
+    <div style={{ padding: '16px 24px' }}>
+      {/* Header */}
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'flex-start',
+          justifyContent: 'space-between',
+          marginBottom: 32,
+          gap: 16,
+          flexWrap: 'wrap',
+        }}
+      >
+        <div>
+          <h1
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              padding: '10px 18px',
-              borderRadius: 10,
-              background: COLORS.bgSurface,
-              border: `1px solid ${COLORS.border}`,
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontSize: 28,
+              fontWeight: 700,
               color: COLORS.textPrimary,
-              cursor: 'pointer',
-              fontSize: 13,
-              fontWeight: 600,
-              fontFamily: "'Inter', sans-serif",
-              transition: 'all 0.2s ease',
+              marginBottom: 4,
             }}
           >
-            <Download size={16} /> Export CSV
-          </motion.button>
-        }
-      />
+            Reports
+          </h1>
+          <p style={{ color: COLORS.textMuted, fontSize: 14 }}>
+            All AI-generated handwriting analysis reports
+          </p>
+        </div>
+        <button
+          onClick={handleExport}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            padding: '10px 16px',
+            border: `1px solid ${COLORS.border}`,
+            borderRadius: 8,
+            background: COLORS.bgCard,
+            color: COLORS.textPrimary,
+            fontSize: 14,
+            fontWeight: 500,
+            cursor: 'pointer',
+            fontFamily: "'Inter', sans-serif",
+          }}
+        >
+          <Download size={16} />
+          Export CSV
+        </button>
+      </div>
 
-      {/* Filter bar */}
-      <div style={{
-        display: 'flex',
-        gap: 12,
-        marginBottom: 24,
-        flexWrap: 'wrap',
-      }}>
-        {/* Search input */}
-        <div style={{ position: 'relative', flex: '1 1 280px', maxWidth: 360 }}>
-          <Search
-            size={16}
-            style={{
-              position: 'absolute',
-              left: 14,
-              top: '50%',
-              transform: 'translateY(-50%)',
-              color: COLORS.textMuted,
-              pointerEvents: 'none',
-            }}
-          />
-          <input
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Search by student name..."
-            style={{
-              width: '100%',
-              padding: '11px 40px 11px 42px',
-              background: COLORS.bgSurface,
-              border: `1px solid ${COLORS.border}`,
-              borderRadius: 10,
-              color: COLORS.textPrimary,
-              fontFamily: "'Inter', sans-serif",
-              fontSize: 14,
-              outline: 'none',
-              transition: 'border-color 0.2s ease',
-            }}
-            onFocus={e => e.target.style.borderColor = COLORS.primary}
-            onBlur={e => e.target.style.borderColor = COLORS.border}
-          />
-          {search && (
-            <button
-              onClick={() => setSearch('')}
+      {/* Filters */}
+      <div
+        style={{
+          background: COLORS.bgCard,
+          border: `1px solid ${COLORS.border}`,
+          borderRadius: 12,
+          padding: 16,
+          marginBottom: 24,
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 12,
+            flexWrap: 'wrap',
+          }}
+        >
+          {/* Search Input */}
+          <div style={{ position: 'relative', flex: 1, minWidth: 200 }}>
+            <Search
+              size={16}
               style={{
                 position: 'absolute',
-                right: 12,
+                left: 12,
                 top: '50%',
                 transform: 'translateY(-50%)',
-                background: 'none',
-                border: 'none',
                 color: COLORS.textMuted,
-                cursor: 'pointer',
-                padding: 4,
               }}
-            >
-              <X size={14} />
-            </button>
-          )}
-        </div>
-
-        {/* Risk filter pills */}
-        <div style={{
-          display: 'flex',
-          background: COLORS.bgSubtle,
-          borderRadius: 10,
-          padding: 4,
-          gap: 4,
-        }}>
-          {['ALL', 'LOW', 'MEDIUM', 'HIGH'].map(v => (
-            <button
-              key={v}
-              onClick={() => setRisk(v)}
+            />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search by student or class..."
               style={{
-                padding: '8px 14px',
+                width: '100%',
+                padding: '10px 12px 10px 36px',
+                border: `1px solid ${COLORS.border}`,
                 borderRadius: 8,
-                border: 'none',
-                cursor: 'pointer',
-                background: riskFilter === v ? COLORS.bgSurface : 'transparent',
-                color: riskFilter === v ? COLORS.textPrimary : COLORS.textMuted,
+                background: COLORS.bgCard,
+                color: COLORS.textPrimary,
+                fontSize: 14,
                 fontFamily: "'Inter', sans-serif",
-                fontSize: 13,
-                fontWeight: riskFilter === v ? 600 : 500,
-                transition: 'all 0.2s ease',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-                boxShadow: riskFilter === v ? '0 1px 3px rgba(0, 0, 0, 0.08)' : 'none',
+                outline: 'none',
               }}
-            >
-              {v !== 'ALL' && (
-                <span style={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: '50%',
-                  background: riskFilterColors[v],
-                }} />
-              )}
-              {v}
-              <span style={{
-                fontSize: 11,
-                opacity: 0.6,
-                marginLeft: 2,
-              }}>
-                ({riskCounts[v]})
-              </span>
-            </button>
-          ))}
+            />
+          </div>
+
+          {/* Risk Filter */}
+          <Select
+            value={riskFilter}
+            onChange={setRiskFilter}
+            icon={Filter}
+            options={[
+              { value: 'all', label: 'All Risk' },
+              { value: 'LOW', label: 'Low' },
+              { value: 'MEDIUM', label: 'Medium' },
+              { value: 'HIGH', label: 'High' },
+            ]}
+          />
+
+          {/* Class Filter */}
+          <Select
+            value={classFilter}
+            onChange={setClassFilter}
+            options={[
+              { value: 'all', label: 'All Classes' },
+              ...classes.map((c) => ({ value: c, label: c })),
+            ]}
+          />
         </div>
       </div>
 
-      {/* Column headers */}
-      {filtered.length > 0 && !loading && (
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1.5fr 1fr 1fr 1fr 1fr 40px',
-          padding: '8px 24px',
-          gap: 12,
-          marginBottom: 8,
-        }}>
-          {['Student', 'Dyslexia', 'Dysgraphia', 'Risk Level', 'Date', ''].map(h => (
-            <div key={h} style={{
-              fontSize: 11,
-              fontWeight: 600,
-              color: COLORS.textMuted,
-              textTransform: 'uppercase',
-              letterSpacing: '0.06em',
-            }}>
-              {h}
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Reports list */}
-      {loading ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {[0, 1, 2, 3, 4].map(i => <SkeletonCard key={i} />)}
-        </div>
-      ) : filtered.length === 0 ? (
-        <EmptyState
-          icon={FileText}
-          title="No reports found"
-          description="No analysis reports match your current filters. Try adjusting your search criteria."
-        />
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {filtered.map((r, i) => (
-            <motion.div
-              key={r.reportId}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.03 }}
-              style={{
-                background: COLORS.bgSurface,
-                border: `1px solid ${COLORS.border}`,
-                borderRadius: 14,
-                overflow: 'hidden',
-                transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.borderColor = COLORS.primaryLight
-                e.currentTarget.style.boxShadow = '0 4px 16px rgba(49, 46, 129, 0.08)'
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.borderColor = COLORS.border
-                e.currentTarget.style.boxShadow = 'none'
-              }}
-            >
-              <div
-                onClick={() => setExpId(id => id === r.reportId ? null : r.reportId)}
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: '1.5fr 1fr 1fr 1fr 1fr 40px',
-                  alignItems: 'center',
-                  padding: '16px 24px',
-                  cursor: 'pointer',
-                  gap: 12,
-                }}
-              >
-                <div>
-                  <div style={{
-                    fontWeight: 600,
-                    fontSize: 14,
-                    color: COLORS.textPrimary,
-                  }}>
-                    {r.studentName}
-                  </div>
-                  <div style={{
-                    fontSize: 12,
+      {/* Desktop Table */}
+      <div
+        style={{
+          background: COLORS.bgCard,
+          border: `1px solid ${COLORS.border}`,
+          borderRadius: 12,
+          overflow: 'hidden',
+          display: window.innerWidth >= 768 ? 'block' : 'none',
+        }}
+        className="hidden-mobile"
+      >
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ background: COLORS.bgMuted }}>
+              <th style={{ padding: '12px 24px', textAlign: 'left', fontSize: 12, fontWeight: 500, color: COLORS.textMuted }}>
+                Student
+              </th>
+              <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 12, fontWeight: 500, color: COLORS.textMuted }}>
+                Class
+              </th>
+              <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 12, fontWeight: 500, color: COLORS.textMuted }}>
+                <button
+                  onClick={() => toggleSort('dyslexia')}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
                     color: COLORS.textMuted,
-                    marginTop: 2,
-                  }}>
-                    {r.className} · {r.originalFileName}
-                  </div>
-                </div>
-                <span style={{
-                  fontWeight: 700,
-                  fontSize: 14,
-                  color: r.dyslexiaScore >= 70 ? COLORS.riskHigh : r.dyslexiaScore >= 45 ? COLORS.riskMedium : COLORS.riskLow,
-                }}>
-                  {r.dyslexiaScore?.toFixed(1)}%
-                </span>
-                <span style={{
-                  fontWeight: 700,
-                  fontSize: 14,
-                  color: r.dysgraphiaScore >= 70 ? COLORS.riskHigh : r.dysgraphiaScore >= 45 ? COLORS.riskMedium : COLORS.riskLow,
-                }}>
-                  {r.dysgraphiaScore?.toFixed(1)}%
-                </span>
-                <RiskBadge level={r.riskLevel} />
-                <span style={{ fontSize: 13, color: COLORS.textMuted }}>
-                  {r.createdAt ? format(new Date(r.createdAt), 'MMM d, yyyy') : '—'}
-                </span>
-                <span style={{ color: COLORS.textMuted }}>
-                  {expandedId === r.reportId ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-                </span>
-              </div>
-
-              <AnimatePresence>
-                {expandedId === r.reportId && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-                    style={{ overflow: 'hidden' }}
-                  >
-                    <div style={{
-                      padding: '0 24px 24px',
-                      borderTop: `1px solid ${COLORS.border}`,
-                      paddingTop: 24,
-                    }}>
-                      <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: '1fr 1fr',
-                        gap: 24,
-                      }}>
-                        <div>
-                          <div style={{
+                    fontSize: 12,
+                    fontWeight: 500,
+                  }}
+                >
+                  Dyslexia <SortIcon k="dyslexia" />
+                </button>
+              </th>
+              <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 12, fontWeight: 500, color: COLORS.textMuted }}>
+                <button
+                  onClick={() => toggleSort('dysgraphia')}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: COLORS.textMuted,
+                    fontSize: 12,
+                    fontWeight: 500,
+                  }}
+                >
+                  Dysgraphia <SortIcon k="dysgraphia" />
+                </button>
+              </th>
+              <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 12, fontWeight: 500, color: COLORS.textMuted }}>
+                Risk
+              </th>
+              <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 12, fontWeight: 500, color: COLORS.textMuted }}>
+                <button
+                  onClick={() => toggleSort('date')}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: COLORS.textMuted,
+                    fontSize: 12,
+                    fontWeight: 500,
+                  }}
+                >
+                  Date <SortIcon k="date" />
+                </button>
+              </th>
+              <th style={{ padding: '12px 24px', textAlign: 'right', fontSize: 12, fontWeight: 500, color: COLORS.textMuted }}>
+                View
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr>
+                <td colSpan={7} style={{ padding: 48, textAlign: 'center', color: COLORS.textMuted }}>
+                  Loading reports...
+                </td>
+              </tr>
+            ) : filtered.length === 0 ? (
+              <tr>
+                <td colSpan={7} style={{ padding: 48, textAlign: 'center' }}>
+                  <FileText size={32} color={COLORS.textMuted} style={{ marginBottom: 12 }} />
+                  <p style={{ color: COLORS.textMuted }}>No reports found</p>
+                </td>
+              </tr>
+            ) : (
+              filtered.map((r) => (
+                <tr
+                  key={r.reportId}
+                  style={{ borderTop: `1px solid ${COLORS.border}` }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = COLORS.bgMuted)}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <td style={{ padding: '16px 24px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <div
+                        style={{
+                          width: 36,
+                          height: 36,
+                          borderRadius: '50%',
+                          background: `rgba(20, 184, 166, 0.1)`,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontWeight: 600,
+                          fontSize: 14,
+                          color: COLORS.primary,
+                        }}
+                      >
+                        {r.studentName?.charAt(0) || '?'}
+                      </div>
+                      <div>
+                        <p style={{ fontWeight: 500, fontSize: 14, color: COLORS.textPrimary }}>{r.studentName}</p>
+                        <p
+                          style={{
                             fontSize: 12,
-                            fontWeight: 600,
                             color: COLORS.textMuted,
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.06em',
-                            marginBottom: 16,
-                          }}>
-                            Score Breakdown
-                          </div>
-                          <ScoreBar label="Dyslexia Score" value={r.dyslexiaScore} />
-                          <ScoreBar label="Dysgraphia Score" value={r.dysgraphiaScore} />
-                        </div>
-                        <div style={{
-                          background: COLORS.bgSubtle,
-                          borderRadius: 12,
-                          padding: 20,
-                        }}>
-                          <div style={{
-                            fontSize: 12,
-                            fontWeight: 600,
-                            color: COLORS.textMuted,
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.06em',
-                            marginBottom: 12,
-                          }}>
-                            AI Analysis Summary
-                          </div>
-                          <p style={{
-                            fontSize: 14,
-                            color: COLORS.textSecondary,
-                            lineHeight: 1.75,
-                          }}>
-                            {r.aiComment || 'No AI commentary available for this assessment.'}
-                          </p>
-                        </div>
+                            maxWidth: 140,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {r.originalFileName}
+                        </p>
                       </div>
                     </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </motion.div>
-          ))}
-        </div>
+                  </td>
+                  <td style={{ padding: '16px', fontSize: 14, color: COLORS.textPrimary }}>{r.className}</td>
+                  <td style={{ padding: '16px' }}>
+                    <ScoreBar value={r.dyslexiaScore} color={COLORS.primary} />
+                  </td>
+                  <td style={{ padding: '16px' }}>
+                    <ScoreBar value={r.dysgraphiaScore} color={COLORS.sidebar} />
+                  </td>
+                  <td style={{ padding: '16px' }}>
+                    <RiskBadge risk={r.riskLevel} />
+                  </td>
+                  <td style={{ padding: '16px', fontSize: 14, color: COLORS.textMuted }}>{formatDate(r.createdAt)}</td>
+                  <td style={{ padding: '16px 24px', textAlign: 'right' }}>
+                    <button
+                      onClick={() => setSelectedReport(r)}
+                      style={{
+                        width: 32,
+                        height: 32,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: 'transparent',
+                        border: 'none',
+                        borderRadius: 6,
+                        cursor: 'pointer',
+                        color: COLORS.textMuted,
+                      }}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = COLORS.primary)}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = COLORS.textMuted)}
+                    >
+                      <Eye size={16} />
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Mobile Cards */}
+      <div className="mobile-only" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {loading ? (
+          <div
+            style={{
+              background: COLORS.bgCard,
+              border: `1px solid ${COLORS.border}`,
+              borderRadius: 12,
+              padding: 48,
+              textAlign: 'center',
+              color: COLORS.textMuted,
+            }}
+          >
+            Loading reports...
+          </div>
+        ) : filtered.length === 0 ? (
+          <div
+            style={{
+              background: COLORS.bgCard,
+              border: `1px solid ${COLORS.border}`,
+              borderRadius: 12,
+              padding: 48,
+              textAlign: 'center',
+            }}
+          >
+            <FileText size={32} color={COLORS.textMuted} style={{ marginBottom: 12 }} />
+            <p style={{ color: COLORS.textMuted }}>No reports found</p>
+          </div>
+        ) : (
+          filtered.map((r) => (
+            <div
+              key={r.reportId}
+              style={{
+                background: COLORS.bgCard,
+                border: `1px solid ${COLORS.border}`,
+                borderRadius: 12,
+                padding: 16,
+              }}
+            >
+              {/* Header */}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: 12,
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <div
+                    style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: '50%',
+                      background: `rgba(20, 184, 166, 0.1)`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontWeight: 600,
+                      fontSize: 16,
+                      color: COLORS.primary,
+                    }}
+                  >
+                    {r.studentName?.charAt(0) || '?'}
+                  </div>
+                  <div>
+                    <p style={{ fontWeight: 500, fontSize: 14, color: COLORS.textPrimary }}>{r.studentName}</p>
+                    <p style={{ fontSize: 12, color: COLORS.textMuted }}>{r.className}</p>
+                  </div>
+                </div>
+                <RiskBadge risk={r.riskLevel} />
+              </div>
+
+              {/* Scores */}
+              <div
+                style={{
+                  borderTop: `1px solid ${COLORS.border}`,
+                  paddingTop: 12,
+                  marginBottom: 12,
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 16,
+                    marginBottom: 8,
+                  }}
+                >
+                  <span style={{ fontSize: 12, color: COLORS.textMuted, width: 80 }}>Dyslexia</span>
+                  <ScoreBar value={r.dyslexiaScore} color={COLORS.primary} />
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
+                  <span style={{ fontSize: 12, color: COLORS.textMuted, width: 80 }}>Dysgraphia</span>
+                  <ScoreBar value={r.dysgraphiaScore} color={COLORS.sidebar} />
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  borderTop: `1px solid ${COLORS.border}`,
+                  paddingTop: 12,
+                }}
+              >
+                <span style={{ fontSize: 12, color: COLORS.textMuted }}>{formatDate(r.createdAt)}</span>
+                <button
+                  onClick={() => setSelectedReport(r)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    padding: '8px 12px',
+                    border: `1px solid ${COLORS.border}`,
+                    borderRadius: 6,
+                    background: COLORS.bgCard,
+                    color: COLORS.textPrimary,
+                    fontSize: 13,
+                    fontWeight: 500,
+                    cursor: 'pointer',
+                    fontFamily: "'Inter', sans-serif",
+                  }}
+                >
+                  <Eye size={14} />
+                  View Report
+                </button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Report Count */}
+      {filtered.length > 0 && (
+        <p style={{ textAlign: 'center', fontSize: 14, color: COLORS.textMuted, marginTop: 24 }}>
+          Showing {filtered.length} of {reports.length} reports
+        </p>
       )}
+
+      {/* Report Detail Dialog */}
+      <Dialog open={!!selectedReport} onClose={() => setSelectedReport(null)}>
+        {selectedReport && (
+          <>
+            <div style={{ padding: '20px 24px', borderBottom: `1px solid ${COLORS.border}` }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                <div>
+                  <h2
+                    style={{
+                      fontFamily: "'Plus Jakarta Sans', sans-serif",
+                      fontSize: 20,
+                      fontWeight: 700,
+                      color: COLORS.textPrimary,
+                      marginBottom: 4,
+                    }}
+                  >
+                    Report - {selectedReport.studentName}
+                  </h2>
+                  <p style={{ fontSize: 14, color: COLORS.textMuted }}>
+                    {selectedReport.className} · {formatDate(selectedReport.createdAt)}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setSelectedReport(null)}
+                  style={{
+                    width: 32,
+                    height: 32,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: 'transparent',
+                    border: 'none',
+                    borderRadius: 6,
+                    cursor: 'pointer',
+                    color: COLORS.textMuted,
+                  }}
+                >
+                  <X size={20} />
+                </button>
+              </div>
+            </div>
+
+            <div style={{ padding: 24 }}>
+              {/* Risk Level */}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: 20,
+                }}
+              >
+                <span style={{ fontSize: 14, fontWeight: 500, color: COLORS.textPrimary }}>Risk Level</span>
+                <RiskBadge risk={selectedReport.riskLevel} />
+              </div>
+
+              {/* Scores */}
+              <div style={{ marginBottom: 20 }}>
+                <div style={{ marginBottom: 16 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                    <span style={{ fontSize: 14, color: COLORS.textMuted }}>Dyslexia Score</span>
+                    <span style={{ fontSize: 14, fontFamily: 'monospace', fontWeight: 500 }}>
+                      {((selectedReport.dyslexiaScore || 0) * 100).toFixed(1)}%
+                    </span>
+                  </div>
+                  <ProgressBar value={selectedReport.dyslexiaScore} />
+                </div>
+
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                    <span style={{ fontSize: 14, color: COLORS.textMuted }}>Dysgraphia Score</span>
+                    <span style={{ fontSize: 14, fontFamily: 'monospace', fontWeight: 500 }}>
+                      {((selectedReport.dysgraphiaScore || 0) * 100).toFixed(1)}%
+                    </span>
+                  </div>
+                  <ProgressBar value={selectedReport.dysgraphiaScore} />
+                </div>
+              </div>
+
+              {/* AI Analysis */}
+              <div
+                style={{
+                  background: COLORS.bgMuted,
+                  borderRadius: 8,
+                  padding: 16,
+                  marginBottom: 16,
+                }}
+              >
+                <p style={{ fontSize: 12, fontWeight: 500, color: COLORS.textMuted, marginBottom: 6 }}>AI Analysis</p>
+                <p style={{ fontSize: 14, color: COLORS.textPrimary, lineHeight: 1.6 }}>
+                  {selectedReport.aiComment || 'No AI commentary available for this assessment.'}
+                </p>
+              </div>
+
+              {/* File Name */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: COLORS.textMuted }}>
+                <FileText size={14} />
+                {selectedReport.originalFileName}
+              </div>
+            </div>
+          </>
+        )}
+      </Dialog>
+
+      {/* Mobile/Desktop Visibility Styles */}
+      <style>{`
+        @media (min-width: 768px) {
+          .mobile-only { display: none !important; }
+          .hidden-mobile { display: block !important; }
+        }
+        @media (max-width: 767px) {
+          .mobile-only { display: flex !important; }
+          .hidden-mobile { display: none !important; }
+        }
+      `}</style>
     </div>
   )
 }

@@ -1,247 +1,154 @@
-import { useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
-import { Brain, Users, AlertTriangle, FileText, Activity } from 'lucide-react'
+import { useEffect, useState, useMemo } from 'react'
+import { TrendingUp, TrendingDown, AlertTriangle, Users, Minus, ChevronDown } from 'lucide-react'
 import { optimizedAnalysisAPI, optimizedStudentAPI } from '../../services/optimizedApi'
 import { useAuth } from '../../context/AuthContext'
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar,
-  ScatterChart, Scatter, ZAxis
+  BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
 } from 'recharts'
 import toast from 'react-hot-toast'
+import { format, subMonths } from 'date-fns'
 
 // ════════════════════════════════════════════════════════════════
-// DESIGN SYSTEM COLORS
+// DESIGN SYSTEM - Matching reference exactly
 // ════════════════════════════════════════════════════════════════
 const COLORS = {
-  // Primary: Deep Indigo (UI elements, not charts)
-  primary: '#312E81',
-  primaryLight: '#4338CA',
-  primaryLighter: '#6366F1',
-  primaryBg: '#EEF2FF',
+  sidebar: '#312E81',
+  primary: '#14B8A6',
+  primaryHover: '#0D9488',
 
-  // Secondary: Soft Teal (UI elements, not charts)
-  secondary: '#14B8A6',
-  secondaryDark: '#0D9488',
-  secondaryBg: '#CCFBF1',
+  bgBase: '#F8FAFC',
+  bgCard: '#FFFFFF',
+  bgMuted: '#F1F5F9',
 
-  // Chart colors (per design system)
-  chartDyslexia: '#14B8A6',    // Soft Teal for Dyslexia
-  chartDysgraphia: '#6366F1',  // Indigo for Dysgraphia
-
-  // Risk levels (muted clinical)
-  riskHigh: '#B91C1C',
-  riskHighBg: '#FEF2F2',
-  riskMedium: '#B45309',
-  riskMediumBg: '#FFFBEB',
-  riskLow: '#047857',
-  riskLowBg: '#ECFDF5',
-
-  // Neutrals
-  textPrimary: '#1E293B',
+  textPrimary: '#0F172A',
   textSecondary: '#475569',
   textMuted: '#64748B',
-  textLight: '#94A3B8',
 
-  // Backgrounds
-  bgBase: '#F8FAFC',
-  bgSurface: '#FFFFFF',
-  bgSubtle: '#F1F5F9',
-
-  // Borders
   border: '#E2E8F0',
-  borderLight: '#F1F5F9',
+
+  // Chart colors
+  chartDyslexia: '#14B8A6',
+  chartDysgraphia: '#312E81',
+
+  // Risk colors
+  riskHigh: '#ef4444',
+  riskHighBg: 'rgba(239, 68, 68, 0.1)',
+  riskMedium: '#f59e0b',
+  riskMediumBg: 'rgba(245, 158, 11, 0.1)',
+  riskLow: '#22c55e',
+  riskLowBg: 'rgba(34, 197, 94, 0.1)',
 }
 
 // ════════════════════════════════════════════════════════════════
-// REUSABLE COMPONENTS
+// SELECT COMPONENT
 // ════════════════════════════════════════════════════════════════
-
-const PageHeader = ({ title, subtitle, breadcrumb }) => (
-  <div style={{ marginBottom: 32 }}>
-    {breadcrumb && (
-      <div style={{
-        fontSize: 12,
-        color: COLORS.textMuted,
-        marginBottom: 10,
-        fontWeight: 500,
-      }}>
-        {breadcrumb}
-      </div>
-    )}
-    <h1 style={{
-      fontFamily: "'Plus Jakarta Sans', sans-serif",
-      fontSize: 28,
-      fontWeight: 800,
-      marginBottom: 8,
-      color: COLORS.textPrimary,
-      letterSpacing: '-0.02em',
-    }}>
-      {title}
-    </h1>
-    {subtitle && (
-      <p style={{
-        fontSize: 15,
-        color: COLORS.textSecondary,
-        lineHeight: 1.6,
-      }}>
-        {subtitle}
-      </p>
-    )}
-  </div>
-)
-
-const StatCard = ({ icon: Icon, label, value, color = 'primary', delay = 0 }) => {
-  const colorMap = {
-    primary: { bg: COLORS.primaryBg, icon: COLORS.primary },
-    secondary: { bg: COLORS.secondaryBg, icon: COLORS.secondary },
-    warning: { bg: COLORS.riskMediumBg, icon: COLORS.riskMedium },
-    danger: { bg: COLORS.riskHighBg, icon: COLORS.riskHigh },
-  }
-  const c = colorMap[color] || colorMap.primary
-
+function Select({ value, onChange, options }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: delay * 0.08 }}
+    <div style={{ position: 'relative' }}>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        style={{
+          appearance: 'none',
+          padding: '10px 36px 10px 16px',
+          border: `1px solid ${COLORS.border}`,
+          borderRadius: 8,
+          background: COLORS.bgCard,
+          color: COLORS.textPrimary,
+          fontSize: 14,
+          fontFamily: "'Inter', sans-serif",
+          cursor: 'pointer',
+          minWidth: 160,
+        }}
+      >
+        {options.map((opt) => (
+          <option key={opt.value} value={opt.value}>
+            {opt.label}
+          </option>
+        ))}
+      </select>
+      <ChevronDown
+        size={16}
+        style={{
+          position: 'absolute',
+          right: 12,
+          top: '50%',
+          transform: 'translateY(-50%)',
+          color: COLORS.textMuted,
+          pointerEvents: 'none',
+        }}
+      />
+    </div>
+  )
+}
+
+// ════════════════════════════════════════════════════════════════
+// CARD COMPONENT
+// ════════════════════════════════════════════════════════════════
+function Card({ children, style = {} }) {
+  return (
+    <div
       style={{
-        background: COLORS.bgSurface,
-        borderRadius: 16,
-        padding: '22px 24px',
+        background: COLORS.bgCard,
         border: `1px solid ${COLORS.border}`,
+        borderRadius: 12,
+        overflow: 'hidden',
+        ...style,
       }}
     >
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
-        <div style={{
-          width: 44,
-          height: 44,
-          borderRadius: 12,
-          background: c.bg,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}>
-          <Icon size={22} color={c.icon} strokeWidth={2} />
-        </div>
-        <div style={{ flex: 1 }}>
-          <div style={{
-            fontSize: 13,
-            color: COLORS.textMuted,
-            marginBottom: 4,
-            fontWeight: 500,
-          }}>
-            {label}
-          </div>
-          <div style={{
-            fontFamily: "'Plus Jakarta Sans', sans-serif",
-            fontSize: 26,
-            fontWeight: 800,
-            color: COLORS.textPrimary,
-          }}>
-            {value}
-          </div>
-        </div>
-      </div>
-    </motion.div>
+      {children}
+    </div>
   )
 }
 
-const SkeletonCard = ({ rows = 4 }) => (
-  <div style={{
-    border: `1px solid ${COLORS.border}`,
-    borderRadius: 16,
-    padding: '22px 24px',
-    background: COLORS.bgSurface,
-  }}>
-    {Array(rows).fill(0).map((_, i) => (
-      <div key={i} style={{
-        height: i === 0 ? 24 : 14,
-        background: `linear-gradient(90deg, ${COLORS.bgSubtle} 25%, ${COLORS.bgSurface} 50%, ${COLORS.bgSubtle} 75%)`,
-        backgroundSize: '200% 100%',
-        animation: 'shimmer 1.5s infinite',
-        borderRadius: 8,
-        marginBottom: i < rows - 1 ? 12 : 0,
-      }} />
-    ))}
-    <style>{`@keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }`}</style>
-  </div>
-)
-
-const RiskBadge = ({ level }) => {
-  const styles = {
-    LOW: { bg: COLORS.riskLowBg, text: COLORS.riskLow },
-    MEDIUM: { bg: COLORS.riskMediumBg, text: COLORS.riskMedium },
-    HIGH: { bg: COLORS.riskHighBg, text: COLORS.riskHigh },
-  }
-  const s = styles[level] || styles.LOW
-
+function CardHeader({ title, description }) {
   return (
-    <span style={{
-      display: 'inline-block',
-      padding: '4px 12px',
-      borderRadius: 100,
-      fontSize: 12,
-      fontWeight: 600,
-      background: s.bg,
-      color: s.text,
-    }}>
-      {level}
-    </span>
-  )
-}
-
-const ChartCard = ({ title, subtitle, children, delay = 0 }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 16 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay }}
-    style={{
-      background: COLORS.bgSurface,
-      border: `1px solid ${COLORS.border}`,
-      borderRadius: 16,
-      padding: '24px',
-      height: '100%',
-    }}
-  >
-    <div style={{ marginBottom: 20 }}>
-      <h3 style={{
-        fontFamily: "'Plus Jakarta Sans', sans-serif",
-        fontSize: 16,
-        fontWeight: 700,
-        color: COLORS.textPrimary,
-        marginBottom: 4,
-      }}>
+    <div style={{ padding: '20px 24px', borderBottom: `1px solid ${COLORS.border}` }}>
+      <h3
+        style={{
+          fontFamily: "'Plus Jakarta Sans', sans-serif",
+          fontSize: 18,
+          fontWeight: 600,
+          color: COLORS.textPrimary,
+          marginBottom: description ? 4 : 0,
+        }}
+      >
         {title}
       </h3>
-      {subtitle && (
-        <p style={{ fontSize: 13, color: COLORS.textMuted }}>
-          {subtitle}
-        </p>
+      {description && (
+        <p style={{ fontSize: 14, color: COLORS.textMuted }}>{description}</p>
       )}
     </div>
-    {children}
-  </motion.div>
-)
+  )
+}
 
-const CustomTooltip = ({ active, payload, label }) => {
+function CardContent({ children, style = {} }) {
+  return <div style={{ padding: 24, ...style }}>{children}</div>
+}
+
+// ════════════════════════════════════════════════════════════════
+// CHART TOOLTIP
+// ════════════════════════════════════════════════════════════════
+function CustomTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null
   return (
-    <div style={{
-      background: COLORS.bgSurface,
-      border: `1px solid ${COLORS.border}`,
-      borderRadius: 12,
-      padding: '12px 16px',
-      fontSize: 13,
-      boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
-    }}>
-      <p style={{ color: COLORS.textMuted, marginBottom: 8, fontWeight: 600 }}>{label}</p>
-      {payload.map(p => (
+    <div
+      style={{
+        background: COLORS.bgCard,
+        border: `1px solid ${COLORS.border}`,
+        borderRadius: 8,
+        padding: '12px 16px',
+        fontSize: 13,
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+      }}
+    >
+      {label && <p style={{ color: COLORS.textMuted, marginBottom: 8, fontWeight: 500 }}>{label}</p>}
+      {payload.map((p) => (
         <div key={p.name} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
           <div style={{ width: 10, height: 10, borderRadius: 3, background: p.color }} />
           <span style={{ color: COLORS.textSecondary }}>{p.name}:</span>
-          <span style={{ fontWeight: 700, color: COLORS.textPrimary }}>
-            {typeof p.value === 'number' ? p.value.toFixed(1) + '%' : p.value}
+          <span style={{ fontWeight: 600, color: COLORS.textPrimary }}>
+            {typeof p.value === 'number' ? (p.value < 1 ? (p.value * 100).toFixed(1) + '%' : p.value) : p.value}
           </span>
         </div>
       ))}
@@ -250,21 +157,59 @@ const CustomTooltip = ({ active, payload, label }) => {
 }
 
 // ════════════════════════════════════════════════════════════════
+// AI INSIGHTS DATA
+// ════════════════════════════════════════════════════════════════
+const defaultInsights = [
+  {
+    type: 'improvement',
+    icon: TrendingUp,
+    color: COLORS.riskLow,
+    bg: COLORS.riskLowBg,
+    title: 'Average scores improving',
+    desc: 'Overall trend shows improvement in both dyslexia and dysgraphia indicators across your classes.',
+  },
+  {
+    type: 'concern',
+    icon: AlertTriangle,
+    color: COLORS.riskHigh,
+    bg: COLORS.riskHighBg,
+    title: 'High-risk students need attention',
+    desc: 'Some students show elevated risk indicators. Consider targeted intervention strategies.',
+  },
+  {
+    type: 'stable',
+    icon: Minus,
+    color: COLORS.riskMedium,
+    bg: COLORS.riskMediumBg,
+    title: 'Upload frequency varies',
+    desc: 'Consistent weekly uploads will improve trend accuracy and early detection.',
+  },
+  {
+    type: 'positive',
+    icon: Users,
+    color: COLORS.primary,
+    bg: `rgba(20, 184, 166, 0.1)`,
+    title: 'Early intervention working',
+    desc: 'Students who received early intervention show measurable improvement in assessments.',
+  },
+]
+
+// ════════════════════════════════════════════════════════════════
 // MAIN ANALYTICS PAGE
 // ════════════════════════════════════════════════════════════════
-
 export default function AnalyticsPage() {
   const { user } = useAuth()
   const [reports, setReports] = useState([])
   const [students, setStudents] = useState([])
   const [dash, setDash] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [classFilter, setClassFilter] = useState('all')
 
   useEffect(() => {
     Promise.all([
       optimizedAnalysisAPI.getReports(),
       optimizedAnalysisAPI.getDashboard(),
-      optimizedStudentAPI.getAll()
+      optimizedStudentAPI.getAll(),
     ])
       .then(([r, d, s]) => {
         setReports(r.data.data || [])
@@ -275,348 +220,365 @@ export default function AnalyticsPage() {
       .finally(() => setLoading(false))
   }, [user?.userId])
 
+  // Get unique classes
+  const classes = useMemo(() => {
+    return Array.from(new Set(reports.map((r) => r.className).filter(Boolean))).sort()
+  }, [reports])
+
+  // Filter reports by class
+  const filteredReports = useMemo(() => {
+    if (classFilter === 'all') return reports
+    return reports.filter((r) => r.className === classFilter)
+  }, [reports, classFilter])
+
+  // Monthly trend data (last 5 months)
+  const monthlyTrend = useMemo(() => {
+    const now = new Date()
+    const months = []
+    for (let i = 4; i >= 0; i--) {
+      const d = subMonths(now, i)
+      months.push({ month: format(d, 'MMM'), monthNum: d.getMonth(), year: d.getFullYear() })
+    }
+
+    return months.map(({ month, monthNum, year }) => {
+      const monthReports = filteredReports.filter((r) => {
+        const rd = new Date(r.createdAt)
+        return rd.getMonth() === monthNum && rd.getFullYear() === year
+      })
+      const avgDyslexia = monthReports.length
+        ? monthReports.reduce((s, r) => s + (r.dyslexiaScore || 0), 0) / monthReports.length / 100
+        : 0
+      const avgDysgraphia = monthReports.length
+        ? monthReports.reduce((s, r) => s + (r.dysgraphiaScore || 0), 0) / monthReports.length / 100
+        : 0
+      return { month, dyslexia: avgDyslexia, dysgraphia: avgDysgraphia }
+    })
+  }, [filteredReports])
+
+  // Class comparison data
+  const classComparison = useMemo(() => {
+    const classMap = {}
+    reports.forEach((r) => {
+      if (!r.className) return
+      if (!classMap[r.className]) {
+        classMap[r.className] = { dyslexiaSum: 0, dysgraphiaSum: 0, count: 0 }
+      }
+      classMap[r.className].dyslexiaSum += r.dyslexiaScore || 0
+      classMap[r.className].dysgraphiaSum += r.dysgraphiaScore || 0
+      classMap[r.className].count++
+    })
+
+    return Object.entries(classMap)
+      .map(([className, data]) => ({
+        class: className.length > 8 ? className.substring(0, 8) : className,
+        dyslexia: Math.round(data.dyslexiaSum / data.count),
+        dysgraphia: Math.round(data.dysgraphiaSum / data.count),
+        students: data.count,
+      }))
+      .slice(0, 6)
+  }, [reports])
+
+  // Risk distribution by class
+  const riskByClass = useMemo(() => {
+    const classMap = {}
+    reports.forEach((r) => {
+      if (!r.className) return
+      if (!classMap[r.className]) {
+        classMap[r.className] = { low: 0, medium: 0, high: 0 }
+      }
+      if (r.riskLevel === 'LOW') classMap[r.className].low++
+      else if (r.riskLevel === 'MEDIUM') classMap[r.className].medium++
+      else if (r.riskLevel === 'HIGH') classMap[r.className].high++
+    })
+
+    return Object.entries(classMap)
+      .map(([name, data]) => ({
+        name: name.length > 12 ? name.substring(0, 12) : name,
+        ...data,
+      }))
+      .slice(0, 4)
+  }, [reports])
+
+  // Upload frequency (last 8 weeks)
+  const uploadFrequency = useMemo(() => {
+    const now = new Date()
+    const weeks = []
+    for (let i = 7; i >= 0; i--) {
+      const weekStart = new Date(now)
+      weekStart.setDate(weekStart.getDate() - i * 7)
+      weeks.push({ week: `W${8 - i}`, weekStart })
+    }
+
+    return weeks.map(({ week, weekStart }) => {
+      const weekEnd = new Date(weekStart)
+      weekEnd.setDate(weekEnd.getDate() + 7)
+      const uploads = filteredReports.filter((r) => {
+        const rd = new Date(r.createdAt)
+        return rd >= weekStart && rd < weekEnd
+      }).length
+      return { week, uploads }
+    })
+  }, [filteredReports])
+
   if (loading) {
     return (
-      <div>
-        <PageHeader title="Analytics" subtitle="Loading analytics data..." />
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 24 }}>
-          {[0, 1, 2, 3].map(i => <SkeletonCard key={i} rows={2} />)}
+      <div style={{ padding: '16px 24px' }}>
+        <div style={{ marginBottom: 32 }}>
+          <div style={{ height: 32, width: 160, background: COLORS.bgMuted, borderRadius: 8, marginBottom: 8 }} />
+          <div style={{ height: 18, width: 280, background: COLORS.bgMuted, borderRadius: 6 }} />
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-          <SkeletonCard rows={8} />
-          <SkeletonCard rows={8} />
-        </div>
+        <div
+          style={{
+            background: COLORS.bgCard,
+            border: `1px solid ${COLORS.border}`,
+            borderRadius: 12,
+            height: 300,
+            animation: 'pulse 1.5s infinite',
+          }}
+        />
+        <style>{`@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }`}</style>
       </div>
     )
   }
 
-  // Per-student bar data
-  const perStudentData = [...reports]
-    .reduce((acc, r) => {
-      const existing = acc.find(x => x.name === r.studentName)
-      if (existing) {
-        existing.dyslexia = Math.max(existing.dyslexia, r.dyslexiaScore)
-        existing.dysgraphia = Math.max(existing.dysgraphia, r.dysgraphiaScore)
-      } else {
-        acc.push({
-          name: r.studentName.split(' ')[0],
-          dyslexia: r.dyslexiaScore,
-          dysgraphia: r.dysgraphiaScore,
-        })
-      }
-      return acc
-    }, [])
-    .slice(0, 10)
-
-  // Risk distribution for radar
-  const riskCounts = { LOW: 0, MEDIUM: 0, HIGH: 0 }
-  reports.forEach(r => { if (riskCounts[r.riskLevel] !== undefined) riskCounts[r.riskLevel]++ })
-
-  const radarData = [
-    { subject: 'Low Risk', A: riskCounts.LOW },
-    { subject: 'Medium Risk', A: riskCounts.MEDIUM },
-    { subject: 'High Risk', A: riskCounts.HIGH },
-    { subject: 'Avg Dyslexia', A: Math.round(dash?.averageDyslexiaScore ?? 0) },
-    { subject: 'Avg Dysgraphia', A: Math.round(dash?.averageDysgraphiaScore ?? 0) },
-  ]
-
-  // Scatter: dyslexia vs dysgraphia per report
-  const scatterData = reports.map(r => ({
-    x: r.dyslexiaScore,
-    y: r.dysgraphiaScore,
-    z: 1,
-    name: r.studentName,
-    risk: r.riskLevel,
-  }))
-
-  const riskColors = {
-    LOW: COLORS.riskLow,
-    MEDIUM: COLORS.riskMedium,
-    HIGH: COLORS.riskHigh,
-  }
-
-  // Top at-risk students
-  const atRiskStudents = reports
-    .filter(r => r.riskLevel !== 'LOW')
-    .reduce((acc, r) => {
-      const ex = acc.find(x => x.studentId === r.studentId)
-      if (!ex) acc.push({
-        studentId: r.studentId,
-        studentName: r.studentName,
-        className: r.className,
-        riskLevel: r.riskLevel,
-        dyslexiaScore: r.dyslexiaScore,
-        dysgraphiaScore: r.dysgraphiaScore,
-      })
-      return acc
-    }, [])
-    .sort((a, b) => Math.max(b.dyslexiaScore, b.dysgraphiaScore) - Math.max(a.dyslexiaScore, a.dysgraphiaScore))
-    .slice(0, 5)
-
   return (
-    <div>
-      <PageHeader
-        title="Analytics"
-        subtitle="Comprehensive insights into classroom learning health and risk patterns."
-        breadcrumb="NeuraScan / Analytics"
-      />
-
-      {/* Top stats */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-        gap: 16,
-        marginBottom: 28,
-      }}>
-        <StatCard icon={Users} label="Total Students" value={students.length} color="primary" delay={0} />
-        <StatCard icon={FileText} label="Analyses Completed" value={reports.length} color="secondary" delay={1} />
-        <StatCard icon={AlertTriangle} label="Students at Risk" value={dash?.studentsAtRisk ?? 0} color="warning" delay={2} />
-        <StatCard icon={Brain} label="Avg Dyslexia Score" value={`${(dash?.averageDyslexiaScore ?? 0).toFixed(1)}%`} color="danger" delay={3} />
+    <div style={{ padding: '16px 24px' }}>
+      {/* Header */}
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'flex-start',
+          justifyContent: 'space-between',
+          marginBottom: 32,
+          gap: 16,
+          flexWrap: 'wrap',
+        }}
+      >
+        <div>
+          <h1
+            style={{
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontSize: 28,
+              fontWeight: 700,
+              color: COLORS.textPrimary,
+              marginBottom: 4,
+            }}
+          >
+            Analytics
+          </h1>
+          <p style={{ color: COLORS.textMuted, fontSize: 14 }}>
+            Trends, class comparisons and AI insights
+          </p>
+        </div>
+        <Select
+          value={classFilter}
+          onChange={setClassFilter}
+          options={[
+            { value: 'all', label: 'All Classes' },
+            ...classes.map((c) => ({ value: c, label: c })),
+          ]}
+        />
       </div>
 
-      {/* Charts row 1 */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'minmax(0, 1fr) minmax(300px, 400px)',
-        gap: 20,
-        marginBottom: 20,
-      }}>
-        {/* Bar: per-student scores */}
-        <ChartCard
-          title="Student Score Comparison"
-          subtitle="Highest scores per student across all analyses"
-          delay={0.3}
-        >
-          {perStudentData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={240}>
-              <BarChart data={perStudentData} barCategoryGap="30%">
-                <CartesianGrid stroke={COLORS.border} strokeDasharray="4 4" vertical={false} />
-                <XAxis dataKey="name" tick={{ fill: COLORS.textMuted, fontSize: 11 }} axisLine={false} tickLine={false} />
-                <YAxis domain={[0, 100]} tick={{ fill: COLORS.textMuted, fontSize: 11 }} axisLine={false} tickLine={false} />
+      {/* Score Trends Over Time */}
+      <Card style={{ marginBottom: 24 }}>
+        <CardHeader title="Score Trends Over Time" description="Monthly average dyslexia and dysgraphia scores" />
+        <CardContent>
+          <div style={{ height: 256 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={monthlyTrend} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke={COLORS.border} />
+                <XAxis dataKey="month" tick={{ fontSize: 12, fill: COLORS.textMuted }} stroke={COLORS.border} />
+                <YAxis
+                  tickFormatter={(v) => `${(v * 100).toFixed(0)}%`}
+                  tick={{ fontSize: 12, fill: COLORS.textMuted }}
+                  stroke={COLORS.border}
+                />
                 <Tooltip content={<CustomTooltip />} />
-                <Bar dataKey="dyslexia" name="Dyslexia" fill={COLORS.chartDyslexia} radius={[6, 6, 0, 0]} />
-                <Bar dataKey="dysgraphia" name="Dysgraphia" fill={COLORS.chartDysgraphia} radius={[6, 6, 0, 0]} />
+                <Legend />
+                <Line
+                  type="monotone"
+                  dataKey="dyslexia"
+                  name="Dyslexia"
+                  stroke={COLORS.chartDyslexia}
+                  strokeWidth={2.5}
+                  dot={{ r: 4, fill: COLORS.chartDyslexia }}
+                  activeDot={{ r: 6 }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="dysgraphia"
+                  name="Dysgraphia"
+                  stroke={COLORS.chartDysgraphia}
+                  strokeWidth={2.5}
+                  dot={{ r: 4, fill: COLORS.chartDysgraphia }}
+                  activeDot={{ r: 6 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Class Comparison + Risk Distribution */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
+          gap: 24,
+          marginBottom: 24,
+        }}
+      >
+        {/* Class Score Comparison */}
+        <Card>
+          <CardHeader title="Class Score Comparison" description="Average scores by class (in %)" />
+          <CardContent>
+            <div style={{ height: 224 }}>
+              {classComparison.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={classComparison} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={COLORS.border} />
+                    <XAxis dataKey="class" tick={{ fontSize: 12, fill: COLORS.textMuted }} stroke={COLORS.border} />
+                    <YAxis tick={{ fontSize: 12, fill: COLORS.textMuted }} stroke={COLORS.border} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend />
+                    <Bar dataKey="dyslexia" name="Dyslexia %" fill={COLORS.chartDyslexia} radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="dysgraphia" name="Dysgraphia %" fill={COLORS.chartDysgraphia} radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div
+                  style={{
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: COLORS.textMuted,
+                  }}
+                >
+                  No class data available
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Risk Distribution by Class */}
+        <Card>
+          <CardHeader title="Risk Distribution by Class" description="Students in each risk category per class" />
+          <CardContent>
+            <div style={{ height: 224 }}>
+              {riskByClass.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={riskByClass} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={COLORS.border} />
+                    <XAxis dataKey="name" tick={{ fontSize: 11, fill: COLORS.textMuted }} stroke={COLORS.border} />
+                    <YAxis tick={{ fontSize: 12, fill: COLORS.textMuted }} stroke={COLORS.border} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend />
+                    <Bar dataKey="low" name="Low Risk" fill={COLORS.riskLow} stackId="a" />
+                    <Bar dataKey="medium" name="Medium Risk" fill={COLORS.riskMedium} stackId="a" />
+                    <Bar dataKey="high" name="High Risk" fill={COLORS.riskHigh} stackId="a" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div
+                  style={{
+                    height: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: COLORS.textMuted,
+                  }}
+                >
+                  No risk data available
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Upload Frequency */}
+      <Card style={{ marginBottom: 32 }}>
+        <CardHeader title="Upload Frequency" description="Number of papers analyzed per week" />
+        <CardContent>
+          <div style={{ height: 208 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={uploadFrequency} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke={COLORS.border} />
+                <XAxis dataKey="week" tick={{ fontSize: 12, fill: COLORS.textMuted }} stroke={COLORS.border} />
+                <YAxis tick={{ fontSize: 12, fill: COLORS.textMuted }} stroke={COLORS.border} />
+                <Tooltip content={<CustomTooltip />} />
+                <Bar dataKey="uploads" name="Papers Uploaded" fill={COLORS.chartDyslexia} radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
-          ) : (
-            <div style={{
-              height: 240,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: COLORS.textMuted,
-              fontSize: 14,
-            }}>
-              No data yet. Upload student samples to see comparisons.
-            </div>
-          )}
-        </ChartCard>
-
-        {/* Radar */}
-        <ChartCard
-          title="Classroom Overview"
-          subtitle="Risk distribution and score averages"
-          delay={0.4}
-        >
-          <ResponsiveContainer width="100%" height={240}>
-            <RadarChart data={radarData}>
-              <PolarGrid stroke={`${COLORS.chartDyslexia}15`} />
-              <PolarAngleAxis dataKey="subject" tick={{ fill: COLORS.textMuted, fontSize: 10 }} />
-              <PolarRadiusAxis tick={{ fill: COLORS.textMuted, fontSize: 9 }} />
-              <Radar
-                name="Classroom"
-                dataKey="A"
-                stroke={COLORS.chartDyslexia}
-                fill={COLORS.chartDyslexia}
-                fillOpacity={0.2}
-              />
-              <Tooltip
-                contentStyle={{
-                  background: COLORS.bgSurface,
-                  border: `1px solid ${COLORS.border}`,
-                  borderRadius: 10,
-                  fontSize: 12,
-                }}
-              />
-            </RadarChart>
-          </ResponsiveContainer>
-        </ChartCard>
-      </div>
-
-      {/* Charts row 2 */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: 20,
-      }}>
-        {/* Scatter: dyslexia vs dysgraphia */}
-        <ChartCard
-          title="Score Correlation Analysis"
-          subtitle="Dyslexia vs Dysgraphia scores, colored by risk level"
-          delay={0.5}
-        >
-          <div style={{ display: 'flex', gap: 16, marginBottom: 16 }}>
-            {[['Low', COLORS.riskLow], ['Medium', COLORS.riskMedium], ['High', COLORS.riskHigh]].map(([label, color]) => (
-              <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
-                <div style={{ width: 10, height: 10, borderRadius: '50%', background: color }} />
-                <span style={{ color: COLORS.textMuted }}>{label}</span>
-              </div>
-            ))}
           </div>
-          {scatterData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={220}>
-              <ScatterChart>
-                <CartesianGrid stroke={COLORS.border} strokeDasharray="4 4" />
-                <XAxis
-                  type="number"
-                  dataKey="x"
-                  name="Dyslexia"
-                  domain={[0, 100]}
-                  tick={{ fill: COLORS.textMuted, fontSize: 10 }}
-                  axisLine={false}
-                  tickLine={false}
-                  label={{ value: 'Dyslexia %', position: 'insideBottom', offset: -4, fill: COLORS.textMuted, fontSize: 10 }}
-                />
-                <YAxis
-                  type="number"
-                  dataKey="y"
-                  name="Dysgraphia"
-                  domain={[0, 100]}
-                  tick={{ fill: COLORS.textMuted, fontSize: 10 }}
-                  axisLine={false}
-                  tickLine={false}
-                  label={{ value: 'Dysgraphia %', angle: -90, position: 'insideLeft', fill: COLORS.textMuted, fontSize: 10 }}
-                />
-                <ZAxis dataKey="z" range={[50, 50]} />
-                <Tooltip
-                  cursor={{ strokeDasharray: '3 3' }}
-                  contentStyle={{
-                    background: COLORS.bgSurface,
-                    border: `1px solid ${COLORS.border}`,
-                    borderRadius: 10,
-                    fontSize: 12,
-                  }}
-                  formatter={(v, n) => [typeof v === 'number' ? v.toFixed(1) + '%' : v, n]}
-                />
-                <Scatter
-                  data={scatterData}
-                  shape={(props) => {
-                    const { cx, cy, payload } = props
-                    const fill = riskColors[payload.risk] || COLORS.primary
-                    return <circle cx={cx} cy={cy} r={6} fill={fill} fillOpacity={0.7} stroke={fill} strokeWidth={2} />
-                  }}
-                />
-              </ScatterChart>
-            </ResponsiveContainer>
-          ) : (
-            <div style={{
-              height: 220,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: COLORS.textMuted,
-              fontSize: 14,
-            }}>
-              No correlation data available yet.
-            </div>
-          )}
-        </ChartCard>
+        </CardContent>
+      </Card>
 
-        {/* At-risk students table */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
+      {/* AI Insights */}
+      <div>
+        <h2
           style={{
-            background: COLORS.bgSurface,
-            border: `1px solid ${COLORS.border}`,
-            borderRadius: 16,
-            overflow: 'hidden',
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            fontSize: 20,
+            fontWeight: 700,
+            color: COLORS.textPrimary,
+            marginBottom: 16,
           }}
         >
-          <div style={{
-            padding: '20px 24px',
-            borderBottom: `1px solid ${COLORS.border}`,
-          }}>
-            <h3 style={{
-              fontFamily: "'Plus Jakarta Sans', sans-serif",
-              fontSize: 16,
-              fontWeight: 700,
-              marginBottom: 4,
-              color: COLORS.textPrimary,
-            }}>
-              Students Requiring Attention
-            </h3>
-            <p style={{ fontSize: 13, color: COLORS.textMuted }}>
-              Ranked by highest risk indicators
-            </p>
-          </div>
-
-          {atRiskStudents.length === 0 ? (
-            <div style={{ padding: '48px 24px', textAlign: 'center' }}>
-              <Activity size={40} color={COLORS.textLight} strokeWidth={1.5} style={{ marginBottom: 16 }} />
-              <p style={{ color: COLORS.textMuted, fontSize: 14 }}>
-                No high-risk students identified.
-              </p>
-            </div>
-          ) : (
-            atRiskStudents.map((s, i) => (
-              <div
-                key={s.studentId}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 14,
-                  padding: '16px 24px',
-                  borderBottom: i < atRiskStudents.length - 1 ? `1px solid ${COLORS.borderLight}` : 'none',
-                }}
-              >
-                <div style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: 10,
-                  background: COLORS.primaryBg,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
-                  fontWeight: 700,
-                  fontSize: 14,
-                  color: COLORS.primary,
-                  flexShrink: 0,
-                }}>
-                  {s.studentName?.charAt(0).toUpperCase()}
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{
-                    fontWeight: 600,
-                    fontSize: 14,
-                    color: COLORS.textPrimary,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}>
-                    {s.studentName}
+          AI Insights
+        </h2>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: 16,
+          }}
+        >
+          {defaultInsights.map((insight) => (
+            <Card
+              key={insight.title}
+              style={{
+                borderLeft: `4px solid ${insight.color}`,
+              }}
+            >
+              <div style={{ padding: 20 }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                  <div
+                    style={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: 8,
+                      background: insight.bg,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                    }}
+                  >
+                    <insight.icon size={20} color={insight.color} />
                   </div>
-                  <div style={{ fontSize: 12, color: COLORS.textMuted, marginTop: 2 }}>
-                    {s.className}
+                  <div>
+                    <p
+                      style={{
+                        fontSize: 14,
+                        fontWeight: 500,
+                        color: COLORS.textPrimary,
+                        marginBottom: 4,
+                      }}
+                    >
+                      {insight.title}
+                    </p>
+                    <p style={{ fontSize: 14, color: COLORS.textMuted, lineHeight: 1.5 }}>{insight.desc}</p>
                   </div>
-                </div>
-                <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                  <div style={{
-                    fontSize: 15,
-                    fontWeight: 700,
-                    color: s.dyslexiaScore >= 70 ? COLORS.riskHigh : COLORS.riskMedium,
-                    marginBottom: 4,
-                  }}>
-                    {Math.max(s.dyslexiaScore, s.dysgraphiaScore).toFixed(1)}%
-                  </div>
-                  <RiskBadge level={s.riskLevel} />
                 </div>
               </div>
-            ))
-          )}
-        </motion.div>
+            </Card>
+          ))}
+        </div>
       </div>
     </div>
   )

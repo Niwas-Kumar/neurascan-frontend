@@ -8,32 +8,38 @@ import toast from 'react-hot-toast'
 import { format } from 'date-fns'
 
 // ════════════════════════════════════════════════════════════════
-// DESIGN SYSTEM COLORS
+// DESIGN SYSTEM - Matching reference exactly
 // ════════════════════════════════════════════════════════════════
 const COLORS = {
-  primary: '#312E81',
-  primaryLight: '#4338CA',
-  primaryBg: '#EEF2FF',
-  secondary: '#14B8A6',
-  secondaryBg: '#CCFBF1',
+  sidebar: '#312E81',
+  primary: '#14B8A6',
+  primaryHover: '#0D9488',
+  primaryBg: 'rgba(20, 184, 166, 0.1)',
 
-  // Chart colors (per design system)
-  chartDyslexia: '#14B8A6',    // Soft Teal for Dyslexia
-  chartDysgraphia: '#6366F1',  // Indigo for Dysgraphia
+  bgBase: '#F8FAFC',
+  bgCard: '#FFFFFF',
+  bgSurface: '#FFFFFF',
+  bgMuted: '#F1F5F9',
+  bgSubtle: '#F1F5F9',
 
-  riskHigh: '#B91C1C',
-  riskHighBg: '#FEF2F2',
-  riskMedium: '#B45309',
-  riskMediumBg: '#FFFBEB',
-  riskLow: '#047857',
-  riskLowBg: '#ECFDF5',
-  textPrimary: '#1E293B',
+  textPrimary: '#0F172A',
   textSecondary: '#475569',
   textMuted: '#64748B',
   textLight: '#94A3B8',
-  bgSurface: '#FFFFFF',
-  bgSubtle: '#F1F5F9',
+
   border: '#E2E8F0',
+
+  // Chart colors
+  chartDyslexia: '#14B8A6',
+  chartDysgraphia: '#6366F1',
+
+  // Risk colors
+  riskHigh: '#ef4444',
+  riskHighBg: 'rgba(239, 68, 68, 0.1)',
+  riskMedium: '#f59e0b',
+  riskMediumBg: 'rgba(245, 158, 11, 0.1)',
+  riskLow: '#22c55e',
+  riskLowBg: 'rgba(34, 197, 94, 0.1)',
 }
 
 const PageHeader = ({ title, subtitle }) => (
@@ -44,9 +50,29 @@ const PageHeader = ({ title, subtitle }) => (
 )
 
 const RiskBadge = ({ level }) => {
-  const styles = { LOW: { bg: COLORS.riskLowBg, text: COLORS.riskLow }, MEDIUM: { bg: COLORS.riskMediumBg, text: COLORS.riskMedium }, HIGH: { bg: COLORS.riskHighBg, text: COLORS.riskHigh } }
+  const styles = {
+    LOW: { bg: COLORS.riskLowBg, color: COLORS.riskLow, border: 'rgba(34, 197, 94, 0.2)' },
+    MEDIUM: { bg: COLORS.riskMediumBg, color: COLORS.riskMedium, border: 'rgba(245, 158, 11, 0.2)' },
+    HIGH: { bg: COLORS.riskHighBg, color: COLORS.riskHigh, border: 'rgba(239, 68, 68, 0.2)' },
+  }
+  const labels = { LOW: 'Low Risk', MEDIUM: 'Medium Risk', HIGH: 'High Risk' }
   const s = styles[level] || styles.LOW
-  return <span style={{ display: 'inline-block', padding: '5px 12px', borderRadius: 100, fontSize: 12, fontWeight: 600, background: s.bg, color: s.text }}>{level}</span>
+  return (
+    <span
+      style={{
+        display: 'inline-block',
+        padding: '4px 12px',
+        borderRadius: 9999,
+        fontSize: 12,
+        fontWeight: 500,
+        background: s.bg,
+        color: s.color,
+        border: `1px solid ${s.border}`,
+      }}
+    >
+      {labels[level] || level}
+    </span>
+  )
 }
 
 const SkeletonCard = ({ rows = 4 }) => (
