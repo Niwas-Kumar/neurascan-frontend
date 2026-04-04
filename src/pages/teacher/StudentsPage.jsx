@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   Users, Pencil, Trash2, Search, GraduationCap,
-  FileText, X, Check, UserPlus, AlertCircle
+  FileText, X, Check, UserPlus, AlertCircle, Copy, Share2, Users2
 } from 'lucide-react'
 import { optimizedStudentAPI } from '../../services/optimizedApi'
 import toast from 'react-hot-toast'
@@ -246,6 +246,154 @@ function DeleteConfirmModal({ student, onClose, onConfirm }) {
 }
 
 // ════════════════════════════════════════════════════════════════
+// SHARE WITH PARENTS MODAL
+// ════════════════════════════════════════════════════════════════
+function ShareWithParentsModal({ students, onClose }) {
+  const [copied, setCopied] = useState(null)
+
+  const copyAllIds = () => {
+    const idList = students
+      .map(s => `${s.name}: ${s.id}`)
+      .join('\n')
+    navigator.clipboard.writeText(idList)
+    toast.success('All Student IDs copied!')
+  }
+
+  const copyStudentId = (student) => {
+    navigator.clipboard.writeText(student.id)
+    setCopied(student.id)
+    toast.success(`${student.name}'s ID copied!`)
+    setTimeout(() => setCopied(null), 2000)
+  }
+
+  return (
+    <div>
+      {/* Instructions */}
+      <div style={{
+        background: COLORS.primaryBg,
+        border: `1px solid rgba(20, 184, 166, 0.2)`,
+        borderRadius: 12,
+        padding: 20,
+        marginBottom: 24,
+      }}>
+        <h3 style={{
+          fontSize: 15,
+          fontWeight: 700,
+          color: COLORS.primary,
+          marginBottom: 12,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+        }}>
+          <Users2 size={18} />
+          How Parents Connect
+        </h3>
+        <ol style={{
+          margin: 0,
+          paddingLeft: 20,
+          color: COLORS.textSecondary,
+          fontSize: 13,
+          lineHeight: 1.8,
+        }}>
+          <li>Share the <strong>Student ID</strong> with each parent</li>
+          <li>Parent logs into NeuraScan with their account</li>
+          <li>Parent enters the Student ID on their dashboard</li>
+          <li>Parent receives a verification code via email</li>
+          <li>Once verified, parent can view their child's reports</li>
+        </ol>
+      </div>
+
+      {/* Copy All Button */}
+      <div style={{ marginBottom: 20 }}>
+        <Button
+          icon={<Copy size={16} />}
+          onClick={copyAllIds}
+          fullWidth
+          style={{
+            background: COLORS.primary,
+          }}
+        >
+          Copy All Student IDs
+        </Button>
+      </div>
+
+      {/* Student List */}
+      <div style={{
+        maxHeight: 300,
+        overflowY: 'auto',
+        border: `1px solid ${COLORS.border}`,
+        borderRadius: 10,
+      }}>
+        {students.map((student, i) => (
+          <div
+            key={student.id}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '12px 16px',
+              borderBottom: i < students.length - 1 ? `1px solid ${COLORS.border}` : 'none',
+              background: copied === student.id ? COLORS.successBg : 'transparent',
+              transition: 'background 0.2s ease',
+            }}
+          >
+            <div>
+              <div style={{
+                fontSize: 14,
+                fontWeight: 600,
+                color: COLORS.textPrimary,
+                marginBottom: 2,
+              }}>
+                {student.name}
+              </div>
+              <div style={{
+                fontSize: 11,
+                fontFamily: 'monospace',
+                color: COLORS.textMuted,
+              }}>
+                {student.id}
+              </div>
+            </div>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => copyStudentId(student)}
+              style={{
+                padding: '6px 12px',
+                borderRadius: 6,
+                border: 'none',
+                background: copied === student.id ? COLORS.success : COLORS.primaryBg,
+                color: copied === student.id ? 'white' : COLORS.primary,
+                cursor: 'pointer',
+                fontSize: 12,
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 4,
+              }}
+            >
+              {copied === student.id ? <Check size={14} /> : <Copy size={14} />}
+              {copied === student.id ? 'Copied!' : 'Copy'}
+            </motion.button>
+          </div>
+        ))}
+      </div>
+
+      {/* Close Button */}
+      <div style={{ marginTop: 20 }}>
+        <Button
+          variant="outline"
+          fullWidth
+          onClick={onClose}
+        >
+          Done
+        </Button>
+      </div>
+    </div>
+  )
+}
+
+// ════════════════════════════════════════════════════════════════
 // STUDENT CARD
 // ════════════════════════════════════════════════════════════════
 function StudentCard({ student, onEdit, onDelete, index }) {
@@ -389,13 +537,14 @@ function StudentCard({ student, onEdit, onDelete, index }) {
         )}
       </div>
 
-      {/* Student ID - High contrast */}
+      {/* Roll Number */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
         gap: 6,
         paddingTop: 12,
         borderTop: `1px solid ${COLORS.border}`,
+        marginBottom: 10,
       }}>
         <span style={{
           fontSize: 11,
@@ -404,7 +553,7 @@ function StudentCard({ student, onEdit, onDelete, index }) {
           textTransform: 'uppercase',
           letterSpacing: '0.05em',
         }}>
-          ID
+          Roll
         </span>
         <span style={{
           fontSize: 12,
@@ -415,8 +564,68 @@ function StudentCard({ student, onEdit, onDelete, index }) {
           padding: '2px 8px',
           borderRadius: 4,
         }}>
-          #{student.rollNumber || String(student.id).padStart(4, '0')}
+          #{student.rollNumber}
         </span>
+      </div>
+
+      {/* Student ID for Parent Connection - Prominent display */}
+      <div style={{
+        background: COLORS.primaryBg,
+        border: `1px solid rgba(20, 184, 166, 0.2)`,
+        borderRadius: 8,
+        padding: '10px 12px',
+      }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: 6,
+        }}>
+          <span style={{
+            fontSize: 10,
+            fontWeight: 700,
+            color: COLORS.primary,
+            textTransform: 'uppercase',
+            letterSpacing: '0.08em',
+          }}>
+            Parent Connection ID
+          </span>
+          <div style={{ display: 'flex', gap: 4 }}>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => {
+                navigator.clipboard.writeText(student.id)
+                toast.success('Student ID copied!')
+              }}
+              style={{
+                width: 24,
+                height: 24,
+                borderRadius: 4,
+                border: 'none',
+                background: 'rgba(20, 184, 166, 0.15)',
+                color: COLORS.primary,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+              title="Copy ID"
+            >
+              <Copy size={12} />
+            </motion.button>
+          </div>
+        </div>
+        <div style={{
+          fontFamily: 'monospace',
+          fontSize: 11,
+          fontWeight: 600,
+          color: COLORS.textPrimary,
+          letterSpacing: '0.03em',
+          wordBreak: 'break-all',
+        }}>
+          {student.id}
+        </div>
       </div>
     </motion.div>
   )
@@ -504,15 +713,28 @@ export default function StudentsPage() {
           </p>
         </div>
 
-        <Button
-          icon={<UserPlus size={18} />}
-          onClick={() => setModal('add')}
-          style={{
-            background: COLORS.primary,
-          }}
-        >
-          Add Student
-        </Button>
+        <div style={{ display: 'flex', gap: 12 }}>
+          <Button
+            icon={<Share2 size={18} />}
+            onClick={() => setModal('share')}
+            variant="outline"
+            style={{
+              borderColor: COLORS.primary,
+              color: COLORS.primary,
+            }}
+          >
+            Share with Parents
+          </Button>
+          <Button
+            icon={<UserPlus size={18} />}
+            onClick={() => setModal('add')}
+            style={{
+              background: COLORS.primary,
+            }}
+          >
+            Add Student
+          </Button>
+        </div>
       </motion.div>
 
       {/* Search */}
@@ -675,11 +897,11 @@ export default function StudentsPage() {
 
       {/* Add/Edit Modal */}
       <Modal
-        open={!!modal && modal !== null && !deleteTarget}
+        open={!!modal && modal !== 'share' && !deleteTarget}
         onClose={() => setModal(null)}
         title={modal === 'add' ? 'Add New Student' : 'Edit Student'}
       >
-        {modal && (
+        {modal && modal !== 'share' && (
           <StudentForm
             student={modal === 'add' ? null : modal}
             onClose={() => setModal(null)}
@@ -699,6 +921,19 @@ export default function StudentsPage() {
           student={deleteTarget}
           onClose={() => setDeleteTarget(null)}
           onConfirm={handleDelete}
+        />
+      </Modal>
+
+      {/* Share with Parents Modal */}
+      <Modal
+        open={modal === 'share'}
+        onClose={() => setModal(null)}
+        title="Share Student IDs with Parents"
+        size="md"
+      >
+        <ShareWithParentsModal
+          students={students}
+          onClose={() => setModal(null)}
         />
       </Modal>
     </div>
