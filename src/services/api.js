@@ -141,6 +141,7 @@ export const studentAPI = {
 // ── CLASSES ──────────────────────────────────────────────────
 export const classAPI = {
   getAll: () => api.get('/classes'),
+  create: (data) => api.post('/classes', data),
 }
 
 // ── ANALYSIS ─────────────────────────────────────────────────

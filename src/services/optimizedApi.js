@@ -255,6 +255,12 @@ export const optimizedClassAPI = {
 
     return { success: false, data: { data: [] }, attempts: maxRetries }
   },
+
+  create: async (data) => {
+    const res = await retryWithBackoff(() => classAPI.create(data), 3, 400)
+    requestCache.clear('classes/all')
+    return res
+  },
 }
 
 // Optimized analysis API with caching

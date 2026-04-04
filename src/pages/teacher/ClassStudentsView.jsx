@@ -28,6 +28,14 @@ function buildForm(className, student = null) {
   }
 }
 
+function normalizeRollKey(value) {
+  return String(value || '')
+    .trim()
+    .replace(/^#+/, '')
+    .replace(/\s+/g, '')
+    .toLowerCase()
+}
+
 export default function ClassStudentsView() {
   const { user } = useAuth()
   const navigate = useNavigate()
@@ -148,6 +156,18 @@ export default function ClassStudentsView() {
 
     if (!form.rollNumber.trim()) {
       nextErrors.rollNumber = 'Roll number is required'
+    } else {
+      const formRollKey = normalizeRollKey(form.rollNumber)
+      const duplicate = students.find((student) => {
+        if (modalMode === 'edit' && activeStudent?.id && student.id === activeStudent.id) {
+          return false
+        }
+        return normalizeRollKey(student.rollNumber) === formRollKey
+      })
+
+      if (duplicate) {
+        nextErrors.rollNumber = `Roll No already exists for ${decodedClassId}`
+      }
     }
 
     const age = Number(form.age)
