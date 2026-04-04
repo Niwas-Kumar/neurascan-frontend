@@ -538,9 +538,9 @@ export default function QuizPage() {
   }
 
   useEffect(() => {
-    if (!user?.userId) return
+    if (!user?.token) return
     load()
-  }, [user?.userId])
+  }, [user?.token])
 
   const handleCreateQuiz = async () => {
     if (!topic || !text) return toast.error('Topic and text required')

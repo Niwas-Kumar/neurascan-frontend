@@ -56,7 +56,7 @@ export default function ClassesView() {
   }
 
   useEffect(() => {
-    if (!user?.userId) return
+    if (!user?.token) return
 
     const loadClasses = async () => {
       setLoading(true)
@@ -98,7 +98,7 @@ export default function ClassesView() {
     }
 
     loadClasses()
-  }, [user?.userId])
+  }, [user?.token])
 
   const filteredClasses = useMemo(() => {
     const q = search.trim().toLowerCase()

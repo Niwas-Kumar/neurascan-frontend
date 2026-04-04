@@ -167,7 +167,7 @@ export default function UploadPage() {
   const [validationError, setValidationError] = useState(null)
 
   useEffect(() => {
-    if (!user?.userId) return
+    if (!user?.token) return
 
     const loadStudents = async () => {
       try {
@@ -188,7 +188,7 @@ export default function UploadPage() {
     }
 
     loadStudents()
-  }, [user?.userId])
+  }, [user?.token])
 
   const onDrop = useCallback((accepted, rejected) => {
     if (rejected.length > 0) {

@@ -206,7 +206,7 @@ export default function AnalyticsPage() {
   const [classFilter, setClassFilter] = useState('all')
 
   useEffect(() => {
-    if (!user?.userId) return
+    if (!user?.token) return
 
     let isCancelled = false
     const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms))
@@ -265,7 +265,7 @@ export default function AnalyticsPage() {
     return () => {
       isCancelled = true
     }
-  }, [user?.userId])
+  }, [user?.token])
 
   // Get unique classes
   const classes = useMemo(() => {

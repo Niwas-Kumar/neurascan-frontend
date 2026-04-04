@@ -241,9 +241,9 @@ export default function TeacherDashboard() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!user?.userId) {
+    if (!user?.token) {
       // User not ready yet — keep loading state true so the skeleton shows,
-      // and wait for the next render when userId becomes available.
+      // and wait for the next render when token becomes available.
       return
     }
 
@@ -316,7 +316,7 @@ export default function TeacherDashboard() {
     return () => {
       isCancelled = true
     }
-  }, [user?.userId])
+  }, [user?.token])
 
   const greeting = (() => {
     const h = new Date().getHours()

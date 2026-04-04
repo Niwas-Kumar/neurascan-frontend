@@ -706,9 +706,9 @@ export default function StudentsPage() {
   }
 
   useEffect(() => {
-    if (!user?.userId) return
+    if (!user?.token) return
     load()
-  }, [user?.userId])
+  }, [user?.token])
 
   const handleDelete = async () => {
     if (!deleteTarget) return

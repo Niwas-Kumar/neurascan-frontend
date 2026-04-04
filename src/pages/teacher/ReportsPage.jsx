@@ -238,7 +238,7 @@ export function ReportsPage() {
   const debouncedSearch = useDebounce(search)
 
   useEffect(() => {
-    if (!user?.userId) return
+    if (!user?.token) return
 
     let isCancelled = false
     const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms))
@@ -281,7 +281,7 @@ export function ReportsPage() {
     return () => {
       isCancelled = true
     }
-  }, [user?.userId])
+  }, [user?.token])
 
   const classes = useMemo(() => {
     return Array.from(new Set(reports.map((r) => r.className).filter(Boolean))).sort()

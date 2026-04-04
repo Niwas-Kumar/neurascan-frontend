@@ -92,7 +92,7 @@ export default function ClassStudentsView() {
     }
 
     loadStudents()
-  }, [decodedClassId, user?.userId])
+  }, [decodedClassId, user?.token])
 
   const filteredStudents = useMemo(() => {
     const q = search.trim().toLowerCase()
