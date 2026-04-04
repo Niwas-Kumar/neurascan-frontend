@@ -71,6 +71,18 @@ export function AuthProvider({ children }) {
     setLoading(false)
   }, [])
 
+  // Listen for token refresh events from the API interceptor
+  useEffect(() => {
+    const handleTokenRefresh = (e) => {
+      const newToken = e.detail?.token
+      if (newToken) {
+        setUser(prev => prev ? { ...prev, token: newToken } : prev)
+      }
+    }
+    window.addEventListener('ns-token-refreshed', handleTokenRefresh)
+    return () => window.removeEventListener('ns-token-refreshed', handleTokenRefresh)
+  }, [])
+
   const login = useCallback((data) => {
     const { jwtToken, userRole, userId, userName, studentId, school, picture } = data
     const finalRole = userRole.startsWith('ROLE_') ? userRole : `ROLE_${userRole.toUpperCase()}`

@@ -36,6 +36,9 @@ api.interceptors.request.use((config) => {
   return config
 })
 
+// Track if we're already handling a 401 redirect to prevent loops
+let isRedirecting = false
+
 // Global response error handler
 api.interceptors.response.use(
   (res) => {
@@ -43,6 +46,8 @@ api.interceptors.response.use(
     const newToken = res.headers['x-new-token']
     if (newToken) {
       localStorage.setItem('ns_token', newToken)
+      // Dispatch custom event so AuthContext can update React state
+      window.dispatchEvent(new CustomEvent('ns-token-refreshed', { detail: { token: newToken } }))
       console.log('[Token] Auto-refreshed - token extended')
     }
     return res
@@ -62,7 +67,11 @@ api.interceptors.response.use(
     // ✅ FIX: Only logout on 401 (unauthorized), NOT on 403 (forbidden)
     // 403 means the user IS authenticated but doesn't have permission
     // 401 means the token is invalid/expired
-    if (err.response?.status === 401 && !isAuthEndpoint && !isStudentIdMissing) {
+    // Also: skip if no response (network error / CORS block — NOT a true 401)
+    if (err.response?.status === 401 && !isAuthEndpoint && !isStudentIdMissing && !isRedirecting) {
+      isRedirecting = true
+      console.warn('[Auth] 401 Unauthorized on:', url, '— redirecting to login')
+      
       // ✅ FIX: Only clear authentication token, preserve other data (studentId, userId, etc)
       // This allows parents to re-login without losing their child's student ID
       localStorage.removeItem('ns_token')
@@ -72,7 +81,11 @@ api.interceptors.response.use(
       localStorage.removeItem('ns_school')
       localStorage.removeItem('ns_picture')
       // ⚠️ NOTE: Intentionally NOT clearing ns_studentId or ns_userId
-      window.location.href = '/login?session=expired'
+
+      // Small delay to let any other in-flight requests complete before redirect
+      setTimeout(() => {
+        window.location.href = '/login?session=expired'
+      }, 100)
     }
 
     // Log 403 errors for debugging but don't logout

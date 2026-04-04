@@ -60,7 +60,7 @@ class RequestCache {
   }
 
   setPendingRequest(key, promise) {
-    this.pendingRequests.set(key)
+    this.pendingRequests.set(key, promise)
     promise.finally(() => this.pendingRequests.delete(key))
     return promise
   }
