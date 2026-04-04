@@ -396,7 +396,7 @@ function ShareWithParentsModal({ students, onClose }) {
 // ════════════════════════════════════════════════════════════════
 // STUDENT CARD — Pastel Minimalist Design
 // ════════════════════════════════════════════════════════════════
-function StudentCard({ student, onEdit, onDelete, index }) {
+export function StudentCard({ student, onEdit, onDelete, index }) {
   const [copyFeedback, setCopyFeedback] = useState(false)
 
   // Pastel purple avatar

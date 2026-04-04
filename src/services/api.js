@@ -122,10 +122,16 @@ export const authAPI = {
 // ── STUDENTS ─────────────────────────────────────────────────
 export const studentAPI = {
   getAll:    ()         => api.get('/students'),
+  getByClassId: (classId) => api.get('/students', { params: { classId } }),
   getById:   (id)       => api.get(`/students/${id}`),
   create:    (data)     => api.post('/students', data),
   update:    (id, data) => api.put(`/students/${id}`, data),
   remove:    (id)       => api.delete(`/students/${id}`),
+}
+
+// ── CLASSES ──────────────────────────────────────────────────
+export const classAPI = {
+  getAll: () => api.get('/classes'),
 }
 
 // ── ANALYSIS ─────────────────────────────────────────────────

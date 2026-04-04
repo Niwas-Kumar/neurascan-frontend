@@ -11,10 +11,13 @@ import { useIsMobile, useClickOutside } from '../../hooks'
 import { Tooltip, Card, NavItem } from '../shared/UI'
 import { NeuraScanLogo } from '../shared/Logo'
 import toast from 'react-hot-toast'
+import { CLASS_DRILLDOWN_ENABLED } from '../../config/featureFlags'
+
+const teacherStudentsPath = CLASS_DRILLDOWN_ENABLED ? '/teacher/classes' : '/teacher/students'
 
 const teacherNav = [
   { to: '/teacher/dashboard', icon: LayoutDashboard, label: 'Dashboard',    badge: null },
-  { to: '/teacher/students',  icon: Users,           label: 'Students',     badge: null },
+  { to: teacherStudentsPath,  icon: Users,           label: 'Students',     badge: null },
   { to: '/teacher/upload',    icon: Upload,          label: 'Upload Paper', badge: null },
   { to: '/teacher/analytics', icon: TrendingUp,      label: 'Analytics',    badge: null },
   { to: '/teacher/reports',   icon: FileText,        label: 'Reports',      badge: null },

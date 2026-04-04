@@ -105,6 +105,10 @@ export const optimizedStudentAPI = {
     return { success: false, data: { data: [] }, attempts: maxRetries }
   },
 
+  getByClassId: async (classId) => {
+    return retryWithBackoff(() => studentAPI.getByClassId(classId))
+  },
+
   getById: (id) => {
     const cacheKey = `students/${id}`
     const cached = requestCache.get(cacheKey)
