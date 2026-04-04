@@ -683,7 +683,7 @@ export function StudentCard({ student, onEdit, onDelete, index }) {
 // MAIN COMPONENT
 // ════════════════════════════════════════════════════════════════
 export default function StudentsPage() {
-  const { user } = useAuth()
+  const { user, sessionId } = useAuth()
   const [students, setStudents] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -708,7 +708,7 @@ export default function StudentsPage() {
   useEffect(() => {
     if (!user?.token) return
     load()
-  }, [user?.token])
+  }, [sessionId])
 
   const handleDelete = async () => {
     if (!deleteTarget) return

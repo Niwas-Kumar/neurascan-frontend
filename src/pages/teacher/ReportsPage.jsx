@@ -226,7 +226,7 @@ function Dialog({ open, onClose, children }) {
 // MAIN REPORTS PAGE
 // ════════════════════════════════════════════════════════════════
 export function ReportsPage() {
-  const { user } = useAuth()
+  const { user, sessionId } = useAuth()
   const [reports, setReports] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -281,7 +281,7 @@ export function ReportsPage() {
     return () => {
       isCancelled = true
     }
-  }, [user?.token])
+  }, [sessionId])
 
   const classes = useMemo(() => {
     return Array.from(new Set(reports.map((r) => r.className).filter(Boolean))).sort()

@@ -62,7 +62,9 @@ export default function ClassesView() {
       setLoading(true)
       try {
         const response = await optimizedClassAPI.getAllWithIndexRetry(5, 350)
+        console.log('[ClassesView] Raw API response:', JSON.stringify(response.data, null, 2))
         const classRows = normalizeClassRows(response.data?.data)
+        console.log('[ClassesView] Normalized classRows:', classRows)
 
         if (classRows.length > 0) {
           setClasses(classRows)

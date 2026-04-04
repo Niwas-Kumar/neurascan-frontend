@@ -234,7 +234,7 @@ function CardContent({ children, style = {} }) {
 // MAIN DASHBOARD COMPONENT
 // ════════════════════════════════════════════════════════════════
 export default function TeacherDashboard() {
-  const { user, addNotification } = useAuth()
+  const { user, addNotification, sessionId } = useAuth()
   const navigate = useNavigate()
   const [dash, setDash] = useState(null)
   const [reports, setReports] = useState([])
@@ -243,7 +243,7 @@ export default function TeacherDashboard() {
   useEffect(() => {
     if (!user?.token) {
       // User not ready yet — keep loading state true so the skeleton shows,
-      // and wait for the next render when token becomes available.
+      // and wait for the next render when sessionId changes.
       return
     }
 
@@ -265,6 +265,8 @@ export default function TeacherDashboard() {
         const reportsData = r.status === 'fulfilled' ? (r.value.data.data || []) : []
         const hasFailure = d.status !== 'fulfilled' || r.status !== 'fulfilled'
         const looksTransientlyEmpty = !dashData && reportsData.length === 0
+
+        console.log('[Dashboard] Attempt', attempt + 1, '| dash:', dashData, '| reports:', reportsData.length, '| hasFailure:', hasFailure, '| transientEmpty:', looksTransientlyEmpty)
 
         setDash(dashData)
         setReports(reportsData)
@@ -316,7 +318,7 @@ export default function TeacherDashboard() {
     return () => {
       isCancelled = true
     }
-  }, [user?.token])
+  }, [sessionId])
 
   const greeting = (() => {
     const h = new Date().getHours()
