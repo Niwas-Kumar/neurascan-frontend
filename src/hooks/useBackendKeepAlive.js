@@ -10,10 +10,12 @@ export const useBackendKeepAlive = (intervalMs = 14 * 60 * 1000) => {
   useEffect(() => {
     const pingBackend = async () => {
       try {
-        const token = localStorage.getItem('token')
+        // /ping is a root-level endpoint, so strip /api suffix from VITE_API_URL
+        const baseUrl = (import.meta.env.VITE_API_URL || '').replace(/\/api\/?$/, '')
+        const token = localStorage.getItem('ns_token')
         const headers = token ? { Authorization: `Bearer ${token}` } : {}
 
-        await fetch(`${import.meta.env.VITE_API_URL}/ping`, {
+        await fetch(`${baseUrl}/ping`, {
           method: 'GET',
           headers,
         }).catch(() => {
