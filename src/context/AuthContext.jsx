@@ -38,8 +38,34 @@ export function AuthProvider({ children }) {
     const picture = (rawPicture === 'null' || rawPicture === 'undefined' || !rawPicture) ? null : rawPicture;
     const savedTheme= localStorage.getItem(STORAGE_KEYS.theme) || 'dark'
 
+    // Validate token expiration before restoring session
     if (token && role) {
-      setUser({ token, role, userId, name, email, studentId, school, picture })
+      try {
+        // Decode JWT to check expiration (JWT format: header.payload.signature)
+        const payload = JSON.parse(atob(token.split('.')[1]))
+        const expirationTime = payload.exp * 1000 // Convert to milliseconds
+        const now = Date.now()
+
+        if (expirationTime < now) {
+          // Token expired - clear it proactively
+          console.log('[Auth] Token expired on startup, clearing session')
+          localStorage.removeItem(STORAGE_KEYS.token)
+          localStorage.removeItem(STORAGE_KEYS.role)
+          localStorage.removeItem(STORAGE_KEYS.userName)
+          localStorage.removeItem(STORAGE_KEYS.userEmail)
+          localStorage.removeItem(STORAGE_KEYS.school)
+          localStorage.removeItem(STORAGE_KEYS.picture)
+          // Note: NOT clearing userId or studentId
+        } else {
+          // Token valid - restore session
+          setUser({ token, role, userId, name, email, studentId, school, picture })
+        }
+      } catch (error) {
+        // Invalid token format - clear it
+        console.error('[Auth] Invalid token format, clearing session')
+        localStorage.removeItem(STORAGE_KEYS.token)
+        localStorage.removeItem(STORAGE_KEYS.role)
+      }
     }
     setThemeState(savedTheme)
     setLoading(false)
