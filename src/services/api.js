@@ -20,7 +20,15 @@ api.interceptors.request.use((config) => {
 
 // Global response error handler
 api.interceptors.response.use(
-  (res) => res,
+  (res) => {
+    // Auto-refresh token if backend sends X-New-Token header
+    const newToken = res.headers['x-new-token']
+    if (newToken) {
+      localStorage.setItem('ns_token', newToken)
+      console.log('[Token] Auto-refreshed - token extended')
+    }
+    return res
+  },
   (err) => {
     // Only redirect on 401 for non-auth endpoints
     // Auth endpoints (login, register, forgot/reset password) should handle their own errors
