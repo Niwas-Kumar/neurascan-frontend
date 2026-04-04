@@ -21,7 +21,6 @@ import OAuth2RedirectHandler from './components/auth/OAuth2RedirectHandler'
 
 // Teacher pages
 import TeacherDashboard from './pages/teacher/TeacherDashboard'
-import StudentsPage     from './pages/teacher/StudentsPage'
 import ClassesView      from './pages/teacher/ClassesView'
 import ClassStudentsView from './pages/teacher/ClassStudentsView'
 import UploadPage       from './pages/teacher/UploadPage'
@@ -41,7 +40,6 @@ import QuizAttemptPage from './pages/QuizAttemptPage'
 // Layout
 import AppLayout from './components/layout/AppLayout'
 import { FullPageLoader } from './components/shared/UI'
-import { CLASS_DRILLDOWN_ENABLED } from './config/featureFlags'
 
 // Import design system
 import './styles/designSystem.css'
@@ -67,9 +65,6 @@ function RootRedirect() {
 
 function TeacherClassesRedirect() {
   const { classId } = useParams()
-  if (!CLASS_DRILLDOWN_ENABLED) {
-    return <Navigate to="/teacher/students" replace />
-  }
 
   if (!classId) {
     return <Navigate to="/teacher/classes" replace />
@@ -80,7 +75,6 @@ function TeacherClassesRedirect() {
 
 function AppRoutes() {
   useBackendKeepAlive(14 * 60 * 1000) // Ping every 14 minutes
-  const studentsHomePath = CLASS_DRILLDOWN_ENABLED ? '/teacher/classes' : '/teacher/students'
 
   return (
     <Routes>
@@ -103,7 +97,7 @@ function AppRoutes() {
       <Route path="/quiz-attempt" element={<QuizAttemptPage />} />
 
       {/* ── Teacher classes compatibility aliases ── */}
-      <Route path="/classes" element={<Navigate to={studentsHomePath} replace />} />
+      <Route path="/classes" element={<Navigate to="/teacher/classes" replace />} />
       <Route path="/classes/:classId/students" element={<TeacherClassesRedirect />} />
 
       {/* ── Teacher routes ── */}
@@ -114,10 +108,9 @@ function AppRoutes() {
       }>
         <Route index          element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<TeacherDashboard />} />
-        <Route path="classes" element={CLASS_DRILLDOWN_ENABLED ? <ClassesView /> : <Navigate to="/teacher/students" replace />} />
-        <Route path="classes/:classId/students" element={CLASS_DRILLDOWN_ENABLED ? <ClassStudentsView /> : <Navigate to="/teacher/students" replace />} />
-        <Route path="students" element={CLASS_DRILLDOWN_ENABLED ? <Navigate to="/teacher/classes" replace /> : <StudentsPage />} />
-        <Route path="students/legacy" element={<StudentsPage />} />
+        <Route path="classes" element={<ClassesView />} />
+        <Route path="classes/:classId/students" element={<ClassStudentsView />} />
+        <Route path="students" element={<Navigate to="/teacher/classes" replace />} />
         <Route path="upload"    element={<UploadPage />} />
         <Route path="reports"   element={<ReportsPage />} />
         <Route path="analytics" element={<AnalyticsPage />} />

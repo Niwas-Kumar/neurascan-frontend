@@ -6,7 +6,7 @@ import toast from 'react-hot-toast'
 import { optimizedStudentAPI } from '../../services/optimizedApi'
 import { useAuth } from '../../context/AuthContext'
 import { Button } from '../../components/shared/UI'
-import { StudentCard } from './StudentsPage'
+import StudentCard from '../../components/teacher/StudentCard'
 
 const COLORS = {
   bgBase: '#F8FAFC',
@@ -138,10 +138,6 @@ export default function ClassStudentsView() {
             {loading ? 'Loading student cards...' : `${students.length} student${students.length !== 1 ? 's' : ''} in this class`}
           </p>
         </div>
-
-        <Button variant="outline" onClick={() => navigate('/teacher/students/legacy')}>
-          Open Legacy Manage View
-        </Button>
       </motion.div>
 
       <motion.div
@@ -225,7 +221,7 @@ export default function ClassStudentsView() {
             {search ? 'No students found' : 'No students in this class'}
           </h3>
           <p style={{ fontSize: 14, color: COLORS.textMuted }}>
-            {search ? `No results for "${search}".` : 'Add students in the legacy manage view, then return here.'}
+            {search ? `No results for "${search}".` : 'Add students from your class/student management flow, then return here.'}
           </p>
         </div>
       ) : (
@@ -239,8 +235,6 @@ export default function ClassStudentsView() {
                 key={student.id}
                 student={student}
                 index={index}
-                onEdit={() => navigate('/teacher/students/legacy')}
-                onDelete={() => navigate('/teacher/students/legacy')}
               />
             ))}
           </AnimatePresence>

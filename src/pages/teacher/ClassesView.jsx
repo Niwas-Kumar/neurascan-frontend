@@ -71,7 +71,7 @@ export default function ClassesView() {
           return
         }
 
-        // Fallback: derive class cards from legacy students list with stronger retries.
+        // Fallback: derive class cards from students list with stronger retries.
         const derived = await loadClassesFallback(5, 320)
         if (derived.length > 0) {
           return
