@@ -5,6 +5,7 @@ import {
   FileText, X, Check, UserPlus, AlertCircle, Copy, Share2, Users2
 } from 'lucide-react'
 import { optimizedStudentAPI } from '../../services/optimizedApi'
+import { useAuth } from '../../context/AuthContext'
 import toast from 'react-hot-toast'
 import { useDebounce } from '../../hooks'
 import { Button, Input, Modal, Badge } from '../../components/shared/UI'
@@ -682,6 +683,7 @@ export function StudentCard({ student, onEdit, onDelete, index }) {
 // MAIN COMPONENT
 // ════════════════════════════════════════════════════════════════
 export default function StudentsPage() {
+  const { user } = useAuth()
   const [students, setStudents] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -703,7 +705,10 @@ export default function StudentsPage() {
     }
   }
 
-  useEffect(() => { load() }, [])
+  useEffect(() => {
+    if (!user?.userId) return
+    load()
+  }, [user?.userId])
 
   const handleDelete = async () => {
     if (!deleteTarget) return

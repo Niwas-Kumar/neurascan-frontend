@@ -206,6 +206,8 @@ export default function AnalyticsPage() {
   const [classFilter, setClassFilter] = useState('all')
 
   useEffect(() => {
+    if (!user?.userId) return
+
     let isCancelled = false
     const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms))
 

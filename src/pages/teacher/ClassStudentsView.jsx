@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, Search, X } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { optimizedStudentAPI } from '../../services/optimizedApi'
+import { useAuth } from '../../context/AuthContext'
 import { Button } from '../../components/shared/UI'
 import { StudentCard } from './StudentsPage'
 
@@ -19,6 +20,7 @@ const COLORS = {
 }
 
 export default function ClassStudentsView() {
+  const { user } = useAuth()
   const navigate = useNavigate()
   const { classId } = useParams()
   const decodedClassId = decodeURIComponent(classId || '')
@@ -90,7 +92,7 @@ export default function ClassStudentsView() {
     }
 
     loadStudents()
-  }, [decodedClassId])
+  }, [decodedClassId, user?.userId])
 
   const filteredStudents = useMemo(() => {
     const q = search.trim().toLowerCase()

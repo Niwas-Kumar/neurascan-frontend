@@ -155,7 +155,7 @@ function ProgressSteps({ steps, current }) {
 // MAIN UPLOAD PAGE
 // ════════════════════════════════════════════════════════════════
 export default function UploadPage() {
-  const { addNotification } = useAuth()
+  const { user, addNotification } = useAuth()
   const [students, setStudents] = useState([])
   const [studentId, setStudentId] = useState('')
   const [file, setFile] = useState(null)
@@ -167,6 +167,8 @@ export default function UploadPage() {
   const [validationError, setValidationError] = useState(null)
 
   useEffect(() => {
+    if (!user?.userId) return
+
     const loadStudents = async () => {
       try {
         const response = await optimizedStudentAPI.getAllWithIndexRetry(4, 300)
@@ -186,7 +188,7 @@ export default function UploadPage() {
     }
 
     loadStudents()
-  }, [])
+  }, [user?.userId])
 
   const onDrop = useCallback((accepted, rejected) => {
     if (rejected.length > 0) {

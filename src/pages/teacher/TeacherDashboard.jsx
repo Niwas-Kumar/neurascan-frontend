@@ -241,7 +241,11 @@ export default function TeacherDashboard() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!user?.userId) return
+    if (!user?.userId) {
+      // User not ready yet — keep loading state true so the skeleton shows,
+      // and wait for the next render when userId becomes available.
+      return
+    }
 
     let isCancelled = false
     const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms))
@@ -358,7 +362,7 @@ export default function TeacherDashboard() {
   ].filter((d) => d.value > 0)
 
   // Loading State
-  if (loading || !user?.userId) {
+  if (loading) {
     return (
       <div style={{ padding: '16px 24px' }}>
         <div style={{ marginBottom: 32 }}>

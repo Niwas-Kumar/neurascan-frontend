@@ -10,9 +10,9 @@ class RequestCache {
   // Get cached value if available and not expired
   get(key) {
     if (this.cache.has(key)) {
-      const { data, timestamp } = this.cache.get(key)
+      const { data, timestamp, ttl } = this.cache.get(key)
       const age = Date.now() - timestamp
-      if (age < this.CACHE_DURATION) {
+      if (age < (ttl || this.CACHE_DURATION)) {
         return data
       } else {
         this.cache.delete(key)
@@ -23,7 +23,7 @@ class RequestCache {
 
   // Set cache with auto-expiry
   set(key, data, duration = this.CACHE_DURATION) {
-    this.cache.set(key, { data, timestamp: Date.now() })
+    this.cache.set(key, { data, timestamp: Date.now(), ttl: duration })
     
     // Clear old timer if exists
     if (this.timers.has(key)) {

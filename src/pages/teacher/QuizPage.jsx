@@ -538,6 +538,7 @@ export default function QuizPage() {
   }
 
   useEffect(() => {
+    if (!user?.userId) return
     load()
   }, [user?.userId])
 

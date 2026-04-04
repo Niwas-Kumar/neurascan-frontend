@@ -238,6 +238,8 @@ export function ReportsPage() {
   const debouncedSearch = useDebounce(search)
 
   useEffect(() => {
+    if (!user?.userId) return
+
     let isCancelled = false
     const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms))
 

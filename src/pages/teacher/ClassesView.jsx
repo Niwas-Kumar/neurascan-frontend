@@ -5,6 +5,7 @@ import { Layers, Search, X } from 'lucide-react'
 import toast from 'react-hot-toast'
 import ClassCard from '../../components/teacher/ClassCard'
 import { optimizedClassAPI, optimizedStudentAPI } from '../../services/optimizedApi'
+import { useAuth } from '../../context/AuthContext'
 
 const COLORS = {
   bgBase: '#F8FAFC',
@@ -41,6 +42,7 @@ function deriveClassRowsFromStudents(students) {
 }
 
 export default function ClassesView() {
+  const { user } = useAuth()
   const navigate = useNavigate()
   const [classes, setClasses] = useState([])
   const [loading, setLoading] = useState(true)
@@ -54,6 +56,8 @@ export default function ClassesView() {
   }
 
   useEffect(() => {
+    if (!user?.userId) return
+
     const loadClasses = async () => {
       setLoading(true)
       try {
@@ -94,7 +98,7 @@ export default function ClassesView() {
     }
 
     loadClasses()
-  }, [])
+  }, [user?.userId])
 
   const filteredClasses = useMemo(() => {
     const q = search.trim().toLowerCase()
