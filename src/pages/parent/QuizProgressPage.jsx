@@ -314,8 +314,6 @@ export default function QuizProgressPage() {
       return
     }
 
-    console.log('Loading quiz progress for studentId:', sid)
-
     // Use the new endpoint that fetches quiz attempts (with per-question data)
     quizAPI.getStudentQuizAttempts(sid)
       .then(r => {

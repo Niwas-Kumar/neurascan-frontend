@@ -537,7 +537,7 @@ export default function QuizAttemptPage() {
             <motion.button
               whileHover={{ y: -2 }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => window.location.reload()}
+              onClick={validateAndLoadQuiz}
               style={styles.button(true, false)}
             >
               <RefreshCw size={18} /> Try Again

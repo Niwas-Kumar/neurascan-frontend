@@ -24,18 +24,18 @@ export default function PremiumNavbar() {
   const navigate = useNavigate()
 
   const navLinks = [
-    { label: 'Features', href: '/#features' },
-    { label: 'Pricing', href: '/pricing' },
-    { label: 'Help', href: '/help' },
-    { label: 'About', href: '/about' },
+    { label: 'Features', to: '/#features' },
+    { label: 'Pricing', to: '/pricing' },
+    { label: 'Help', to: '/help' },
+    { label: 'About', to: '/about' },
   ]
 
-  const isActive = (href) => location.pathname === href
+  const isActive = (to) => location.pathname === to
 
-  const handleNavClick = (e, href) => {
-    if (href.startsWith('/#')) {
+  const handleNavClick = (e, to) => {
+    if (to.startsWith('/#')) {
       e.preventDefault()
-      const sectionId = href.substring(2)
+      const sectionId = to.substring(2)
 
       if (location.pathname === '/') {
         // Already on landing page, just scroll
@@ -90,13 +90,13 @@ export default function PremiumNavbar() {
         }}
         className="hide-mobile"
         >
-          {navLinks.map(({ label, href }) => (
-            <a
+          {navLinks.map(({ label, to }) => (
+            <Link
               key={label}
-              href={href}
-              onClick={(e) => handleNavClick(e, href)}
+              to={to}
+              onClick={(e) => handleNavClick(e, to)}
               style={{
-                color: isActive(href) ? COLORS.primary : COLORS.textSecondary,
+                color: isActive(to) ? COLORS.primary : COLORS.textSecondary,
                 textDecoration: 'none',
                 fontWeight: 500,
                 fontSize: 14,
@@ -104,14 +104,14 @@ export default function PremiumNavbar() {
                 fontFamily: "'Inter', sans-serif",
               }}
               onMouseEnter={(e) => {
-                e.target.style.color = COLORS.primary
+                e.currentTarget.style.color = COLORS.primary
               }}
               onMouseLeave={(e) => {
-                e.target.style.color = isActive(href) ? COLORS.primary : COLORS.textSecondary
+                e.currentTarget.style.color = isActive(to) ? COLORS.primary : COLORS.textSecondary
               }}
             >
               {label}
-            </a>
+            </Link>
           ))}
         </div>
 
@@ -199,11 +199,11 @@ export default function PremiumNavbar() {
               boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
             }}
           >
-            {navLinks.map(({ label, href }) => (
-              <a
+            {navLinks.map(({ label, to }) => (
+              <Link
                 key={label}
-                href={href}
-                onClick={(e) => handleNavClick(e, href)}
+                to={to}
+                onClick={(e) => handleNavClick(e, to)}
                 style={{
                   color: COLORS.textSecondary,
                   textDecoration: 'none',
@@ -214,7 +214,7 @@ export default function PremiumNavbar() {
                 }}
               >
                 {label}
-              </a>
+              </Link>
             ))}
             <div style={{ paddingTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
               <Link to="/login" style={{ textDecoration: 'none' }}>
