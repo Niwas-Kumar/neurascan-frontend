@@ -394,13 +394,21 @@ function ShareWithParentsModal({ students, onClose }) {
 }
 
 // ════════════════════════════════════════════════════════════════
-// STUDENT CARD
+// STUDENT CARD — Pastel Minimalist Design
 // ════════════════════════════════════════════════════════════════
 function StudentCard({ student, onEdit, onDelete, index }) {
-  // Generate consistent color from student name
-  const hue = (student.name?.charCodeAt(0) || 0) * 137 % 360
-  const avatarBg = `hsl(${hue}, 45%, 92%)`
-  const avatarColor = `hsl(${hue}, 55%, 35%)`
+  const [copyFeedback, setCopyFeedback] = useState(false)
+
+  // Pastel purple avatar
+  const avatarBg = '#EDE9FE'
+  const avatarColor = '#312E81'
+
+  const handleCopyId = () => {
+    navigator.clipboard.writeText(student.id)
+    setCopyFeedback(true)
+    toast.success('Student ID copied!')
+    setTimeout(() => setCopyFeedback(false), 2000)
+  }
 
   return (
     <motion.div
@@ -410,98 +418,104 @@ function StudentCard({ student, onEdit, onDelete, index }) {
       transition={{ delay: index * 0.03, duration: 0.3, ease: [0.2, 0, 0, 1] }}
       layout
       style={{
-        background: COLORS.bgSurface,
-        border: `1px solid ${COLORS.border}`,
-        borderRadius: 12,
-        padding: 22,
+        background: '#FFFFFF',
+        border: '1px solid #F1F5F9',
+        borderRadius: 16,
+        padding: 24,
         cursor: 'default',
-        transition: 'all 0.15s ease',
         position: 'relative',
+        boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04), 0 1px 2px rgba(15, 23, 42, 0.02)',
+        transition: 'all 0.25s cubic-bezier(0.2, 0, 0, 1)',
       }}
       whileHover={{
-        y: -3,
-        boxShadow: '0 8px 24px rgba(15, 23, 42, 0.08)',
-        borderColor: COLORS.borderStrong,
+        y: -4,
+        boxShadow: '0 12px 28px rgba(15, 23, 42, 0.08), 0 4px 10px rgba(15, 23, 42, 0.04)',
+        borderColor: '#E2E8F0',
       }}
     >
-      {/* Header */}
+      {/* ── Row 1: Avatar + Action Buttons ── */}
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'flex-start',
         marginBottom: 16,
       }}>
-        {/* Avatar */}
+        {/* Purple Avatar */}
         <div style={{
-          width: 48,
-          height: 48,
-          borderRadius: 12,
+          width: 50,
+          height: 50,
+          borderRadius: 14,
           background: avatarBg,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          fontFamily: 'var(--font-display)',
-          fontWeight: 700,
-          fontSize: 18,
+          fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
+          fontWeight: 800,
+          fontSize: 20,
           color: avatarColor,
+          flexShrink: 0,
         }}>
           {student.name?.charAt(0).toUpperCase()}
         </div>
 
-        {/* Actions */}
-        <div style={{ display: 'flex', gap: 6 }}>
+        {/* Edit / Delete Buttons */}
+        <div style={{ display: 'flex', gap: 8 }}>
           <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.08 }}
+            whileTap={{ scale: 0.92 }}
             onClick={() => onEdit(student)}
             style={{
-              width: 32,
-              height: 32,
-              borderRadius: 8,
-              border: `1px solid ${COLORS.border}`,
-              background: COLORS.bgSurface,
-              color: COLORS.textMuted,
+              width: 34,
+              height: 34,
+              borderRadius: 10,
+              border: '1px solid #E2E8F0',
+              background: '#F8FAFC',
+              color: '#94A3B8',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              transition: 'all 0.15s ease',
+              transition: 'all 0.2s ease',
             }}
             onMouseEnter={e => {
-              e.currentTarget.style.borderColor = COLORS.primary
-              e.currentTarget.style.color = COLORS.primary
-              e.currentTarget.style.background = COLORS.primaryBg
+              e.currentTarget.style.borderColor = '#CBD5E1'
+              e.currentTarget.style.color = '#64748B'
+              e.currentTarget.style.background = '#F1F5F9'
             }}
             onMouseLeave={e => {
-              e.currentTarget.style.borderColor = COLORS.border
-              e.currentTarget.style.color = COLORS.textMuted
-              e.currentTarget.style.background = COLORS.bgSurface
+              e.currentTarget.style.borderColor = '#E2E8F0'
+              e.currentTarget.style.color = '#94A3B8'
+              e.currentTarget.style.background = '#F8FAFC'
             }}
           >
             <Pencil size={14} />
           </motion.button>
           <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.08 }}
+            whileTap={{ scale: 0.92 }}
             onClick={() => onDelete(student)}
             style={{
-              width: 32,
-              height: 32,
-              borderRadius: 8,
-              border: `1px solid rgba(185, 28, 28, 0.2)`,
-              background: COLORS.dangerBg,
-              color: COLORS.danger,
+              width: 34,
+              height: 34,
+              borderRadius: 10,
+              border: '1px solid #FEE2E2',
+              background: '#FEF2F2',
+              color: '#F87171',
               cursor: 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              transition: 'all 0.15s ease',
+              transition: 'all 0.2s ease',
             }}
             onMouseEnter={e => {
-              e.currentTarget.style.background = 'rgba(185, 28, 28, 0.15)'
+              e.currentTarget.style.background = '#FEE2E2'
+              e.currentTarget.style.borderColor = '#FECACA'
+              e.currentTarget.style.color = '#EF4444'
             }}
             onMouseLeave={e => {
-              e.currentTarget.style.background = COLORS.dangerBg
+              e.currentTarget.style.background = '#FEF2F2'
+              e.currentTarget.style.borderColor = '#FEE2E2'
+              e.currentTarget.style.color = '#F87171'
             }}
           >
             <Trash2 size={14} />
@@ -509,120 +523,153 @@ function StudentCard({ student, onEdit, onDelete, index }) {
         </div>
       </div>
 
-      {/* Name */}
+      {/* ── Row 2: Student Name ── */}
       <div style={{
-        fontFamily: 'var(--font-display)',
-        fontSize: 16,
+        fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif",
+        fontSize: 17,
         fontWeight: 700,
-        color: COLORS.textPrimary,
-        marginBottom: 12,
+        color: '#1E293B',
+        marginBottom: 14,
+        letterSpacing: '-0.01em',
       }}>
         {student.name}
       </div>
 
-      {/* Badges */}
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 }}>
-        <Badge color="primary" size="sm">
-          <GraduationCap size={12} style={{ marginRight: 4 }} />
+      {/* ── Row 3: Pill Tags — single horizontal row ── */}
+      <div style={{
+        display: 'flex',
+        gap: 6,
+        flexWrap: 'wrap',
+        marginBottom: 16,
+      }}>
+        {/* ROLL pill */}
+        <span style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 3,
+          padding: '4px 10px',
+          borderRadius: 20,
+          background: '#F1F5F9',
+          fontSize: 11,
+          fontWeight: 700,
+          color: '#64748B',
+          letterSpacing: '0.02em',
+          whiteSpace: 'nowrap',
+        }}>
+          ROLL #{student.rollNumber}
+        </span>
+
+        {/* Class pill with graduation cap */}
+        <span style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 4,
+          padding: '4px 10px',
+          borderRadius: 20,
+          background: '#EDE9FE',
+          fontSize: 11,
+          fontWeight: 700,
+          color: '#7C3AED',
+          whiteSpace: 'nowrap',
+        }}>
+          <GraduationCap size={12} />
           {student.className}
-        </Badge>
-        <Badge color="default" size="sm">
-          Age {student.age}
-        </Badge>
+        </span>
+
+        {/* Age pill */}
+        <span style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          padding: '4px 10px',
+          borderRadius: 20,
+          background: '#F1F5F9',
+          fontSize: 11,
+          fontWeight: 700,
+          color: '#64748B',
+          whiteSpace: 'nowrap',
+        }}>
+          AGE {student.age}
+        </span>
+
+        {/* Samples pill */}
         {student.totalPapers > 0 && (
-          <Badge color="secondary" size="sm">
-            <FileText size={12} style={{ marginRight: 4 }} />
-            {student.totalPapers} {student.totalPapers === 1 ? 'sample' : 'samples'}
-          </Badge>
+          <span style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 4,
+            padding: '4px 10px',
+            borderRadius: 20,
+            background: '#ECFDF5',
+            fontSize: 11,
+            fontWeight: 700,
+            color: '#059669',
+            whiteSpace: 'nowrap',
+          }}>
+            <FileText size={12} />
+            {student.totalPapers} {student.totalPapers === 1 ? 'SAMPLE' : 'SAMPLES'}
+          </span>
         )}
       </div>
 
-      {/* Roll Number */}
+      {/* ── Divider ── */}
       <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 6,
-        paddingTop: 12,
-        borderTop: `1px solid ${COLORS.border}`,
-        marginBottom: 10,
-      }}>
-        <span style={{
-          fontSize: 11,
-          fontWeight: 600,
-          color: COLORS.textLight,
-          textTransform: 'uppercase',
-          letterSpacing: '0.05em',
-        }}>
-          Roll
-        </span>
-        <span style={{
-          fontSize: 12,
-          fontWeight: 700,
-          color: COLORS.textSecondary,
-          fontFamily: 'var(--font-display)',
-          background: COLORS.bgSubtle,
-          padding: '2px 8px',
-          borderRadius: 4,
-        }}>
-          #{student.rollNumber}
-        </span>
-      </div>
+        height: 1,
+        background: '#F1F5F9',
+        marginBottom: 16,
+      }} />
 
-      {/* Student ID for Parent Connection - Prominent display */}
+      {/* ── Row 4: Parent Connection ID Container ── */}
       <div style={{
-        background: COLORS.primaryBg,
-        border: `1px solid rgba(20, 184, 166, 0.2)`,
-        borderRadius: 8,
-        padding: '10px 12px',
+        background: '#F8FAFC',
+        borderRadius: 12,
+        padding: '14px 16px',
+        border: '1px solid #F1F5F9',
       }}>
         <div style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          marginBottom: 6,
+          marginBottom: 8,
         }}>
           <span style={{
             fontSize: 10,
             fontWeight: 700,
-            color: COLORS.primary,
+            color: '#94A3B8',
             textTransform: 'uppercase',
             letterSpacing: '0.08em',
           }}>
             Parent Connection ID
           </span>
-          <div style={{ display: 'flex', gap: 4 }}>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => {
-                navigator.clipboard.writeText(student.id)
-                toast.success('Student ID copied!')
-              }}
-              style={{
-                width: 24,
-                height: 24,
-                borderRadius: 4,
-                border: 'none',
-                background: 'rgba(20, 184, 166, 0.15)',
-                color: COLORS.primary,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-              title="Copy ID"
-            >
-              <Copy size={12} />
-            </motion.button>
-          </div>
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={handleCopyId}
+            style={{
+              width: 28,
+              height: 28,
+              borderRadius: 8,
+              border: 'none',
+              background: copyFeedback ? '#D1FAE5' : '#ECFDF5',
+              color: copyFeedback ? '#059669' : '#14B8A6',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.2s ease',
+            }}
+            title="Copy ID"
+          >
+            {copyFeedback ? <Check size={13} /> : <Copy size={13} />}
+          </motion.button>
         </div>
         <div style={{
-          fontFamily: 'monospace',
-          fontSize: 11,
+          fontFamily: "'JetBrains Mono', 'SF Mono', 'Fira Code', monospace",
+          fontSize: 13,
           fontWeight: 600,
-          color: COLORS.textPrimary,
-          letterSpacing: '0.03em',
+          color: '#1E293B',
+          letterSpacing: '0.04em',
           wordBreak: 'break-all',
+          lineHeight: 1.5,
         }}>
           {student.id}
         </div>
