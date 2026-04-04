@@ -167,9 +167,25 @@ export default function UploadPage() {
   const [validationError, setValidationError] = useState(null)
 
   useEffect(() => {
-    optimizedStudentAPI.getAll()
-      .then(r => setStudents(r.data.data || []))
-      .catch(() => toast.error('Unable to load student roster'))
+    const loadStudents = async () => {
+      try {
+        const response = await optimizedStudentAPI.getAllWithIndexRetry(4, 300)
+        setStudents(response?.data?.data || [])
+      } catch (error) {
+        console.error('UploadPage: initial student load failed:', error)
+        try {
+          await new Promise(resolve => setTimeout(resolve, 1200))
+          const retryResponse = await optimizedStudentAPI.getAllWithIndexRetry(3, 350)
+          setStudents(retryResponse?.data?.data || [])
+          toast.error('Initial roster load was slow. Recovered automatically.')
+        } catch (retryError) {
+          console.error('UploadPage: retry student load failed:', retryError)
+          toast.error('Unable to load student roster')
+        }
+      }
+    }
+
+    loadStudents()
   }, [])
 
   const onDrop = useCallback((accepted, rejected) => {

@@ -1,4 +1,4 @@
-import { api, studentAPI, analysisAPI, authAPI } from './api'
+import { api, studentAPI, classAPI, analysisAPI, authAPI } from './api'
 import { requestCache } from '../utils/requestCache'
 
 // Exponential backoff retry logic with longer delays for timeout resilience
@@ -54,7 +54,13 @@ export const optimizedStudentAPI = {
     // Make new request with retry logic
     const request = retryWithBackoff(() => studentAPI.getAll())
       .then(res => {
-        requestCache.set(cacheKey, res.data.data, 10 * 60 * 1000) // Cache for 10 mins
+        const students = res.data?.data || []
+        // Do not cache empty lists; they are often transient during cold-start/index propagation.
+        if (Array.isArray(students) && students.length > 0) {
+          requestCache.set(cacheKey, students, 10 * 60 * 1000) // Cache for 10 mins
+        } else {
+          requestCache.clear(cacheKey)
+        }
         return res
       })
       .catch(err => {
@@ -151,6 +157,33 @@ export const optimizedStudentAPI = {
         requestCache.clear('students/all')
         return res
       })
+  },
+}
+
+// Optimized class API with retry + cache for first-load reliability
+export const optimizedClassAPI = {
+  getAll: async () => {
+    const cacheKey = 'classes/all'
+
+    const cached = requestCache.get(cacheKey)
+    if (cached) return { data: { data: cached } }
+
+    const pending = requestCache.getPendingRequest(cacheKey)
+    if (pending) return pending
+
+    const request = retryWithBackoff(() => classAPI.getAll(), 5)
+      .then((res) => {
+        const classes = res.data?.data || []
+        // Do not cache empty lists; they can be temporary during backend warm-up.
+        if (Array.isArray(classes) && classes.length > 0) {
+          requestCache.set(cacheKey, classes, 10 * 60 * 1000)
+        } else {
+          requestCache.clear(cacheKey)
+        }
+        return res
+      })
+
+    return requestCache.setPendingRequest(cacheKey, request)
   },
 }
 

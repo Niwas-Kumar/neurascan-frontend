@@ -4,8 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Layers, Search, X } from 'lucide-react'
 import toast from 'react-hot-toast'
 import ClassCard from '../../components/teacher/ClassCard'
-import { classAPI } from '../../services/api'
-import { optimizedStudentAPI } from '../../services/optimizedApi'
+import { optimizedClassAPI, optimizedStudentAPI } from '../../services/optimizedApi'
 
 const COLORS = {
   bgBase: '#F8FAFC',
@@ -47,11 +46,17 @@ export default function ClassesView() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
 
+  const loadClassesFallback = async () => {
+    const studentsResponse = await optimizedStudentAPI.getAllWithIndexRetry(3, 250)
+    const derived = deriveClassRowsFromStudents(studentsResponse?.data?.data || [])
+    setClasses(derived)
+  }
+
   useEffect(() => {
     const loadClasses = async () => {
       setLoading(true)
       try {
-        const response = await classAPI.getAll()
+        const response = await optimizedClassAPI.getAll()
         const classRows = normalizeClassRows(response.data?.data)
 
         if (classRows.length > 0) {
@@ -60,13 +65,17 @@ export default function ClassesView() {
         }
 
         // Safety fallback: derive class cards from legacy students list.
-        const studentsResponse = await optimizedStudentAPI.getAllWithIndexRetry(3, 250)
-        const derived = deriveClassRowsFromStudents(studentsResponse?.data?.data || [])
-        setClasses(derived)
+        await loadClassesFallback()
       } catch (error) {
         console.error('Failed to load classes:', error)
-        toast.error('Unable to load classes')
-        setClasses([])
+        try {
+          await loadClassesFallback()
+          toast.error('Class endpoint is slow right now. Loaded from student data.')
+        } catch (fallbackError) {
+          console.error('Fallback class load failed:', fallbackError)
+          toast.error('Unable to load classes')
+          setClasses([])
+        }
       } finally {
         setLoading(false)
       }

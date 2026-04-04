@@ -41,8 +41,17 @@ export default function ClassStudentsView() {
         setStudents(response.data?.data || [])
       } catch (error) {
         console.error('Failed to load class students:', error)
-        toast.error('Unable to load students for this class')
-        setStudents([])
+        try {
+          // Retry once after brief delay to recover from backend cold-start.
+          await new Promise((resolve) => setTimeout(resolve, 1200))
+          const retryResponse = await optimizedStudentAPI.getByClassId(decodedClassId)
+          setStudents(retryResponse.data?.data || [])
+          toast.error('Initial load was slow. Student list recovered automatically.')
+        } catch (retryError) {
+          console.error('Retry load for class students failed:', retryError)
+          toast.error('Unable to load students for this class')
+          setStudents([])
+        }
       } finally {
         setLoading(false)
       }

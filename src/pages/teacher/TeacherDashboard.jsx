@@ -245,18 +245,26 @@ export default function TeacherDashboard() {
 
     setLoading(true)
 
-    Promise.all([
+    Promise.allSettled([
       optimizedAnalysisAPI.getDashboard(),
       optimizedAnalysisAPI.getReports(),
     ])
       .then(([d, r]) => {
-        setDash(d.data.data)
-        setReports(r.data.data || [])
-        if ((d.data.data?.studentsAtRisk || 0) > 0) {
+        const dashData = d.status === 'fulfilled' ? d.value.data.data : null
+        const reportsData = r.status === 'fulfilled' ? (r.value.data.data || []) : []
+
+        setDash(dashData)
+        setReports(reportsData)
+
+        if (d.status !== 'fulfilled' || r.status !== 'fulfilled') {
+          toast.error('Dashboard data is delayed. Showing available data.')
+        }
+
+        if ((dashData?.studentsAtRisk || 0) > 0) {
           addNotification({
             type: 'warning',
             title: 'Attention Required',
-            body: `${d.data.data.studentsAtRisk} student(s) flagged for follow-up assessment.`,
+            body: `${dashData.studentsAtRisk} student(s) flagged for follow-up assessment.`,
           })
         }
       })

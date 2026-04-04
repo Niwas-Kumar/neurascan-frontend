@@ -206,15 +206,36 @@ export default function AnalyticsPage() {
   const [classFilter, setClassFilter] = useState('all')
 
   useEffect(() => {
-    Promise.all([
+    Promise.allSettled([
       optimizedAnalysisAPI.getReports(),
       optimizedAnalysisAPI.getDashboard(),
-      optimizedStudentAPI.getAll(),
+      optimizedStudentAPI.getAllWithIndexRetry(4, 300),
     ])
       .then(([r, d, s]) => {
-        setReports(r.data.data || [])
-        setDash(d.data.data)
-        setStudents(s.data.data || [])
+        if (r.status === 'fulfilled') {
+          setReports(r.value.data.data || [])
+        } else {
+          console.error('AnalyticsPage: failed to load reports:', r.reason)
+          setReports([])
+        }
+
+        if (d.status === 'fulfilled') {
+          setDash(d.value.data.data)
+        } else {
+          console.error('AnalyticsPage: failed to load dashboard:', d.reason)
+          setDash(null)
+        }
+
+        if (s.status === 'fulfilled') {
+          setStudents(s.value?.data?.data || [])
+        } else {
+          console.error('AnalyticsPage: failed to load students:', s.reason)
+          setStudents([])
+        }
+
+        if (r.status !== 'fulfilled' || d.status !== 'fulfilled' || s.status !== 'fulfilled') {
+          toast.error('Some analytics data is delayed. Showing available data.')
+        }
       })
       .catch(() => toast.error('Failed to load analytics'))
       .finally(() => setLoading(false))

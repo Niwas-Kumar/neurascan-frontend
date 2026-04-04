@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { ArrowLeft, Send, Users, Clock, CheckCircle, XCircle, Brain, X, Loader2 } from 'lucide-react'
-import { quizAPI, studentAPI } from '../../services/api'
+import { quizAPI } from '../../services/api'
+import { optimizedStudentAPI } from '../../services/optimizedApi'
 import toast from 'react-hot-toast'
 
 // ════════════════════════════════════════════════════════════════
@@ -141,10 +142,11 @@ export default function TeacherQuizResultsPage() {
 
   const loadStudentsList = async () => {
     try {
-      const response = await studentAPI.getAll()
-      setStudents(response.data?.data || response.data || [])
+      const response = await optimizedStudentAPI.getAllWithIndexRetry(4, 300)
+      setStudents(response?.data?.data || [])
     } catch (err) {
       console.error('Error loading students:', err)
+      toast.error('Unable to load students for distribution')
     }
   }
 
