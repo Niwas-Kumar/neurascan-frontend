@@ -432,7 +432,8 @@ export default function QuizAttemptPage() {
         attemptId,
         currentQuestion.id,
         selectedAnswer,
-        responseTime
+        responseTime,
+        token
       )
 
       const responseData = res.data?.data
@@ -471,7 +472,7 @@ export default function QuizAttemptPage() {
   const completeQuiz = async () => {
     try {
       setSubmitting(true)
-      const res = await quizAttemptAPI.completeAttempt(attemptId)
+      const res = await quizAttemptAPI.completeAttempt(attemptId, token)
       setFinalResult(res.data?.data)
       clearInterval(timerRef.current)
     } catch (err) {

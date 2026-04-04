@@ -171,14 +171,14 @@ export const quizAttemptAPI = {
   startAttempt: (quizId, token) => api.post('/quiz-attempt/start', { quizId, token }),
 
   // Submit answer for a single question
-  submitAnswer: (attemptId, questionId, studentAnswer, responseTimeMs) =>
-    api.post(`/quiz-attempt/${attemptId}/answer`, { questionId, studentAnswer, responseTimeMs }),
+  submitAnswer: (attemptId, questionId, studentAnswer, responseTimeMs, token) =>
+    api.post(`/quiz-attempt/${attemptId}/answer?token=${encodeURIComponent(token)}`, { questionId, studentAnswer, responseTimeMs }),
 
   // Complete the quiz and get results
-  completeAttempt: (attemptId) => api.post(`/quiz-attempt/${attemptId}/complete`),
+  completeAttempt: (attemptId, token) => api.post(`/quiz-attempt/${attemptId}/complete?token=${encodeURIComponent(token)}`),
 
   // Get quiz attempt result
-  getResult: (attemptId) => api.get(`/quiz-attempt/${attemptId}/result`),
+  getResult: (attemptId, token) => api.get(`/quiz-attempt/${attemptId}/result?token=${encodeURIComponent(token)}`),
 }
 
 // ── PARENT-STUDENT CONNECTIONS ────────────────────────────────
