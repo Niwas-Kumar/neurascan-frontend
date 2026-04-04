@@ -164,21 +164,32 @@ export const quizAPI = {
 // ── PUBLIC QUIZ ATTEMPT API (No Auth Required) ─────────────
 // These endpoints are accessed via token-based links sent to parents
 export const quizAttemptAPI = {
+  // Security: token is transmitted only via Authorization header.
+  authHeader: (token) => ({ headers: { Authorization: `Bearer ${token}` } }),
+
   // Validate quiz link token and get quiz questions
-  validateLink: (quizId, token) => api.get(`/quiz-attempt/validate?quizId=${quizId}&token=${token}`),
+  validateLink: (quizId, token) =>
+    api.get(`/quiz-attempt/validate?quizId=${quizId}`, quizAttemptAPI.authHeader(token)),
 
   // Start a new quiz attempt session
-  startAttempt: (quizId, token) => api.post('/quiz-attempt/start', { quizId, token }),
+  startAttempt: (quizId, token) =>
+    api.post('/quiz-attempt/start', { quizId }, quizAttemptAPI.authHeader(token)),
 
   // Submit answer for a single question
   submitAnswer: (attemptId, questionId, studentAnswer, responseTimeMs, token) =>
-    api.post(`/quiz-attempt/${attemptId}/answer?token=${encodeURIComponent(token)}`, { questionId, studentAnswer, responseTimeMs }),
+    api.post(
+      `/quiz-attempt/${attemptId}/answer`,
+      { questionId, studentAnswer, responseTimeMs },
+      quizAttemptAPI.authHeader(token)
+    ),
 
   // Complete the quiz and get results
-  completeAttempt: (attemptId, token) => api.post(`/quiz-attempt/${attemptId}/complete?token=${encodeURIComponent(token)}`),
+  completeAttempt: (attemptId, token) =>
+    api.post(`/quiz-attempt/${attemptId}/complete`, {}, quizAttemptAPI.authHeader(token)),
 
   // Get quiz attempt result
-  getResult: (attemptId, token) => api.get(`/quiz-attempt/${attemptId}/result?token=${encodeURIComponent(token)}`),
+  getResult: (attemptId, token) =>
+    api.get(`/quiz-attempt/${attemptId}/result`, quizAttemptAPI.authHeader(token)),
 }
 
 // ── PARENT-STUDENT CONNECTIONS ────────────────────────────────
