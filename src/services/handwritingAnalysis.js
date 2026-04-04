@@ -16,6 +16,31 @@ const aiClient = axios.create({
   timeout: 60000, // 60 seconds for ML processing
 })
 
+const getJwtToken = () => {
+  const localToken = localStorage.getItem('ns_token')
+  if (localToken) return localToken
+  return sessionStorage.getItem('ns_token')
+}
+
+// Attach JWT automatically for protected AI endpoints
+aiClient.interceptors.request.use((config) => {
+  const token = getJwtToken()
+  const hasAuthHeader = config.headers?.Authorization || config.headers?.authorization
+
+  if (token && !hasAuthHeader) {
+    if (typeof config.headers?.set === 'function') {
+      config.headers.set('Authorization', `Bearer ${token}`)
+    } else {
+      config.headers = {
+        ...config.headers,
+        Authorization: `Bearer ${token}`,
+      }
+    }
+  }
+
+  return config
+})
+
 // Response interceptor for error handling
 aiClient.interceptors.response.use(
   (res) => res,

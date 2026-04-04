@@ -5,7 +5,7 @@ import {
   BarChart, Calendar, CheckCircle, XCircle, ArrowRight, Clock,
   Target, TrendingUp, TrendingDown, Brain, BookOpen, Loader2
 } from 'lucide-react'
-import { quizAPI } from '../../services/api'
+import { parentStudentAPI, quizAPI } from '../../services/api'
 import toast from 'react-hot-toast'
 import { useAuth } from '../../context/AuthContext'
 
@@ -276,14 +276,39 @@ export default function QuizProgressPage() {
   const [noStudentId, setNoStudentId] = useState(false)
   const [expandedId, setExpandedId] = useState(null)
 
-  const load = () => {
+  const resolveStudentId = async () => {
+    const fromUser = user?.studentId
+    const fromLocal = localStorage.getItem('ns_studentId')
+    const fromSession = sessionStorage.getItem('ns_studentId')
+    const existing = fromUser || fromLocal || fromSession
+
+    if (existing) return String(existing)
+
+    try {
+      const res = await parentStudentAPI.getPrimaryStudent()
+      const payload = res?.data?.data
+      const primaryStudent = payload?.student || payload
+      const sid = primaryStudent?.studentId || primaryStudent?.id
+
+      if (sid) {
+        localStorage.setItem('ns_studentId', String(sid))
+        return String(sid)
+      }
+    } catch (err) {
+      console.warn('Unable to resolve primary student ID for parent:', err?.message || err)
+    }
+
+    return null
+  }
+
+  const load = async () => {
     setLoading(true)
     setNoStudentId(false)
 
-    const sid = user?.studentId || localStorage.getItem('ns_studentId')
+    const sid = await resolveStudentId()
 
     if (!sid) {
-      console.warn('No studentId found in user object or localStorage')
+      console.warn('No studentId found in user object, storage, or primary student API')
       setNoStudentId(true)
       setLoading(false)
       return

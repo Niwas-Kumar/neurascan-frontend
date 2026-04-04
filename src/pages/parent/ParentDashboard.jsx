@@ -727,6 +727,10 @@ export default function ParentDashboard() {
       const autoSelect = primary || firstVerified
       if (autoSelect) {
         setSelectedStudentId(autoSelect.studentId)
+        localStorage.setItem('ns_studentId', String(autoSelect.studentId))
+      } else {
+        setSelectedStudentId(null)
+        localStorage.removeItem('ns_studentId')
       }
     } catch (err) {
       console.error('Failed to load connected students:', err)
@@ -780,6 +784,9 @@ export default function ParentDashboard() {
 
   const handleSelectStudent = (studentId) => {
     setSelectedStudentId(studentId)
+    if (studentId) {
+      localStorage.setItem('ns_studentId', String(studentId))
+    }
   }
 
   const handleDisconnect = async (studentId, studentName) => {

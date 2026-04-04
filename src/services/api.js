@@ -11,10 +11,28 @@ export const api = axios.create({
   timeout: 45000, // 45 seconds - allows for slow initial requests
 })
 
+const getJwtToken = () => {
+  const localToken = localStorage.getItem('ns_token')
+  if (localToken) return localToken
+  return sessionStorage.getItem('ns_token')
+}
+
 // Attach JWT on every request
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('ns_token')
-  if (token) config.headers.Authorization = `Bearer ${token}`
+  const token = getJwtToken()
+  const hasAuthHeader = config.headers?.Authorization || config.headers?.authorization
+
+  if (token && !hasAuthHeader) {
+    if (typeof config.headers?.set === 'function') {
+      config.headers.set('Authorization', `Bearer ${token}`)
+    } else {
+      config.headers = {
+        ...config.headers,
+        Authorization: `Bearer ${token}`,
+      }
+    }
+  }
+
   return config
 })
 

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { TrendingUp, TrendingDown, Minus, Calendar, Brain, ArrowUpRight, ArrowDownRight } from 'lucide-react'
 import { optimizedAnalysisAPI } from '../../services/optimizedApi'
+import { parentStudentAPI } from '../../services/api'
 import { useAuth } from '../../context/AuthContext'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts'
 import toast from 'react-hot-toast'
@@ -125,15 +126,49 @@ export default function ProgressPage() {
   const [noData, setNoData] = useState(false)
 
   useEffect(() => {
-    const sid = user?.studentId || localStorage.getItem('ns_studentId')
-    if (!sid) { setNoData(true); setLoading(false); return }
-    optimizedAnalysisAPI.getProgress(sid)
-      .then(res => setData(res.data.data))
-      .catch(err => {
-        if (err.response?.status === 404 || err.response?.status === 403) setNoData(true)
-        else toast.error('Failed to load progress data')
-      })
-      .finally(() => setLoading(false))
+    const resolveStudentId = async () => {
+      const fromUser = user?.studentId
+      const fromLocal = localStorage.getItem('ns_studentId')
+      const fromSession = sessionStorage.getItem('ns_studentId')
+      const existing = fromUser || fromLocal || fromSession
+
+      if (existing) return String(existing)
+
+      try {
+        const res = await parentStudentAPI.getPrimaryStudent()
+        const payload = res?.data?.data
+        const primaryStudent = payload?.student || payload
+        const sid = primaryStudent?.studentId || primaryStudent?.id
+
+        if (sid) {
+          localStorage.setItem('ns_studentId', String(sid))
+          return String(sid)
+        }
+      } catch (err) {
+        console.warn('Unable to resolve primary student ID for parent progress:', err?.message || err)
+      }
+
+      return null
+    }
+
+    const loadProgress = async () => {
+      const sid = await resolveStudentId()
+      if (!sid) {
+        setNoData(true)
+        setLoading(false)
+        return
+      }
+
+      optimizedAnalysisAPI.getProgress(sid)
+        .then(res => setData(res.data.data))
+        .catch(err => {
+          if (err.response?.status === 404 || err.response?.status === 403) setNoData(true)
+          else toast.error('Failed to load progress data')
+        })
+        .finally(() => setLoading(false))
+    }
+
+    loadProgress()
   }, [user?.userId, user?.studentId])
 
   if (loading) return (
