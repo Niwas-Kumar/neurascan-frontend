@@ -14,6 +14,7 @@ export const api = axios.create({
 const getJwtToken = () => {
   const localToken = localStorage.getItem('ns_token')
   if (localToken) return localToken
+  // Legacy fallback for older sessions that wrote auth into sessionStorage.
   return sessionStorage.getItem('ns_token')
 }
 
@@ -57,6 +58,7 @@ api.interceptors.response.use(
     // Auth endpoints (login, register, forgot/reset password) should handle their own errors
     const url = err.config?.url || ''
     const isAuthEndpoint = url.includes('/auth/')
+    const isPublicTokenEndpoint = url.includes('/quiz-attempt/') || url.includes('/quizzes/public/')
     const errorMessage = err.response?.data?.message || ''
 
     // ✅ IMPROVED: Don't logout if it's just a missing studentId configuration
@@ -68,7 +70,7 @@ api.interceptors.response.use(
     // 403 means the user IS authenticated but doesn't have permission
     // 401 means the token is invalid/expired
     // Also: skip if no response (network error / CORS block — NOT a true 401)
-    if (err.response?.status === 401 && !isAuthEndpoint && !isStudentIdMissing && !isRedirecting) {
+    if (err.response?.status === 401 && !isAuthEndpoint && !isPublicTokenEndpoint && !isStudentIdMissing && !isRedirecting) {
       isRedirecting = true
       console.warn('[Auth] 401 Unauthorized on:', url, '— redirecting to login')
       
@@ -80,6 +82,13 @@ api.interceptors.response.use(
       localStorage.removeItem('ns_userEmail')
       localStorage.removeItem('ns_school')
       localStorage.removeItem('ns_picture')
+      // Also clear any legacy sessionStorage auth remnants.
+      sessionStorage.removeItem('ns_token')
+      sessionStorage.removeItem('ns_role')
+      sessionStorage.removeItem('ns_userName')
+      sessionStorage.removeItem('ns_userEmail')
+      sessionStorage.removeItem('ns_school')
+      sessionStorage.removeItem('ns_picture')
       // ⚠️ NOTE: Intentionally NOT clearing ns_studentId or ns_userId
 
       // Small delay to let any other in-flight requests complete before redirect
