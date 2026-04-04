@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, Search, X } from 'lucide-react'
+import { AlertCircle, ArrowLeft, Search, UserPlus, X } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { optimizedStudentAPI } from '../../services/optimizedApi'
 import { useAuth } from '../../context/AuthContext'
-import { Button } from '../../components/shared/UI'
+import { Button, Input, Modal } from '../../components/shared/UI'
 import StudentCard from '../../components/teacher/StudentCard'
 
 const COLORS = {
@@ -19,6 +19,15 @@ const COLORS = {
   primary: '#14B8A6',
 }
 
+function buildForm(className, student = null) {
+  return {
+    name: student?.name || '',
+    rollNumber: student?.rollNumber || '',
+    age: student?.age != null ? String(student.age) : '',
+    className,
+  }
+}
+
 export default function ClassStudentsView() {
   const { user } = useAuth()
   const navigate = useNavigate()
@@ -28,6 +37,11 @@ export default function ClassStudentsView() {
   const [students, setStudents] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [modalMode, setModalMode] = useState(null)
+  const [activeStudent, setActiveStudent] = useState(null)
+  const [form, setForm] = useState(buildForm(decodedClassId))
+  const [errors, setErrors] = useState({})
+  const [saving, setSaving] = useState(false)
 
   const normalizeClass = (value) => String(value || '').trim().toLowerCase()
 
@@ -36,63 +50,159 @@ export default function ClassStudentsView() {
     return (rows || []).filter((student) => normalizeClass(student.className) === classKey)
   }
 
-  useEffect(() => {
-    const loadStudents = async () => {
-      if (!decodedClassId) {
-        setStudents([])
-        setLoading(false)
+  const loadStudents = useCallback(async () => {
+    if (!decodedClassId) {
+      setStudents([])
+      setLoading(false)
+      return
+    }
+
+    setLoading(true)
+    try {
+      const response = await optimizedStudentAPI.getByClassIdWithIndexRetry(decodedClassId, 5, 350)
+      const classStudents = response?.data?.data || []
+
+      if (classStudents.length > 0) {
+        setStudents(classStudents)
         return
       }
 
-      setLoading(true)
-      try {
-        const response = await optimizedStudentAPI.getByClassIdWithIndexRetry(decodedClassId, 5, 350)
-        const classStudents = response?.data?.data || []
+      // Fallback: load all students and filter client-side if class endpoint is temporarily empty.
+      const allResponse = await optimizedStudentAPI.getAllWithIndexRetry(5, 320)
+      const filtered = filterStudentsForClass(allResponse?.data?.data || [], decodedClassId)
 
-        if (classStudents.length > 0) {
-          setStudents(classStudents)
-          return
-        }
-
-        // Fallback: load all students and filter client-side if class endpoint is temporarily empty.
-        const allResponse = await optimizedStudentAPI.getAllWithIndexRetry(5, 320)
-        const filtered = filterStudentsForClass(allResponse?.data?.data || [], decodedClassId)
-
-        if (filtered.length > 0) {
-          setStudents(filtered)
-          return
-        }
-
-        // Final automatic retry to handle cold-start propagation delays.
-        await new Promise((resolve) => setTimeout(resolve, 1500))
-        const finalResponse = await optimizedStudentAPI.getByClassIdWithIndexRetry(decodedClassId, 3, 400)
-        setStudents(finalResponse?.data?.data || [])
-      } catch (error) {
-        console.error('Failed to load class students:', error)
-        try {
-          // Retry once after brief delay to recover from backend cold-start.
-          await new Promise((resolve) => setTimeout(resolve, 1200))
-          const retryResponse = await optimizedStudentAPI.getByClassIdWithIndexRetry(decodedClassId, 3, 400)
-          const retryStudents = retryResponse?.data?.data || []
-          if (retryStudents.length > 0) {
-            setStudents(retryStudents)
-          } else {
-            const allResponse = await optimizedStudentAPI.getAllWithIndexRetry(3, 350)
-            setStudents(filterStudentsForClass(allResponse?.data?.data || [], decodedClassId))
-          }
-          toast.error('Initial load was slow. Student list recovered automatically.')
-        } catch (retryError) {
-          console.error('Retry load for class students failed:', retryError)
-          toast.error('Unable to load students for this class')
-          setStudents([])
-        }
-      } finally {
-        setLoading(false)
+      if (filtered.length > 0) {
+        setStudents(filtered)
+        return
       }
+
+      // Final automatic retry to handle cold-start propagation delays.
+      await new Promise((resolve) => setTimeout(resolve, 1500))
+      const finalResponse = await optimizedStudentAPI.getByClassIdWithIndexRetry(decodedClassId, 3, 400)
+      setStudents(finalResponse?.data?.data || [])
+    } catch (error) {
+      console.error('Failed to load class students:', error)
+      try {
+        // Retry once after brief delay to recover from backend cold-start.
+        await new Promise((resolve) => setTimeout(resolve, 1200))
+        const retryResponse = await optimizedStudentAPI.getByClassIdWithIndexRetry(decodedClassId, 3, 400)
+        const retryStudents = retryResponse?.data?.data || []
+        if (retryStudents.length > 0) {
+          setStudents(retryStudents)
+        } else {
+          const allResponse = await optimizedStudentAPI.getAllWithIndexRetry(3, 350)
+          setStudents(filterStudentsForClass(allResponse?.data?.data || [], decodedClassId))
+        }
+        toast.error('Initial load was slow. Student list recovered automatically.')
+      } catch (retryError) {
+        console.error('Retry load for class students failed:', retryError)
+        toast.error('Unable to load students for this class')
+        setStudents([])
+      }
+    } finally {
+      setLoading(false)
+    }
+  }, [decodedClassId])
+
+  useEffect(() => {
+    loadStudents()
+  }, [loadStudents, user?.token])
+
+  useEffect(() => {
+    setForm(buildForm(decodedClassId))
+    setErrors({})
+  }, [decodedClassId])
+
+  const openAddModal = () => {
+    setActiveStudent(null)
+    setForm(buildForm(decodedClassId))
+    setErrors({})
+    setModalMode('add')
+  }
+
+  const openEditModal = (student) => {
+    setActiveStudent(student)
+    setForm(buildForm(decodedClassId, student))
+    setErrors({})
+    setModalMode('edit')
+  }
+
+  const openDeleteModal = (student) => {
+    setActiveStudent(student)
+    setModalMode('delete')
+  }
+
+  const closeModal = () => {
+    setModalMode(null)
+    setActiveStudent(null)
+    setErrors({})
+    setSaving(false)
+  }
+
+  const validateForm = () => {
+    const nextErrors = {}
+
+    if (!form.name.trim()) {
+      nextErrors.name = 'Student name is required'
     }
 
-    loadStudents()
-  }, [decodedClassId, user?.token])
+    if (!form.rollNumber.trim()) {
+      nextErrors.rollNumber = 'Roll number is required'
+    }
+
+    const age = Number(form.age)
+    if (!form.age || Number.isNaN(age) || age < 1 || age > 25) {
+      nextErrors.age = 'Enter a valid age (1-25)'
+    }
+
+    setErrors(nextErrors)
+    return Object.keys(nextErrors).length === 0
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    if (!validateForm()) return
+
+    setSaving(true)
+    try {
+      const payload = {
+        name: form.name.trim(),
+        rollNumber: form.rollNumber.trim(),
+        className: decodedClassId,
+        age: Number(form.age),
+      }
+
+      if (modalMode === 'edit' && activeStudent?.id) {
+        await optimizedStudentAPI.update(activeStudent.id, payload)
+        toast.success('Student updated successfully')
+      } else {
+        await optimizedStudentAPI.create(payload)
+        toast.success('Student added successfully')
+      }
+
+      closeModal()
+      await loadStudents()
+    } catch (err) {
+      toast.error(err?.response?.data?.message || err?.message || 'Failed to save student')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!activeStudent?.id) return
+
+    setSaving(true)
+    try {
+      await optimizedStudentAPI.remove(activeStudent.id)
+      toast.success('Student deleted successfully')
+      closeModal()
+      await loadStudents()
+    } catch (err) {
+      toast.error(err?.response?.data?.message || err?.message || 'Failed to delete student')
+      setSaving(false)
+    }
+  }
 
   const filteredStudents = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -138,6 +248,10 @@ export default function ClassStudentsView() {
             {loading ? 'Loading student cards...' : `${students.length} student${students.length !== 1 ? 's' : ''} in this class`}
           </p>
         </div>
+
+        <Button icon={<UserPlus size={16} />} onClick={openAddModal}>
+          Add Student
+        </Button>
       </motion.div>
 
       <motion.div
@@ -223,6 +337,13 @@ export default function ClassStudentsView() {
           <p style={{ fontSize: 14, color: COLORS.textMuted }}>
             {search ? `No results for "${search}".` : 'Add students from your class/student management flow, then return here.'}
           </p>
+          {!search && (
+            <div style={{ marginTop: 16 }}>
+              <Button icon={<UserPlus size={16} />} onClick={openAddModal}>
+                Add First Student
+              </Button>
+            </div>
+          )}
         </div>
       ) : (
         <motion.div
@@ -235,11 +356,101 @@ export default function ClassStudentsView() {
                 key={student.id}
                 student={student}
                 index={index}
+                onEdit={openEditModal}
+                onDelete={openDeleteModal}
               />
             ))}
           </AnimatePresence>
         </motion.div>
       )}
+
+      <Modal
+        open={modalMode === 'add' || modalMode === 'edit'}
+        onClose={closeModal}
+        title={modalMode === 'edit' ? 'Edit Student' : 'Add Student'}
+      >
+        <form onSubmit={handleSubmit}>
+          <Input
+            label="Full Name"
+            value={form.name}
+            onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
+            placeholder="Enter student's full name"
+            required
+            error={errors.name}
+          />
+          <Input
+            label="Roll Number"
+            value={form.rollNumber}
+            onChange={(e) => setForm((prev) => ({ ...prev, rollNumber: e.target.value }))}
+            placeholder="e.g., A001"
+            required
+            error={errors.rollNumber}
+          />
+          <Input
+            label="Class"
+            value={decodedClassId}
+            disabled
+            hint="Class is fixed for this page"
+          />
+          <Input
+            label="Age"
+            type="number"
+            min="1"
+            max="25"
+            value={form.age}
+            onChange={(e) => setForm((prev) => ({ ...prev, age: e.target.value }))}
+            placeholder="e.g., 10"
+            required
+            error={errors.age}
+          />
+
+          <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
+            <Button variant="ghost" type="button" fullWidth onClick={closeModal}>
+              Cancel
+            </Button>
+            <Button type="submit" fullWidth loading={saving}>
+              {modalMode === 'edit' ? 'Save Changes' : 'Add Student'}
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      <Modal
+        open={modalMode === 'delete'}
+        onClose={closeModal}
+        title="Delete Student"
+      >
+        <div style={{ textAlign: 'center' }}>
+          <div
+            style={{
+              width: 64,
+              height: 64,
+              borderRadius: 16,
+              background: 'rgba(239, 68, 68, 0.1)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 20px',
+            }}
+          >
+            <AlertCircle size={32} color="#ef4444" />
+          </div>
+
+          <p style={{ fontSize: 14, color: COLORS.textMuted, marginBottom: 24, lineHeight: 1.6 }}>
+            This will permanently delete <strong style={{ color: COLORS.textPrimary }}>{activeStudent?.name}</strong> and related reports.
+            This action cannot be undone.
+          </p>
+
+          <div style={{ display: 'flex', gap: 12 }}>
+            <Button variant="ghost" fullWidth onClick={closeModal}>
+              Cancel
+            </Button>
+            <Button variant="danger" fullWidth loading={saving} onClick={handleDelete}>
+              Delete Student
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   )
 }
