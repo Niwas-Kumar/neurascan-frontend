@@ -243,20 +243,48 @@ export default function TeacherDashboard() {
   useEffect(() => {
     if (!user?.userId) return
 
-    setLoading(true)
+    let isCancelled = false
+    const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms))
 
-    Promise.allSettled([
-      optimizedAnalysisAPI.getDashboard(),
-      optimizedAnalysisAPI.getReports(),
-    ])
-      .then(([d, r]) => {
+    const loadDashboard = async () => {
+      setLoading(true)
+
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const [d, r] = await Promise.allSettled([
+          optimizedAnalysisAPI.getDashboard(),
+          optimizedAnalysisAPI.getReports(),
+        ])
+
+        if (isCancelled) return
+
         const dashData = d.status === 'fulfilled' ? d.value.data.data : null
         const reportsData = r.status === 'fulfilled' ? (r.value.data.data || []) : []
+        const hasFailure = d.status !== 'fulfilled' || r.status !== 'fulfilled'
+        const looksTransientlyEmpty = !dashData && reportsData.length === 0
 
         setDash(dashData)
         setReports(reportsData)
 
-        if (d.status !== 'fulfilled' || r.status !== 'fulfilled') {
+        if (!hasFailure && !looksTransientlyEmpty) {
+          if ((dashData?.studentsAtRisk || 0) > 0) {
+            addNotification({
+              type: 'warning',
+              title: 'Attention Required',
+              body: `${dashData.studentsAtRisk} student(s) flagged for follow-up assessment.`,
+            })
+          }
+
+          setLoading(false)
+          return
+        }
+
+        if (attempt < 1) {
+          await wait(1200)
+          if (isCancelled) return
+          continue
+        }
+
+        if (hasFailure) {
           toast.error('Dashboard data is delayed. Showing available data.')
         }
 
@@ -267,9 +295,23 @@ export default function TeacherDashboard() {
             body: `${dashData.studentsAtRisk} student(s) flagged for follow-up assessment.`,
           })
         }
+
+        setLoading(false)
+        return
+      }
+    }
+
+    loadDashboard()
+      .catch(() => {
+        if (!isCancelled) {
+          toast.error('Unable to load dashboard')
+          setLoading(false)
+        }
       })
-      .catch(() => toast.error('Unable to load dashboard'))
-      .finally(() => setLoading(false))
+
+    return () => {
+      isCancelled = true
+    }
   }, [user?.userId])
 
   const greeting = (() => {

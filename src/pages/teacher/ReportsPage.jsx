@@ -238,10 +238,47 @@ export function ReportsPage() {
   const debouncedSearch = useDebounce(search)
 
   useEffect(() => {
-    optimizedAnalysisAPI.getReports()
-      .then((r) => setReports(r.data.data || []))
-      .catch(() => toast.error('Failed to load reports'))
-      .finally(() => setLoading(false))
+    let isCancelled = false
+    const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+
+    const loadReports = async () => {
+      setLoading(true)
+
+      try {
+        const first = await optimizedAnalysisAPI.getReports()
+        const firstReports = first?.data?.data || []
+
+        if (isCancelled) return
+
+        if (firstReports.length > 0) {
+          setReports(firstReports)
+          return
+        }
+
+        // Retry once when first response is empty to absorb transient cold-start empties.
+        await wait(1200)
+        if (isCancelled) return
+
+        const retry = await optimizedAnalysisAPI.getReports()
+        if (isCancelled) return
+
+        setReports(retry?.data?.data || [])
+      } catch {
+        if (!isCancelled) {
+          toast.error('Failed to load reports')
+        }
+      } finally {
+        if (!isCancelled) {
+          setLoading(false)
+        }
+      }
+    }
+
+    loadReports()
+
+    return () => {
+      isCancelled = true
+    }
   }, [user?.userId])
 
   const classes = useMemo(() => {

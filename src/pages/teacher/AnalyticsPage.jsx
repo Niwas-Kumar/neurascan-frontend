@@ -206,39 +206,63 @@ export default function AnalyticsPage() {
   const [classFilter, setClassFilter] = useState('all')
 
   useEffect(() => {
-    Promise.allSettled([
-      optimizedAnalysisAPI.getReports(),
-      optimizedAnalysisAPI.getDashboard(),
-      optimizedStudentAPI.getAllWithIndexRetry(4, 300),
-    ])
-      .then(([r, d, s]) => {
-        if (r.status === 'fulfilled') {
-          setReports(r.value.data.data || [])
-        } else {
-          console.error('AnalyticsPage: failed to load reports:', r.reason)
-          setReports([])
+    let isCancelled = false
+    const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+
+    const loadAnalytics = async () => {
+      setLoading(true)
+
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const [r, d, s] = await Promise.allSettled([
+          optimizedAnalysisAPI.getReports(),
+          optimizedAnalysisAPI.getDashboard(),
+          optimizedStudentAPI.getAllWithIndexRetry(4, 300),
+        ])
+
+        if (isCancelled) return
+
+        const reportsData = r.status === 'fulfilled' ? (r.value.data.data || []) : []
+        const dashData = d.status === 'fulfilled' ? d.value.data.data : null
+        const studentsData = s.status === 'fulfilled' ? (s.value?.data?.data || []) : []
+
+        setReports(reportsData)
+        setDash(dashData)
+        setStudents(studentsData)
+
+        const hasFailure = r.status !== 'fulfilled' || d.status !== 'fulfilled' || s.status !== 'fulfilled'
+        const likelyTransientEmpty = reportsData.length === 0 && studentsData.length > 0
+
+        if (!hasFailure && !likelyTransientEmpty) {
+          setLoading(false)
+          return
         }
 
-        if (d.status === 'fulfilled') {
-          setDash(d.value.data.data)
-        } else {
-          console.error('AnalyticsPage: failed to load dashboard:', d.reason)
-          setDash(null)
+        if (attempt < 1) {
+          await wait(1200)
+          if (isCancelled) return
+          continue
         }
 
-        if (s.status === 'fulfilled') {
-          setStudents(s.value?.data?.data || [])
-        } else {
-          console.error('AnalyticsPage: failed to load students:', s.reason)
-          setStudents([])
-        }
-
-        if (r.status !== 'fulfilled' || d.status !== 'fulfilled' || s.status !== 'fulfilled') {
+        if (hasFailure) {
           toast.error('Some analytics data is delayed. Showing available data.')
         }
+
+        setLoading(false)
+        return
+      }
+    }
+
+    loadAnalytics()
+      .catch(() => {
+        if (!isCancelled) {
+          toast.error('Failed to load analytics')
+          setLoading(false)
+        }
       })
-      .catch(() => toast.error('Failed to load analytics'))
-      .finally(() => setLoading(false))
+
+    return () => {
+      isCancelled = true
+    }
   }, [user?.userId])
 
   // Get unique classes

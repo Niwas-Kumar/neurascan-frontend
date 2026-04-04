@@ -487,29 +487,54 @@ export default function QuizPage() {
   const [viewResultsQuiz, setViewResultsQuiz] = useState(null)
 
   const load = async () => {
+    const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+
     setLoading(true)
-    const [quizResult, studentResult] = await Promise.allSettled([
-      quizAPI.getMyQuizzes(),
-      optimizedStudentAPI.getAllWithIndexRetry(4, 300)
-    ])
 
-    if (quizResult.status === 'fulfilled') {
-      setQuizzes(quizResult.value.data.data || [])
-    } else {
-      console.error('QuizPage: failed to load quizzes:', quizResult.reason)
-      setQuizzes([])
-      toast.error('Could not load quizzes')
+    try {
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const [quizResult, studentResult] = await Promise.allSettled([
+          quizAPI.getMyQuizzes(),
+          optimizedStudentAPI.getAllWithIndexRetry(4, 300)
+        ])
+
+        const quizzesData = quizResult.status === 'fulfilled' ? (quizResult.value.data.data || []) : []
+        const studentsData = studentResult.status === 'fulfilled' ? (studentResult.value?.data?.data || []) : []
+
+        if (quizResult.status !== 'fulfilled') {
+          console.error('QuizPage: failed to load quizzes:', quizResult.reason)
+        }
+
+        if (studentResult.status !== 'fulfilled') {
+          console.error('QuizPage: failed to load students:', studentResult.reason)
+        }
+
+        setQuizzes(quizzesData)
+        setStudents(studentsData)
+
+        const hasFailure = quizResult.status !== 'fulfilled' || studentResult.status !== 'fulfilled'
+        const likelyTransientEmpty = quizzesData.length === 0 && studentsData.length > 0
+
+        if (!hasFailure && !likelyTransientEmpty) {
+          break
+        }
+
+        if (attempt < 1) {
+          await wait(1000)
+          continue
+        }
+
+        if (quizResult.status !== 'fulfilled') {
+          toast.error('Could not load quizzes')
+        }
+
+        if (studentResult.status !== 'fulfilled') {
+          toast.error('Could not load students')
+        }
+      }
+    } finally {
+      setLoading(false)
     }
-
-    if (studentResult.status === 'fulfilled') {
-      setStudents(studentResult.value?.data?.data || [])
-    } else {
-      console.error('QuizPage: failed to load students:', studentResult.reason)
-      setStudents([])
-      toast.error('Could not load students')
-    }
-
-    setLoading(false)
   }
 
   useEffect(() => {

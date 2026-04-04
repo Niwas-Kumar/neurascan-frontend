@@ -271,7 +271,13 @@ export const optimizedAnalysisAPI = {
     // Reports is heavy operation - longer timeout, aggressive retry
     const request = retryWithBackoff(() => analysisAPI.getReports(), 5)
       .then(res => {
-        requestCache.set(cacheKey, res.data.data, 10 * 60 * 1000) // Cache for 10 mins (increased from 8)
+        const reports = res.data?.data || []
+        // Do not cache empty reports; empty may be transient during backend warm-up.
+        if (Array.isArray(reports) && reports.length > 0) {
+          requestCache.set(cacheKey, reports, 10 * 60 * 1000) // Cache for 10 mins (increased from 8)
+        } else {
+          requestCache.clear(cacheKey)
+        }
         return res
       })
       .catch(err => {
@@ -298,7 +304,13 @@ export const optimizedAnalysisAPI = {
     // Dashboard is heavy operation - longer timeout, aggressive retry
     const request = retryWithBackoff(() => analysisAPI.getDashboard(), 5)
       .then(res => {
-        requestCache.set(cacheKey, res.data.data, 10 * 60 * 1000) // Cache for 10 mins (increased from 6)
+        const dashboard = res.data?.data
+        // Do not cache null/empty dashboard payloads; they can be transient.
+        if (dashboard && typeof dashboard === 'object' && Object.keys(dashboard).length > 0) {
+          requestCache.set(cacheKey, dashboard, 10 * 60 * 1000) // Cache for 10 mins (increased from 6)
+        } else {
+          requestCache.clear(cacheKey)
+        }
         return res
       })
       .catch(err => {

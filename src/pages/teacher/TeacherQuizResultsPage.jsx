@@ -126,13 +126,43 @@ export default function TeacherQuizResultsPage() {
   }, [quizId])
 
   const loadQuizResults = async () => {
+    const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms))
+
     try {
       setLoading(true)
-      const quizResponse = await quizAPI.getQuiz(quizId)
-      setQuiz(quizResponse.data?.data || quizResponse.data)
-      const progressResponse = await quizAPI.getQuizProgress(quizId)
-      setProgress(progressResponse.data?.data || progressResponse.data)
-      setError(null)
+
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const [quizResult, progressResult] = await Promise.allSettled([
+          quizAPI.getQuiz(quizId),
+          quizAPI.getQuizProgress(quizId),
+        ])
+
+        if (quizResult.status === 'fulfilled') {
+          setQuiz(quizResult.value.data?.data || quizResult.value.data)
+        }
+
+        if (progressResult.status === 'fulfilled') {
+          setProgress(progressResult.value.data?.data || progressResult.value.data)
+        }
+
+        if (quizResult.status === 'fulfilled' && progressResult.status === 'fulfilled') {
+          setError(null)
+          return
+        }
+
+        if (quizResult.status === 'fulfilled' && progressResult.status !== 'fulfilled') {
+          setProgress(null)
+          setError(null)
+          toast.error('Live quiz progress is delayed. Please try again shortly.')
+          return
+        }
+
+        if (attempt < 1) {
+          await wait(1000)
+        }
+      }
+
+      setError('Failed to load quiz results')
     } catch (err) {
       setError(err.message || 'Failed to load quiz results')
     } finally {
