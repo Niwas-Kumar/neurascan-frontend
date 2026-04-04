@@ -11,13 +11,12 @@ export const useBackendKeepAlive = (intervalMs = 14 * 60 * 1000) => {
     const pingBackend = async () => {
       try {
         // /ping is a root-level endpoint, so strip /api suffix from VITE_API_URL
-        const baseUrl = (import.meta.env.VITE_API_URL || '').replace(/\/api\/?$/, '')
-        const token = localStorage.getItem('ns_token')
-        const headers = token ? { Authorization: `Bearer ${token}` } : {}
+        const rawUrl = import.meta.env.VITE_API_URL || ''
+        const baseUrl = rawUrl.replace(/\/api\/?$/, '').replace(/\/$/, '') // Remove trailing slash
 
+        // Don't send auth token for /ping - it's a public health check
         await fetch(`${baseUrl}/ping`, {
           method: 'GET',
-          headers,
         }).catch(() => {
           // Silently fail - this is just a keep-alive ping
         })
