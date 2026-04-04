@@ -115,6 +115,42 @@ export const optimizedStudentAPI = {
     return retryWithBackoff(() => studentAPI.getByClassId(classId))
   },
 
+  getByClassIdWithIndexRetry: async (classId, maxRetries = 5, delayMs = 350) => {
+    const classKey = String(classId || '').trim().toLowerCase()
+    const cacheKey = `students/class/${classKey}`
+
+    // Cache only non-empty class rosters to avoid sticky empty states.
+    const cached = requestCache.get(cacheKey)
+    if (cached && Array.isArray(cached) && cached.length > 0) {
+      return { success: true, data: { data: cached }, attempts: 0 }
+    }
+
+    for (let i = 0; i < maxRetries; i++) {
+      try {
+        const res = await retryWithBackoff(() => studentAPI.getByClassId(classId))
+        const students = res.data?.data || []
+
+        if (students.length > 0 || i === maxRetries - 1) {
+          if (students.length > 0) {
+            requestCache.set(cacheKey, students, 10 * 60 * 1000)
+          } else {
+            requestCache.clear(cacheKey)
+          }
+          return { success: students.length > 0, data: { data: students }, attempts: i + 1 }
+        }
+
+        const wait = delayMs * Math.pow(2, i)
+        await new Promise(resolve => setTimeout(resolve, wait))
+      } catch (error) {
+        if (i === maxRetries - 1) throw error
+        const wait = delayMs * Math.pow(2, i)
+        await new Promise(resolve => setTimeout(resolve, wait))
+      }
+    }
+
+    return { success: false, data: { data: [] }, attempts: maxRetries }
+  },
+
   getById: (id) => {
     const cacheKey = `students/${id}`
     const cached = requestCache.get(cacheKey)
@@ -184,6 +220,40 @@ export const optimizedClassAPI = {
       })
 
     return requestCache.setPendingRequest(cacheKey, request)
+  },
+
+  getAllWithIndexRetry: async (maxRetries = 5, delayMs = 350) => {
+    const cacheKey = 'classes/all'
+
+    const cached = requestCache.get(cacheKey)
+    if (cached && Array.isArray(cached) && cached.length > 0) {
+      return { success: true, data: { data: cached }, attempts: 0 }
+    }
+
+    for (let i = 0; i < maxRetries; i++) {
+      try {
+        const res = await retryWithBackoff(() => classAPI.getAll(), 5)
+        const classes = res.data?.data || []
+
+        if (classes.length > 0 || i === maxRetries - 1) {
+          if (classes.length > 0) {
+            requestCache.set(cacheKey, classes, 10 * 60 * 1000)
+          } else {
+            requestCache.clear(cacheKey)
+          }
+          return { success: classes.length > 0, data: { data: classes }, attempts: i + 1 }
+        }
+
+        const wait = delayMs * Math.pow(2, i)
+        await new Promise(resolve => setTimeout(resolve, wait))
+      } catch (error) {
+        if (i === maxRetries - 1) throw error
+        const wait = delayMs * Math.pow(2, i)
+        await new Promise(resolve => setTimeout(resolve, wait))
+      }
+    }
+
+    return { success: false, data: { data: [] }, attempts: maxRetries }
   },
 }
 

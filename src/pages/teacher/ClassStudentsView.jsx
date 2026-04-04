@@ -27,6 +27,13 @@ export default function ClassStudentsView() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
 
+  const normalizeClass = (value) => String(value || '').trim().toLowerCase()
+
+  const filterStudentsForClass = (rows, className) => {
+    const classKey = normalizeClass(className)
+    return (rows || []).filter((student) => normalizeClass(student.className) === classKey)
+  }
+
   useEffect(() => {
     const loadStudents = async () => {
       if (!decodedClassId) {
@@ -37,15 +44,40 @@ export default function ClassStudentsView() {
 
       setLoading(true)
       try {
-        const response = await optimizedStudentAPI.getByClassId(decodedClassId)
-        setStudents(response.data?.data || [])
+        const response = await optimizedStudentAPI.getByClassIdWithIndexRetry(decodedClassId, 5, 350)
+        const classStudents = response?.data?.data || []
+
+        if (classStudents.length > 0) {
+          setStudents(classStudents)
+          return
+        }
+
+        // Fallback: load all students and filter client-side if class endpoint is temporarily empty.
+        const allResponse = await optimizedStudentAPI.getAllWithIndexRetry(5, 320)
+        const filtered = filterStudentsForClass(allResponse?.data?.data || [], decodedClassId)
+
+        if (filtered.length > 0) {
+          setStudents(filtered)
+          return
+        }
+
+        // Final automatic retry to handle cold-start propagation delays.
+        await new Promise((resolve) => setTimeout(resolve, 1500))
+        const finalResponse = await optimizedStudentAPI.getByClassIdWithIndexRetry(decodedClassId, 3, 400)
+        setStudents(finalResponse?.data?.data || [])
       } catch (error) {
         console.error('Failed to load class students:', error)
         try {
           // Retry once after brief delay to recover from backend cold-start.
           await new Promise((resolve) => setTimeout(resolve, 1200))
-          const retryResponse = await optimizedStudentAPI.getByClassId(decodedClassId)
-          setStudents(retryResponse.data?.data || [])
+          const retryResponse = await optimizedStudentAPI.getByClassIdWithIndexRetry(decodedClassId, 3, 400)
+          const retryStudents = retryResponse?.data?.data || []
+          if (retryStudents.length > 0) {
+            setStudents(retryStudents)
+          } else {
+            const allResponse = await optimizedStudentAPI.getAllWithIndexRetry(3, 350)
+            setStudents(filterStudentsForClass(allResponse?.data?.data || [], decodedClassId))
+          }
           toast.error('Initial load was slow. Student list recovered automatically.')
         } catch (retryError) {
           console.error('Retry load for class students failed:', retryError)

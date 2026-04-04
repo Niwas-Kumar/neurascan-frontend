@@ -46,17 +46,18 @@ export default function ClassesView() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
 
-  const loadClassesFallback = async () => {
-    const studentsResponse = await optimizedStudentAPI.getAllWithIndexRetry(3, 250)
+  const loadClassesFallback = async (maxRetries = 5, delayMs = 300) => {
+    const studentsResponse = await optimizedStudentAPI.getAllWithIndexRetry(maxRetries, delayMs)
     const derived = deriveClassRowsFromStudents(studentsResponse?.data?.data || [])
     setClasses(derived)
+    return derived
   }
 
   useEffect(() => {
     const loadClasses = async () => {
       setLoading(true)
       try {
-        const response = await optimizedClassAPI.getAll()
+        const response = await optimizedClassAPI.getAllWithIndexRetry(5, 350)
         const classRows = normalizeClassRows(response.data?.data)
 
         if (classRows.length > 0) {
@@ -64,12 +65,23 @@ export default function ClassesView() {
           return
         }
 
-        // Safety fallback: derive class cards from legacy students list.
-        await loadClassesFallback()
+        // Fallback: derive class cards from legacy students list with stronger retries.
+        const derived = await loadClassesFallback(5, 320)
+        if (derived.length > 0) {
+          return
+        }
+
+        // Final automatic re-attempt (without manual refresh) for cold backend wake-up.
+        await new Promise(resolve => setTimeout(resolve, 1500))
+        await loadClassesFallback(3, 400)
       } catch (error) {
         console.error('Failed to load classes:', error)
         try {
-          await loadClassesFallback()
+          const derived = await loadClassesFallback(5, 320)
+          if (derived.length === 0) {
+            await new Promise(resolve => setTimeout(resolve, 1500))
+            await loadClassesFallback(3, 400)
+          }
           toast.error('Class endpoint is slow right now. Loaded from student data.')
         } catch (fallbackError) {
           console.error('Fallback class load failed:', fallbackError)
