@@ -142,4 +142,40 @@ export const quizAttemptAPI = {
   getResult: (attemptId) => api.get(`/quiz-attempt/${attemptId}/result`),
 }
 
+// ── PARENT-STUDENT CONNECTIONS ────────────────────────────────
+// Persistent parent-student relationship management
+export const parentStudentAPI = {
+  // Validate a student ID before connecting
+  validateStudent: (studentId) => api.get(`/parent/students/validate/${studentId}`),
+
+  // Get all connected students
+  getConnectedStudents: () => api.get('/parent/students'),
+
+  // Get primary connected student
+  getPrimaryStudent: () => api.get('/parent/students/primary'),
+
+  // Initiate connection (sends OTP)
+  connectStudent: (studentId) => api.post('/parent/students/connect', {
+    studentId,
+    verificationMethod: 'OTP'
+  }),
+
+  // Verify connection with OTP
+  verifyConnection: (relationshipId, otp) => api.post('/parent/students/verify', {
+    relationshipId,
+    otp
+  }),
+
+  // Resend verification OTP
+  resendOTP: (relationshipId) => api.post(`/parent/students/resend-otp/${relationshipId}`),
+
+  // Disconnect from a student
+  disconnectStudent: (studentId, reason) => api.delete(`/parent/students/${studentId}`, {
+    data: { studentId, reason }
+  }),
+
+  // Set a student as primary
+  setPrimaryStudent: (studentId) => api.put(`/parent/students/${studentId}/primary`),
+}
+
 export default api
