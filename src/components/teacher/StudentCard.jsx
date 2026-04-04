@@ -152,7 +152,7 @@ export default function StudentCard({ student, onEdit, onDelete, index = 0 }) {
             whiteSpace: 'nowrap',
           }}
         >
-          ROLL #{student.rollNumber}
+          ROLL NO #{student.rollNumber}
         </span>
 
         <span
