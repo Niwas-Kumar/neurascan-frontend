@@ -4,9 +4,10 @@ node_modules/
 # Build output
 dist/
 
-# Environment files (local secrets)
-.env.local
-.env.*.local
+# Environment files — never commit real values
+.env
+.env.*
+!.env.example
 
 # IDE
 .vscode/

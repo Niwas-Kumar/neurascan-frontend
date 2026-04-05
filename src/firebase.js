@@ -3,13 +3,13 @@ import { getAnalytics } from "firebase/analytics";
 import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBAet4HtUYJwl5og96QvX966py4JfDaAhQ",
-  authDomain: "neurascan-8ada2.firebaseapp.com",
-  projectId: "neurascan-8ada2",
-  storageBucket: "neurascan-8ada2.firebasestorage.app",
-  messagingSenderId: "147645341441",
-  appId: "1:147645341441:web:7b29f4f024c87f679f4500",
-  measurementId: "G-83QCZVSXYJ"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
 // Initialize Firebase
