@@ -15,61 +15,51 @@ const STORAGE_KEYS = {
   theme:     'ns_theme',
 }
 
+// Synchronous session restore — runs during initial useState so user is
+// available from the very first render, eliminating any race condition
+// where child components mount before the auth state is ready.
+function restoreSession() {
+  const token     = localStorage.getItem(STORAGE_KEYS.token)
+  const role      = localStorage.getItem(STORAGE_KEYS.role)
+  if (!token || !role) return null
+
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]))
+    if (payload.exp * 1000 < Date.now()) {
+      localStorage.removeItem(STORAGE_KEYS.token)
+      localStorage.removeItem(STORAGE_KEYS.role)
+      localStorage.removeItem(STORAGE_KEYS.userName)
+      localStorage.removeItem(STORAGE_KEYS.userEmail)
+      localStorage.removeItem(STORAGE_KEYS.school)
+      localStorage.removeItem(STORAGE_KEYS.picture)
+      return null
+    }
+  } catch {
+    localStorage.removeItem(STORAGE_KEYS.token)
+    localStorage.removeItem(STORAGE_KEYS.role)
+    return null
+  }
+
+  const userId    = localStorage.getItem(STORAGE_KEYS.userId)
+  const name      = localStorage.getItem(STORAGE_KEYS.userName)
+  const email     = localStorage.getItem(STORAGE_KEYS.userEmail)
+  const studentId = localStorage.getItem(STORAGE_KEYS.studentId)
+  const school    = localStorage.getItem(STORAGE_KEYS.school)
+  const rawPicture = localStorage.getItem(STORAGE_KEYS.picture)
+  const picture = (rawPicture === 'null' || rawPicture === 'undefined' || !rawPicture) ? null : rawPicture
+  return { token, role, userId, name, email, studentId, school, picture }
+}
+
 export function AuthProvider({ children }) {
-  const [user, setUser]       = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [theme, setThemeState]= useState('dark')
+  const [user, setUser]       = useState(restoreSession)
+  const [loading, setLoading] = useState(false)
+  const [theme, setThemeState]= useState(() => localStorage.getItem(STORAGE_KEYS.theme) || 'dark')
 
   // Notifications state (in-app, non-persistent demo)
   const [notifications, setNotifications] = useState([
     { id: 1, type: 'info',    title: 'Welcome to NeuraScan v2', body: 'Explore the new dashboard features.', read: false, time: new Date() },
     { id: 2, type: 'success', title: 'System ready',            body: 'All AI services are operational.',   read: false, time: new Date() },
   ])
-
-  useEffect(() => {
-    const token     = localStorage.getItem(STORAGE_KEYS.token)
-    const role      = localStorage.getItem(STORAGE_KEYS.role)
-    const userId    = localStorage.getItem(STORAGE_KEYS.userId)
-    const name      = localStorage.getItem(STORAGE_KEYS.userName)
-    const email     = localStorage.getItem(STORAGE_KEYS.userEmail)
-    const studentId = localStorage.getItem(STORAGE_KEYS.studentId)
-    const school    = localStorage.getItem(STORAGE_KEYS.school)
-    const rawPicture = localStorage.getItem(STORAGE_KEYS.picture)
-    const picture = (rawPicture === 'null' || rawPicture === 'undefined' || !rawPicture) ? null : rawPicture;
-    const savedTheme= localStorage.getItem(STORAGE_KEYS.theme) || 'dark'
-
-    // Validate token expiration before restoring session
-    if (token && role) {
-      try {
-        // Decode JWT to check expiration (JWT format: header.payload.signature)
-        const payload = JSON.parse(atob(token.split('.')[1]))
-        const expirationTime = payload.exp * 1000 // Convert to milliseconds
-        const now = Date.now()
-
-        if (expirationTime < now) {
-          // Token expired - clear it proactively
-          console.log('[Auth] Token expired on startup, clearing session')
-          localStorage.removeItem(STORAGE_KEYS.token)
-          localStorage.removeItem(STORAGE_KEYS.role)
-          localStorage.removeItem(STORAGE_KEYS.userName)
-          localStorage.removeItem(STORAGE_KEYS.userEmail)
-          localStorage.removeItem(STORAGE_KEYS.school)
-          localStorage.removeItem(STORAGE_KEYS.picture)
-          // Note: NOT clearing userId or studentId
-        } else {
-          // Token valid - restore session
-          setUser({ token, role, userId, name, email, studentId, school, picture })
-        }
-      } catch (error) {
-        // Invalid token format - clear it
-        console.error('[Auth] Invalid token format, clearing session')
-        localStorage.removeItem(STORAGE_KEYS.token)
-        localStorage.removeItem(STORAGE_KEYS.role)
-      }
-    }
-    setThemeState(savedTheme)
-    setLoading(false)
-  }, [])
 
   const login = useCallback((data) => {
     const { jwtToken, userRole, userId, userName, studentId, school, picture } = data
@@ -133,7 +123,6 @@ export function AuthProvider({ children }) {
         
         setUser({ token: jwtToken, role: userRole, userId: userId, email: userEmail, name: userName, picture: picture })
     } catch(e) {
-        console.error("Failed to parse OAuth JWT", e)
         throw e
     }
   }, [])

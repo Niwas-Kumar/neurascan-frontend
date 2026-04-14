@@ -45,7 +45,6 @@ aiClient.interceptors.request.use((config) => {
 aiClient.interceptors.response.use(
   (res) => res,
   (err) => {
-    console.error('AI API Error:', err.message)
     throw err
   }
 )
@@ -73,7 +72,6 @@ export const analyzeHandwriting = async (file, extractedText = '') => {
       data: response.data,
     }
   } catch (error) {
-    console.error('Handwriting analysis failed:', error)
     return {
       success: false,
       error: error.response?.data?.error || error.message,
@@ -104,7 +102,6 @@ export const analyzeHandwritingExternal = async (file, extractedText = '') => {
       data: response.data,
     }
   } catch (error) {
-    console.error('External handwriting analysis failed:', error)
     return {
       success: false,
       error: error.response?.data?.error || error.message,
@@ -132,7 +129,6 @@ export const generateQuizFromText = async (topic, text, questionCount = 5) => {
       data: response.data,
     }
   } catch (error) {
-    console.error('Quiz generation failed:', error)
     return {
       success: false,
       error: error.response?.data?.error || error.message,
@@ -149,7 +145,6 @@ export const checkAIBackendHealth = async () => {
     const response = await aiClient.get('/health', { timeout: 5000 })
     return response.data?.status === 'healthy'
   } catch (error) {
-    console.warn('AI backend health check failed:', error.message)
     return false
   }
 }

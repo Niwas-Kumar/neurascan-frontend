@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, Component } from 'react'
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -11,6 +11,42 @@ import { useIsMobile, useClickOutside } from '../../hooks'
 import { Tooltip, Card, NavItem } from '../shared/UI'
 import { NeuraScanLogo } from '../shared/Logo'
 import toast from 'react-hot-toast'
+
+// ── Error Boundary — catches render crashes so the page never goes blank ──
+class PageErrorBoundary extends Component {
+  state = { hasError: false, error: null }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error }
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: '48px 24px', textAlign: 'center' }}>
+          <AlertTriangle size={40} color="#d93025" style={{ marginBottom: 16 }} />
+          <h2 style={{ fontSize: 20, fontWeight: 600, color: '#202124', marginBottom: 8 }}>
+            Something went wrong
+          </h2>
+          <p style={{ fontSize: 14, color: '#5f6368', marginBottom: 24 }}>
+            {this.state.error?.message || 'An unexpected error occurred.'}
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            style={{
+              padding: '10px 24px', borderRadius: 8, border: 'none',
+              background: '#1a73e8', color: '#fff', fontSize: 14,
+              fontWeight: 600, cursor: 'pointer',
+            }}
+          >
+            Refresh Page
+          </button>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
 
 const teacherNav = [
   { to: '/teacher/dashboard', icon: LayoutDashboard, label: 'Dashboard',    badge: null },
@@ -358,7 +394,7 @@ export default function AppLayout() {
 
         {/* Content */}
         <main style={{ flex: 1, padding: isMobile ? '20px 16px' : '24px 28px', overflowX: 'hidden' }}>
-          <AnimatePresence mode="wait">
+          <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={location.pathname}
               initial={{ opacity: 0, y: 6 }}
@@ -367,7 +403,9 @@ export default function AppLayout() {
               transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
               style={{ maxWidth: 1200, margin: '0 auto' }}
             >
-              <Outlet />
+              <PageErrorBoundary>
+                <Outlet />
+              </PageErrorBoundary>
             </motion.div>
           </AnimatePresence>
         </main>

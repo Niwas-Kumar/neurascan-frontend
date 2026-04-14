@@ -407,7 +407,6 @@ export default function QuizAttemptPage() {
       setQuestionStartTime(Date.now())
 
     } catch (err) {
-      console.error('Quiz load error:', err)
       setError(err.response?.data?.message || 'Could not load quiz. The link may be invalid or expired.')
     } finally {
       setLoading(false)
@@ -463,7 +462,6 @@ export default function QuizAttemptPage() {
 
     } catch (err) {
       toast.error('Could not submit answer. Please try again.')
-      console.error('Submit answer error:', err)
     } finally {
       setSubmitting(false)
     }
@@ -476,7 +474,6 @@ export default function QuizAttemptPage() {
       setFinalResult(res.data?.data)
       clearInterval(timerRef.current)
     } catch (err) {
-      console.error('Complete quiz error:', err)
       toast.error('Could not complete quiz. Please try again.')
     } finally {
       setSubmitting(false)

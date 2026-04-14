@@ -29,12 +29,10 @@ async function retryWithBackoff(fn, maxRetries = 5, initialDelayMs = 2000) {
       if (i < maxRetries - 1) {
         // Exponential backoff: 2s, 4s, 8s, 16s, 32s
         const delay = initialDelayMs * Math.pow(2, i)
-        console.warn(`Retry attempt ${i + 1}/${maxRetries} after ${delay}ms for:`, error.message)
         await new Promise(resolve => setTimeout(resolve, delay))
       }
     }
   }
-  console.error('Max retries exceeded for:', lastError.message)
   throw lastError
 }
 
@@ -75,33 +73,26 @@ export const optimizedStudentAPI = {
 
   getAllWithIndexRetry: async (maxRetries = 5, delayMs = 300) => {
     // Special method that retries on empty results (Firestore index delay)
-    console.log('📚 [LOAD_RETRY] Starting student load with Firestore index retry...')
-    
     for (let i = 0; i < maxRetries; i++) {
       try {
         // Skip cache for retry attempts - always hit server
         const res = await retryWithBackoff(() => studentAPI.getAll())
         const students = res.data.data || []
         
-        console.log(`📚 [LOAD_ATTEMPT ${i + 1}/${maxRetries}] Got ${students.length} students`)
-        
         // If we got students OR this is the last retry, return
         if (students.length > 0 || i === maxRetries - 1) {
           // Cache successful result
           if (students.length > 0) {
             requestCache.set('students/all', students, 10 * 60 * 1000)
-            console.log(`✅ [LOAD_SUCCESS] Student list cached`)
           }
           return { success: students.length > 0, data: { data: students }, attempts: i + 1 }
         }
         
         // Wait before retry (exponential backoff: 300ms, 600ms, 1.2s, 2.4s, 4.8s)
         const wait = delayMs * Math.pow(2, i)
-        console.warn(`⏳ [LOAD_WAIT] Waiting ${wait}ms before retry ${i + 2}/${maxRetries} (Firestore index update in progress)`)
         await new Promise(r => setTimeout(r, wait))
         
       } catch (error) {
-        console.error(`❌ [LOAD_ERROR_${i + 1}] Error on attempt ${i + 1}: ${error.message}`)
         if (i === maxRetries - 1) throw error
         const wait = delayMs * Math.pow(2, i)
         await new Promise(r => setTimeout(r, wait))
@@ -289,7 +280,6 @@ export const optimizedAnalysisAPI = {
       .catch(err => {
         const staleCache = requestCache.cache.get(cacheKey)
         if (staleCache && staleCache.data) {
-          console.warn('Falling back to stale reports cache due to:', err.message)
           return { data: { data: staleCache.data, isStale: true } }
         }
         throw err
@@ -323,7 +313,6 @@ export const optimizedAnalysisAPI = {
         // On timeout/error, try to return stale cache with warning
         const staleCache = requestCache.cache.get(cacheKey)
         if (staleCache && staleCache.data) {
-          console.warn('Falling back to stale dashboard cache due to:', err.message)
           return { data: { data: staleCache.data, isStale: true } }
         }
         throw err

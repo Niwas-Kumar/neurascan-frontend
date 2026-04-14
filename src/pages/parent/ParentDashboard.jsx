@@ -733,7 +733,6 @@ export default function ParentDashboard() {
         localStorage.removeItem('ns_studentId')
       }
     } catch (err) {
-      console.error('Failed to load connected students:', err)
     } finally {
       setLoadingConnections(false)
     }
@@ -763,7 +762,6 @@ export default function ParentDashboard() {
         setNoData(true)
       }
     } catch (err) {
-      console.error('Failed to load report:', err)
       setNoData(true)
     } finally {
       setLoading(false)

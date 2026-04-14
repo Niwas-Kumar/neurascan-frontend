@@ -175,7 +175,6 @@ export default function TeacherQuizResultsPage() {
       const response = await optimizedStudentAPI.getAllWithIndexRetry(4, 300)
       setStudents(response?.data?.data || [])
     } catch (err) {
-      console.error('Error loading students:', err)
       toast.error('Unable to load students for distribution')
     }
   }
