@@ -19,9 +19,6 @@ export function AuthProvider({ children }) {
   const [user, setUser]       = useState(null)
   const [loading, setLoading] = useState(true)
   const [theme, setThemeState]= useState('dark')
-  // Stable session counter — increments only on login/logout, NOT on token refresh.
-  // Pages use this as their useEffect dependency instead of user.token.
-  const [sessionId, setSessionId] = useState(0)
 
   // Notifications state (in-app, non-persistent demo)
   const [notifications, setNotifications] = useState([
@@ -62,7 +59,6 @@ export function AuthProvider({ children }) {
         } else {
           // Token valid - restore session
           setUser({ token, role, userId, name, email, studentId, school, picture })
-          setSessionId(1) // Mark session as restored
         }
       } catch (error) {
         // Invalid token format - clear it
@@ -73,24 +69,6 @@ export function AuthProvider({ children }) {
     }
     setThemeState(savedTheme)
     setLoading(false)
-  }, [])
-
-  // Listen for token refresh events from the API interceptor.
-  // Only update localStorage (already done by the interceptor); do NOT update
-  // React state, because changing user.token would re-trigger every useEffect
-  // that depends on it, creating an infinite re-fetch loop.
-  useEffect(() => {
-    const handleTokenRefresh = (e) => {
-      const newToken = e.detail?.token
-      if (newToken) {
-        // localStorage is already set by the interceptor.
-        // Silently keep React state in sync without causing
-        // dependency-array re-fires in consumer pages.
-        setUser(prev => prev ? { ...prev, token: newToken } : prev)
-      }
-    }
-    window.addEventListener('ns-token-refreshed', handleTokenRefresh)
-    return () => window.removeEventListener('ns-token-refreshed', handleTokenRefresh)
   }, [])
 
   const login = useCallback((data) => {
@@ -123,7 +101,6 @@ export function AuthProvider({ children }) {
       school, 
       picture: (picture && picture !== 'null') ? picture : null 
     })
-    setSessionId(prev => prev + 1) // Bump session for consumer effects
 
     // Welcome notification
     setNotifications(n => [{
@@ -155,7 +132,6 @@ export function AuthProvider({ children }) {
         if(picture) localStorage.setItem(STORAGE_KEYS.picture, picture)
         
         setUser({ token: jwtToken, role: userRole, userId: userId, email: userEmail, name: userName, picture: picture })
-        setSessionId(prev => prev + 1) // Bump session for consumer effects
     } catch(e) {
         console.error("Failed to parse OAuth JWT", e)
         throw e
@@ -191,7 +167,6 @@ export function AuthProvider({ children }) {
     clearAllCaches() // Clear all cached API responses
     setUser(null)
     setNotifications([])
-    setSessionId(prev => prev + 1) // Bump session so stale effects won't re-run
   }, [])
 
   const markAllRead = useCallback(() => {
@@ -216,7 +191,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider value={{
-      user, login, logout, loading, handleOAuthLogin, updateUser, sessionId,
+      user, login, logout, loading, handleOAuthLogin, updateUser,
       isTeacher, isParent,
       notifications, unreadCount, markAllRead, addNotification,
       theme, toggleTheme,

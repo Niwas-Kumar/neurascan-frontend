@@ -148,7 +148,7 @@ function CustomTooltip({ active, payload, label }) {
           <div style={{ width: 10, height: 10, borderRadius: 3, background: p.color }} />
           <span style={{ color: COLORS.textSecondary }}>{p.name}:</span>
           <span style={{ fontWeight: 600, color: COLORS.textPrimary }}>
-            {typeof p.value === 'number' ? (p.value < 1 ? (p.value * 100).toFixed(1) + '%' : p.value) : p.value}
+            {typeof p.value === 'number' ? p.value.toFixed(1) + '%' : p.value}
           </span>
         </div>
       ))}
@@ -293,10 +293,10 @@ export default function AnalyticsPage() {
         return rd.getMonth() === monthNum && rd.getFullYear() === year
       })
       const avgDyslexia = monthReports.length
-        ? monthReports.reduce((s, r) => s + (r.dyslexiaScore || 0), 0) / monthReports.length / 100
+        ? monthReports.reduce((s, r) => s + (r.dyslexiaScore || 0), 0) / monthReports.length
         : 0
       const avgDysgraphia = monthReports.length
-        ? monthReports.reduce((s, r) => s + (r.dysgraphiaScore || 0), 0) / monthReports.length / 100
+        ? monthReports.reduce((s, r) => s + (r.dysgraphiaScore || 0), 0) / monthReports.length
         : 0
       return { month, dyslexia: avgDyslexia, dysgraphia: avgDysgraphia }
     })
@@ -438,7 +438,7 @@ export default function AnalyticsPage() {
                 <CartesianGrid strokeDasharray="3 3" stroke={COLORS.border} />
                 <XAxis dataKey="month" tick={{ fontSize: 12, fill: COLORS.textMuted }} stroke={COLORS.border} />
                 <YAxis
-                  tickFormatter={(v) => `${(v * 100).toFixed(0)}%`}
+                  tickFormatter={(v) => `${v.toFixed(0)}%`}
                   tick={{ fontSize: 12, fill: COLORS.textMuted }}
                   stroke={COLORS.border}
                 />

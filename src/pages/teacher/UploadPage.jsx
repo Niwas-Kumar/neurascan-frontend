@@ -155,7 +155,7 @@ function ProgressSteps({ steps, current }) {
 // MAIN UPLOAD PAGE
 // ════════════════════════════════════════════════════════════════
 export default function UploadPage() {
-  const { user, addNotification, sessionId } = useAuth()
+  const { user, addNotification } = useAuth()
   const [students, setStudents] = useState([])
   const [studentId, setStudentId] = useState('')
   const [file, setFile] = useState(null)
@@ -188,7 +188,7 @@ export default function UploadPage() {
     }
 
     loadStudents()
-  }, [sessionId])
+  }, [user?.token])
 
   const onDrop = useCallback((accepted, rejected) => {
     if (rejected.length > 0) {

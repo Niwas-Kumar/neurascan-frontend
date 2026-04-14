@@ -60,7 +60,7 @@ function RiskBadge({ risk }) {
 }
 
 function ScoreBar({ value, color }) {
-  const percentage = Math.min(Math.max(value * 100 || 0, 0), 100)
+  const percentage = Math.min(Math.max(value || 0, 0), 100)
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 100 }}>
       <div
@@ -89,7 +89,7 @@ function ScoreBar({ value, color }) {
 }
 
 function ProgressBar({ value }) {
-  const percentage = Math.min(Math.max(value * 100 || 0, 0), 100)
+  const percentage = Math.min(Math.max(value || 0, 0), 100)
   return (
     <div
       style={{
@@ -226,7 +226,7 @@ function Dialog({ open, onClose, children }) {
 // MAIN REPORTS PAGE
 // ════════════════════════════════════════════════════════════════
 export function ReportsPage() {
-  const { user, sessionId } = useAuth()
+  const { user } = useAuth()
   const [reports, setReports] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -281,7 +281,7 @@ export function ReportsPage() {
     return () => {
       isCancelled = true
     }
-  }, [sessionId])
+  }, [user?.token])
 
   const classes = useMemo(() => {
     return Array.from(new Set(reports.map((r) => r.className).filter(Boolean))).sort()
@@ -333,8 +333,8 @@ export function ReportsPage() {
       r.reportId,
       r.studentName,
       r.className,
-      ((r.dyslexiaScore || 0) * 100).toFixed(1) + '%',
-      ((r.dysgraphiaScore || 0) * 100).toFixed(1) + '%',
+      (r.dyslexiaScore || 0).toFixed(1) + '%',
+      (r.dysgraphiaScore || 0).toFixed(1) + '%',
       r.riskLevel,
       r.createdAt ? format(new Date(r.createdAt), 'yyyy-MM-dd') : 'N/A',
       r.aiComment || '',
@@ -849,7 +849,7 @@ export function ReportsPage() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                     <span style={{ fontSize: 14, color: COLORS.textMuted }}>Dyslexia Score</span>
                     <span style={{ fontSize: 14, fontFamily: 'monospace', fontWeight: 500 }}>
-                      {((selectedReport.dyslexiaScore || 0) * 100).toFixed(1)}%
+                      {(selectedReport.dyslexiaScore || 0).toFixed(1)}%
                     </span>
                   </div>
                   <ProgressBar value={selectedReport.dyslexiaScore} />
@@ -859,7 +859,7 @@ export function ReportsPage() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
                     <span style={{ fontSize: 14, color: COLORS.textMuted }}>Dysgraphia Score</span>
                     <span style={{ fontSize: 14, fontFamily: 'monospace', fontWeight: 500 }}>
-                      {((selectedReport.dysgraphiaScore || 0) * 100).toFixed(1)}%
+                      {(selectedReport.dysgraphiaScore || 0).toFixed(1)}%
                     </span>
                   </div>
                   <ProgressBar value={selectedReport.dysgraphiaScore} />

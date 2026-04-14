@@ -234,7 +234,7 @@ function CardContent({ children, style = {} }) {
 // MAIN DASHBOARD COMPONENT
 // ════════════════════════════════════════════════════════════════
 export default function TeacherDashboard() {
-  const { user, addNotification, sessionId } = useAuth()
+  const { user, addNotification } = useAuth()
   const navigate = useNavigate()
   const [dash, setDash] = useState(null)
   const [reports, setReports] = useState([])
@@ -318,7 +318,7 @@ export default function TeacherDashboard() {
     return () => {
       isCancelled = true
     }
-  }, [sessionId])
+  }, [user?.token])
 
   const greeting = (() => {
     const h = new Date().getHours()
