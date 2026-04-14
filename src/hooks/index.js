@@ -91,7 +91,7 @@ export function useLocalStorage(key, initialValue) {
       const toStore = val instanceof Function ? val(value) : val
       setValue(toStore)
       localStorage.setItem(key, JSON.stringify(toStore))
-    } catch (e) { console.warn('localStorage error:', e) }
+    } catch (e) { /* localStorage unavailable */ }
   }, [key, value])
 
   return [value, setStoredValue]

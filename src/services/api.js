@@ -49,7 +49,6 @@ api.interceptors.response.use(
       localStorage.setItem('ns_token', newToken)
       // Dispatch custom event so AuthContext can update React state
       window.dispatchEvent(new CustomEvent('ns-token-refreshed', { detail: { token: newToken } }))
-      console.log('[Token] Auto-refreshed - token extended')
     }
     return res
   },
@@ -72,7 +71,6 @@ api.interceptors.response.use(
     // Also: skip if no response (network error / CORS block — NOT a true 401)
     if (err.response?.status === 401 && !isAuthEndpoint && !isPublicTokenEndpoint && !isStudentIdMissing && !isRedirecting) {
       isRedirecting = true
-      console.warn('[Auth] 401 Unauthorized on:', url, '— redirecting to login')
       
       // ✅ FIX: Only clear authentication token, preserve other data (studentId, userId, etc)
       // This allows parents to re-login without losing their child's student ID
@@ -98,10 +96,6 @@ api.interceptors.response.use(
     }
 
     // Log 403 errors for debugging but don't logout
-    if (err.response?.status === 403) {
-      console.warn('Access forbidden (403):', url, errorMessage)
-    }
-
     return Promise.reject(err)
   }
 )

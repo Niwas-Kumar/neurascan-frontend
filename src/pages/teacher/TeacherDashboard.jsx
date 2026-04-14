@@ -266,8 +266,6 @@ export default function TeacherDashboard() {
         const hasFailure = d.status !== 'fulfilled' || r.status !== 'fulfilled'
         const looksTransientlyEmpty = !dashData && reportsData.length === 0
 
-        console.log('[Dashboard] Attempt', attempt + 1, '| dash:', dashData, '| reports:', reportsData.length, '| hasFailure:', hasFailure, '| transientEmpty:', looksTransientlyEmpty)
-
         setDash(dashData)
         setReports(reportsData)
 

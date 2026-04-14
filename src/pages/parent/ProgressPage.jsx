@@ -145,7 +145,6 @@ export default function ProgressPage() {
           return String(sid)
         }
       } catch (err) {
-        console.warn('Unable to resolve primary student ID for parent progress:', err?.message || err)
       }
 
       return null

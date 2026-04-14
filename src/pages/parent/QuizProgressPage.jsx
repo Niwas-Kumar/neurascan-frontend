@@ -295,7 +295,6 @@ export default function QuizProgressPage() {
         return String(sid)
       }
     } catch (err) {
-      console.warn('Unable to resolve primary student ID for parent:', err?.message || err)
     }
 
     return null
@@ -308,7 +307,6 @@ export default function QuizProgressPage() {
     const sid = await resolveStudentId()
 
     if (!sid) {
-      console.warn('No studentId found in user object, storage, or primary student API')
       setNoStudentId(true)
       setLoading(false)
       return
@@ -329,7 +327,6 @@ export default function QuizProgressPage() {
           setNoStudentId(true)
         }
 
-        console.error('Quiz progress error:', errorMsg)
         toast.error(errorMsg.replace('STUDENT_ID_NOT_SET|', ''))
       })
       .finally(() => setLoading(false))

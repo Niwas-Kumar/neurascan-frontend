@@ -37,7 +37,6 @@ const ParentQuizProgress = ({ studentId }) => {
       setError(null);
     } catch (err) {
       setError('Failed to load quiz progress');
-      console.error('Error loading quiz attempts:', err);
     } finally {
       setLoading(false);
     }

@@ -69,9 +69,7 @@ export default function ClassesView() {
     setLoading(true)
     try {
       const response = await optimizedClassAPI.getAllWithIndexRetry(5, 350)
-      console.log('[ClassesView] Raw API response:', JSON.stringify(response.data, null, 2))
       const classRows = normalizeClassRows(response.data?.data)
-      console.log('[ClassesView] Normalized classRows:', classRows)
 
       if (classRows.length > 0) {
         setClasses(classRows)
@@ -88,7 +86,6 @@ export default function ClassesView() {
       await new Promise(resolve => setTimeout(resolve, 1500))
       await loadClassesFallback(3, 400)
     } catch (error) {
-      console.error('Failed to load classes:', error)
       try {
         const derived = await loadClassesFallback(5, 320)
         if (derived.length === 0) {
@@ -97,7 +94,6 @@ export default function ClassesView() {
         }
         toast.error('Class endpoint is slow right now. Loaded from student data.')
       } catch (fallbackError) {
-        console.error('Fallback class load failed:', fallbackError)
         toast.error('Unable to load classes')
         setClasses([])
       }

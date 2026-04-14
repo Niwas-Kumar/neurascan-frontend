@@ -344,7 +344,6 @@ const QuizResultsModal = ({ quiz, onClose }) => {
         const retryRes = await quizAPI.getQuizProgress(quiz.id)
         setProgress(retryRes.data?.data)
       } catch (retryErr) {
-        console.error('QuizResultsModal: failed to load progress:', retryErr)
         toast.error('Could not load quiz results')
       }
     } finally {
@@ -500,14 +499,6 @@ export default function QuizPage() {
 
         const quizzesData = quizResult.status === 'fulfilled' ? (quizResult.value.data.data || []) : []
         const studentsData = studentResult.status === 'fulfilled' ? (studentResult.value?.data?.data || []) : []
-
-        if (quizResult.status !== 'fulfilled') {
-          console.error('QuizPage: failed to load quizzes:', quizResult.reason)
-        }
-
-        if (studentResult.status !== 'fulfilled') {
-          console.error('QuizPage: failed to load students:', studentResult.reason)
-        }
 
         setQuizzes(quizzesData)
         setStudents(studentsData)
