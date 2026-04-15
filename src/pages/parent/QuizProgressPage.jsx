@@ -276,11 +276,15 @@ export default function QuizProgressPage() {
   const [noStudentId, setNoStudentId] = useState(false)
   const [expandedId, setExpandedId] = useState(null)
 
+  // Track the selected student ID so useEffect re-runs when parent switches students
+  const selectedStudentId = localStorage.getItem('ns_studentId') || user?.studentId || null
+
   const resolveStudentId = async () => {
-    const fromUser = user?.studentId
+    // Check localStorage FIRST — parent dashboard writes selected student here
     const fromLocal = localStorage.getItem('ns_studentId')
     const fromSession = sessionStorage.getItem('ns_studentId')
-    const existing = fromUser || fromLocal || fromSession
+    const fromUser = user?.studentId
+    const existing = fromLocal || fromSession || fromUser
 
     if (existing) return String(existing)
 
@@ -334,7 +338,7 @@ export default function QuizProgressPage() {
 
   useEffect(() => {
     load()
-  }, [user?.studentId, user?.userId])
+  }, [selectedStudentId])
 
   // Calculate summary stats
   const completedAttempts = attempts.filter(a => a.isCompleted)
