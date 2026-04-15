@@ -748,17 +748,19 @@ export default function ParentDashboard() {
 
     setLoading(true)
     try {
-      const res = await optimizedAnalysisAPI.getStudentReport(studentId)
-      const data = res.data.data
-      if (Array.isArray(data) && data.length > 0) {
-        const sorted = data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      // Use progress endpoint to get ALL reports (not just latest)
+      // so we can compute the improvement trend
+      const res = await optimizedAnalysisAPI.getProgress(studentId)
+      const progressData = res.data.data
+      const reports = progressData?.reports
+      if (Array.isArray(reports) && reports.length > 0) {
+        const sorted = reports.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
         setReport(sorted[0])
         setPreviousReports(sorted.slice(1, 4))
         setNoData(false)
-      } else if (data && !Array.isArray(data)) {
-        setReport(data)
-        setNoData(false)
       } else {
+        setReport(null)
+        setPreviousReports([])
         setNoData(true)
       }
     } catch (err) {
