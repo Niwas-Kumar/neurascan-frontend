@@ -114,7 +114,7 @@ export default function ClassStudentsView() {
 
   useEffect(() => {
     loadStudents()
-  }, [loadStudents, user?.token])
+  }, [loadStudents, user?.userId])
 
   useEffect(() => {
     setForm(buildForm(decodedClassId))

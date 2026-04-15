@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useCallback } from 'react'
 import { Search, Filter, FileText, Download, Eye, ChevronUp, ChevronDown, X } from 'lucide-react'
 import { optimizedAnalysisAPI } from '../../services/optimizedApi'
 import { useAuth } from '../../context/AuthContext'
@@ -237,51 +237,22 @@ export function ReportsPage() {
   const [selectedReport, setSelectedReport] = useState(null)
   const debouncedSearch = useDebounce(search)
 
+  const loadReports = useCallback(() => {
+    setLoading(true)
+
+    optimizedAnalysisAPI.getReports()
+      .then(res => {
+        setReports(res?.data?.data || [])
+      })
+      .catch(() => {
+        toast.error('Failed to load reports')
+      })
+      .finally(() => setLoading(false))
+  }, [])
+
   useEffect(() => {
-    if (!user?.token) return
-
-    let isCancelled = false
-    const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms))
-
-    const loadReports = async () => {
-      setLoading(true)
-
-      try {
-        const first = await optimizedAnalysisAPI.getReports()
-        const firstReports = first?.data?.data || []
-
-        if (isCancelled) return
-
-        if (firstReports.length > 0) {
-          setReports(firstReports)
-          return
-        }
-
-        // Retry once when first response is empty to absorb transient cold-start empties.
-        await wait(1200)
-        if (isCancelled) return
-
-        const retry = await optimizedAnalysisAPI.getReports()
-        if (isCancelled) return
-
-        setReports(retry?.data?.data || [])
-      } catch {
-        if (!isCancelled) {
-          toast.error('Failed to load reports')
-        }
-      } finally {
-        if (!isCancelled) {
-          setLoading(false)
-        }
-      }
-    }
-
     loadReports()
-
-    return () => {
-      isCancelled = true
-    }
-  }, [user?.token])
+  }, [loadReports, user?.userId])
 
   const classes = useMemo(() => {
     return Array.from(new Set(reports.map((r) => r.className).filter(Boolean))).sort()

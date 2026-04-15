@@ -485,53 +485,26 @@ export default function QuizPage() {
   const [distributeQuiz, setDistributeQuiz] = useState(null)
   const [viewResultsQuiz, setViewResultsQuiz] = useState(null)
 
-  const load = async () => {
-    const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms))
-
+  const load = () => {
     setLoading(true)
 
-    try {
-      for (let attempt = 0; attempt < 2; attempt++) {
-        const [quizResult, studentResult] = await Promise.allSettled([
-          quizAPI.getMyQuizzes(),
-          optimizedStudentAPI.getAllWithIndexRetry(4, 300)
-        ])
-
-        const quizzesData = quizResult.status === 'fulfilled' ? (quizResult.value.data.data || []) : []
-        const studentsData = studentResult.status === 'fulfilled' ? (studentResult.value?.data?.data || []) : []
-
-        setQuizzes(quizzesData)
-        setStudents(studentsData)
-
-        const hasFailure = quizResult.status !== 'fulfilled' || studentResult.status !== 'fulfilled'
-        const likelyTransientEmpty = quizzesData.length === 0 && studentsData.length > 0
-
-        if (!hasFailure && !likelyTransientEmpty) {
-          break
-        }
-
-        if (attempt < 1) {
-          await wait(1000)
-          continue
-        }
-
-        if (quizResult.status !== 'fulfilled') {
-          toast.error('Could not load quizzes')
-        }
-
-        if (studentResult.status !== 'fulfilled') {
-          toast.error('Could not load students')
-        }
-      }
-    } finally {
-      setLoading(false)
-    }
+    Promise.allSettled([
+      quizAPI.getMyQuizzes(),
+      optimizedStudentAPI.getAllWithIndexRetry(4, 300)
+    ])
+      .then(([quizResult, studentResult]) => {
+        setQuizzes(quizResult.status === 'fulfilled' ? (quizResult.value.data.data || []) : [])
+        setStudents(studentResult.status === 'fulfilled' ? (studentResult.value?.data?.data || []) : [])
+      })
+      .catch(() => {
+        toast.error('Could not load quizzes')
+      })
+      .finally(() => setLoading(false))
   }
 
   useEffect(() => {
-    if (!user?.token) return
     load()
-  }, [user?.token])
+  }, [user?.userId])
 
   const handleCreateQuiz = async () => {
     if (!topic || !text) return toast.error('Topic and text required')

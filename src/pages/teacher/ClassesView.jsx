@@ -103,10 +103,8 @@ export default function ClassesView() {
   }, [loadClassesFallback])
 
   useEffect(() => {
-    if (!user?.token) return
-
     loadClasses()
-  }, [user?.token, loadClasses])
+  }, [user?.userId, loadClasses])
 
   const handleCreateClass = async () => {
     const className = newClassName.trim()

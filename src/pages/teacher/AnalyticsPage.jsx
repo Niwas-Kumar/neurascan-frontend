@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useCallback } from 'react'
 import { TrendingUp, TrendingDown, AlertTriangle, Users, Minus, ChevronDown } from 'lucide-react'
 import { optimizedAnalysisAPI, optimizedStudentAPI } from '../../services/optimizedApi'
 import { useAuth } from '../../context/AuthContext'
@@ -205,67 +205,28 @@ export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true)
   const [classFilter, setClassFilter] = useState('all')
 
-  useEffect(() => {
-    if (!user?.token) return
+  const loadAnalytics = useCallback(() => {
+    setLoading(true)
 
-    let isCancelled = false
-    const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms))
-
-    const loadAnalytics = async () => {
-      setLoading(true)
-
-      for (let attempt = 0; attempt < 2; attempt++) {
-        const [r, d, s] = await Promise.allSettled([
-          optimizedAnalysisAPI.getReports(),
-          optimizedAnalysisAPI.getDashboard(),
-          optimizedStudentAPI.getAllWithIndexRetry(4, 300),
-        ])
-
-        if (isCancelled) return
-
-        const reportsData = r.status === 'fulfilled' ? (r.value.data.data || []) : []
-        const dashData = d.status === 'fulfilled' ? d.value.data.data : null
-        const studentsData = s.status === 'fulfilled' ? (s.value?.data?.data || []) : []
-
-        setReports(reportsData)
-        setDash(dashData)
-        setStudents(studentsData)
-
-        const hasFailure = r.status !== 'fulfilled' || d.status !== 'fulfilled' || s.status !== 'fulfilled'
-        const likelyTransientEmpty = reportsData.length === 0 && studentsData.length > 0
-
-        if (!hasFailure && !likelyTransientEmpty) {
-          setLoading(false)
-          return
-        }
-
-        if (attempt < 1) {
-          await wait(1200)
-          if (isCancelled) return
-          continue
-        }
-
-        if (hasFailure) {
-          toast.error('Some analytics data is delayed. Showing available data.')
-        }
-
-        setLoading(false)
-        return
-      }
-    }
-
-    loadAnalytics()
-      .catch(() => {
-        if (!isCancelled) {
-          toast.error('Failed to load analytics')
-          setLoading(false)
-        }
+    Promise.allSettled([
+      optimizedAnalysisAPI.getReports(),
+      optimizedAnalysisAPI.getDashboard(),
+      optimizedStudentAPI.getAllWithIndexRetry(4, 300),
+    ])
+      .then(([r, d, s]) => {
+        setReports(r.status === 'fulfilled' ? (r.value.data.data || []) : [])
+        setDash(d.status === 'fulfilled' ? d.value.data.data : null)
+        setStudents(s.status === 'fulfilled' ? (s.value?.data?.data || []) : [])
       })
+      .catch(() => {
+        toast.error('Failed to load analytics')
+      })
+      .finally(() => setLoading(false))
+  }, [])
 
-    return () => {
-      isCancelled = true
-    }
-  }, [user?.token])
+  useEffect(() => {
+    loadAnalytics()
+  }, [loadAnalytics, user?.userId])
 
   // Get unique classes
   const classes = useMemo(() => {
