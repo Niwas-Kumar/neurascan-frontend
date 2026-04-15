@@ -19,7 +19,7 @@ export default function PricingPage() {
     {
       name: 'Starter',
       description: 'Perfect for individual teachers',
-      price: billingPeriod === 'annual' ? 99 : 9,
+      price: billingPeriod === 'annual' ? '₹99' : '₹9',
       period: billingPeriod === 'annual' ? '/year' : '/month',
       features: [
         'Analyze up to 50 papers/month',
@@ -34,7 +34,7 @@ export default function PricingPage() {
     {
       name: 'Professional',
       description: 'Best for small schools',
-      price: billingPeriod === 'annual' ? 499 : 49,
+      price: billingPeriod === 'annual' ? '₹499' : '₹49',
       period: billingPeriod === 'annual' ? '/year' : '/month',
       features: [
         'Analyze unlimited papers',
@@ -284,7 +284,7 @@ export default function PricingPage() {
 
                 <div style={{ marginBottom: 24 }}>
                   <div style={{
-                    fontSize: typeof plan.price === 'string' ? 'var(--text-2xl)' : 'var(--text-4xl)',
+                    fontSize: typeof plan.price === 'string' && plan.price === 'Custom' ? 'var(--text-2xl)' : 'var(--text-4xl)',
                     fontWeight: 'var(--font-bold)',
                     color: 'var(--color-primary)',
                   }}>

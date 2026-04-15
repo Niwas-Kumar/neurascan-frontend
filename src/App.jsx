@@ -9,6 +9,7 @@ import { useEffect } from 'react'
 import LandingPage from './pages/LandingPage'
 import PricingPage from './pages/PricingPage'
 import HelpPage from './pages/HelpPage'
+import HelpArticlePage from './pages/HelpArticlePage'
 import ContactPage from './pages/ContactPage'
 import AboutPage from './pages/AboutPage'
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage'
@@ -102,6 +103,7 @@ function AppRoutes() {
       <Route path="/"               element={<LandingPage />} />
       <Route path="/pricing"        element={<PricingPage />} />
       <Route path="/help"           element={<HelpPage />} />
+      <Route path="/help/:slug"      element={<HelpArticlePage />} />
       <Route path="/contact"        element={<ContactPage />} />
       <Route path="/about"          element={<AboutPage />} />
       <Route path="/privacy-policy"  element={<PrivacyPolicyPage />} />

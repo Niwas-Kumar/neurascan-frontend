@@ -22,7 +22,7 @@ export default function PremiumFooter() {
 
   const footerLinks = {
     product: [
-      { label: 'Features', href: '#features' },
+      { label: 'Features', href: '/#features' },
       { label: 'Pricing', href: '/pricing' },
       { label: 'Security', href: '/security' },
       { label: 'Integrations', href: '/integrations' },

@@ -49,10 +49,10 @@ function TeamPhoto({ photo, initials, name }) {
 
 export default function AboutPage() {
   const stats = [
-    { num: '7+', label: 'Years of research' },
-    { num: '340+', label: 'Schools & districts' },
-    { num: '12K+', label: 'Students helped' },
-    { num: '94%', label: 'Detection accuracy' },
+    { num: '1+', label: 'Year of development' },
+    { num: '3', label: 'Team members' },
+    { num: '50+', label: 'Students tested' },
+    { num: '89%', label: 'Detection accuracy' },
   ]
 
   const team = [

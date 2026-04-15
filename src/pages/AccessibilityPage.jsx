@@ -6,8 +6,8 @@ import PremiumFooter from '../components/landing/PremiumFooter.jsx'
 const S = {
   page: { minHeight: '100vh', background: '#F8FAFC' },
   hero: { background: 'linear-gradient(135deg, #312E81 0%, #4338CA 100%)', color: 'white', padding: '100px 24px 64px', textAlign: 'center' },
-  heroTitle: { fontSize: 42, fontWeight: 800, marginBottom: 16 },
-  heroSub: { fontSize: 18, maxWidth: 640, margin: '0 auto' },
+  heroTitle: { fontSize: 42, fontWeight: 800, marginBottom: 16, color: '#fff' },
+  heroSub: { fontSize: 18, maxWidth: 640, margin: '0 auto', color: 'rgba(255,255,255,0.9)' },
   container: { maxWidth: 800, margin: '0 auto', padding: '64px 24px' },
   grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 24, marginBottom: 48 },
   card: { background: '#fff', borderRadius: 14, padding: 24, border: '1px solid #E2E8F0' },

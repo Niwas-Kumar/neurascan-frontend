@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Search, MessageSquare, FileText, Video, CheckCircle } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { Badge, PremiumButton } from '../components/shared/PremiumUI.jsx'
 import PremiumNavbar from '../components/landing/PremiumNavbar.jsx'
 import PremiumFooter from '../components/landing/PremiumFooter.jsx'
@@ -10,17 +11,10 @@ export default function HelpPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
 
-  const categories = [
-    { id: 'all', label: 'All Articles', count: 12 },
-    { id: 'getting-started', label: 'Getting Started', count: 3 },
-    { id: 'analysis', label: 'Analysis & Reports', count: 4 },
-    { id: 'security', label: 'Security & Privacy', count: 3 },
-    { id: 'billing', label: 'Billing & Plans', count: 2 },
-  ]
-
   const articles = [
     {
       id: 1,
+      slug: 'getting-started',
       title: 'Getting started with NeuroScan',
       category: 'getting-started',
       description: 'Learn how to set up your account and start analyzing papers in minutes.',
@@ -28,6 +22,7 @@ export default function HelpPage() {
     },
     {
       id: 2,
+      slug: 'uploading-and-scanning',
       title: 'How uploading and scanning works',
       category: 'getting-started',
       description: 'Step-by-step guide to scanning or uploading student test papers.',
@@ -35,6 +30,7 @@ export default function HelpPage() {
     },
     {
       id: 3,
+      slug: 'understanding-ai-results',
       title: 'Understanding AI analysis results',
       category: 'analysis',
       description: 'Deep dive into how our AI detects patterns and generates insights.',
@@ -42,6 +38,7 @@ export default function HelpPage() {
     },
     {
       id: 4,
+      slug: 'creating-reports',
       title: 'Creating custom reports',
       category: 'analysis',
       description: 'Learn how to generate detailed reports for parents and specialists.',
@@ -49,6 +46,7 @@ export default function HelpPage() {
     },
     {
       id: 5,
+      slug: 'data-privacy',
       title: 'Data privacy and FERPA compliance',
       category: 'security',
       description: 'How we protect student data and comply with education regulations.',
@@ -56,6 +54,7 @@ export default function HelpPage() {
     },
     {
       id: 6,
+      slug: 'two-factor-auth',
       title: 'Two-factor authentication setup',
       category: 'security',
       description: 'Secure your account with two-factor authentication.',
@@ -63,6 +62,7 @@ export default function HelpPage() {
     },
     {
       id: 7,
+      slug: 'managing-team',
       title: 'Managing team members',
       category: 'getting-started',
       description: 'Invite teachers, parents, or staff to collaborate on NeuroScan.',
@@ -70,11 +70,20 @@ export default function HelpPage() {
     },
     {
       id: 8,
+      slug: 'upgrading-plan',
       title: 'Upgrading your plan',
       category: 'billing',
       description: 'How to upgrade to a higher tier or add additional features.',
       icon: '⬆️',
     },
+  ]
+
+  const categories = [
+    { id: 'all', label: 'All Articles', count: articles.length },
+    { id: 'getting-started', label: 'Getting Started', count: articles.filter(a => a.category === 'getting-started').length },
+    { id: 'analysis', label: 'Analysis & Reports', count: articles.filter(a => a.category === 'analysis').length },
+    { id: 'security', label: 'Security & Privacy', count: articles.filter(a => a.category === 'security').length },
+    { id: 'billing', label: 'Billing & Plans', count: articles.filter(a => a.category === 'billing').length },
   ]
 
   const faqs = [
@@ -107,19 +116,19 @@ export default function HelpPage() {
   const resources = [
     {
       title: 'Video Tutorials',
-      description: 'Watch step-by-step video guides to get the most out of NeuroScan.',
+      description: 'Coming soon — step-by-step video guides to get the most out of NeuroScan.',
       icon: Video,
-      link: '#',
+      link: null,
     },
     {
       title: 'API Documentation',
-      description: 'Developer docs for integrating NeuroScan with your school management system.',
+      description: 'Technical docs for understanding NeuraScan\'s architecture and API endpoints.',
       icon: FileText,
-      link: '#',
+      link: '/docs',
     },
     {
       title: 'Contact Support',
-      description: 'Need help? Email our support team or start a live chat.',
+      description: 'Need help? Email our support team or send us a message.',
       icon: MessageSquare,
       link: '/contact',
     },
@@ -276,9 +285,9 @@ export default function HelpPage() {
                 gap: 24,
               }}>
                 {filteredArticles.map((article) => (
-                  <motion.a
+                  <Link
                     key={article.id}
-                    href="#"
+                    to={`/help/${article.slug}`}
                     style={{
                       padding: 'var(--space-6)',
                       borderRadius: 'var(--radius-lg)',
@@ -316,7 +325,7 @@ export default function HelpPage() {
                     }}>
                       {article.description}
                     </p>
-                  </motion.a>
+                  </Link>
                 ))}
               </div>
             </div>
@@ -379,10 +388,12 @@ export default function HelpPage() {
               }}>
                 {resources.map((resource) => {
                   const Icon = resource.icon
+                  const Wrapper = resource.link ? Link : 'div'
+                  const wrapperProps = resource.link ? { to: resource.link } : {}
                   return (
-                    <a
+                    <Wrapper
                       key={resource.title}
-                      href={resource.link}
+                      {...wrapperProps}
                       style={{
                         padding: 'var(--space-6)',
                         borderRadius: 'var(--radius-lg)',
@@ -394,10 +405,14 @@ export default function HelpPage() {
                         flexDirection: 'column',
                         gap: 12,
                         transition: 'all var(--duration-fast) var(--easing-out)',
+                        opacity: resource.link ? 1 : 0.7,
+                        cursor: resource.link ? 'pointer' : 'default',
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.boxShadow = 'var(--shadow-lg)'
-                        e.currentTarget.style.transform = 'translateY(-4px)'
+                        if (resource.link) {
+                          e.currentTarget.style.boxShadow = 'var(--shadow-lg)'
+                          e.currentTarget.style.transform = 'translateY(-4px)'
+                        }
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.boxShadow = 'none'
@@ -412,6 +427,7 @@ export default function HelpPage() {
                           marginBottom: 4,
                         }}>
                           {resource.title}
+                          {!resource.link && <span style={{ fontSize: 11, fontWeight: 600, color: '#14B8A6', background: 'rgba(20,184,166,0.1)', padding: '2px 8px', borderRadius: 10, marginLeft: 8 }}>Coming Soon</span>}
                         </h3>
                         <p style={{
                           fontSize: 'var(--text-sm)',
@@ -420,7 +436,7 @@ export default function HelpPage() {
                           {resource.description}
                         </p>
                       </div>
-                    </a>
+                    </Wrapper>
                   )
                 })}
               </div>
