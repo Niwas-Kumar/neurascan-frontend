@@ -52,7 +52,7 @@ api.interceptors.response.use(
     }
     return res
   },
-  (err) => {
+  async (err) => {
     // Only redirect on 401 for non-auth endpoints
     // Auth endpoints (login, register, forgot/reset password) should handle their own errors
     const url = err.config?.url || ''
@@ -70,6 +70,18 @@ api.interceptors.response.use(
     // 401 means the token is invalid/expired
     // Also: skip if no response (network error / CORS block — NOT a true 401)
     if (err.response?.status === 401 && !isAuthEndpoint && !isPublicTokenEndpoint && !isStudentIdMissing && !isRedirecting) {
+      // Before giving up, retry ONCE with the latest token from localStorage
+      // (the original request may have used a stale token from a closure)
+      const originalReq = err.config
+      if (!originalReq._retried) {
+        originalReq._retried = true
+        const freshToken = localStorage.getItem('ns_token')
+        if (freshToken && freshToken !== originalReq.headers?.Authorization?.replace('Bearer ', '')) {
+          originalReq.headers = { ...originalReq.headers, Authorization: `Bearer ${freshToken}` }
+          return api(originalReq)
+        }
+      }
+
       isRedirecting = true
       
       // ✅ FIX: Only clear authentication token, preserve other data (studentId, userId, etc)
@@ -91,6 +103,7 @@ api.interceptors.response.use(
 
       // Small delay to let any other in-flight requests complete before redirect
       setTimeout(() => {
+        isRedirecting = false // reset so future logins work without full reload
         window.location.href = '/login?session=expired'
       }, 100)
     }

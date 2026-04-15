@@ -96,7 +96,7 @@ function LoginForm({ role, login, navigate }) {
     const id = toast.loading('Authenticating with Google...')
     try {
       const result = await signInWithPopup(auth, googleProvider)
-      const idToken = await result.user.getIdToken()
+      const idToken = await result.user.getIdToken(true) // force-refresh to avoid stale cached token
       if (!idToken) throw new Error('Could not retrieve ID Token from Firebase.')
       const picture = result.user?.photoURL || null
       const res = await authAPI.firebaseLogin(idToken, role, picture)

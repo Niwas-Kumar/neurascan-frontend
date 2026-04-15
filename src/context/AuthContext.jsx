@@ -15,6 +15,9 @@ const STORAGE_KEYS = {
   theme:     'ns_theme',
 }
 
+// Grace period (5 minutes) to tolerate minor client/server clock drift
+const CLOCK_SKEW_MS = 5 * 60 * 1000
+
 // Synchronous session restore — runs during initial useState so user is
 // available from the very first render, eliminating any race condition
 // where child components mount before the auth state is ready.
@@ -25,7 +28,7 @@ function restoreSession() {
 
   try {
     const payload = JSON.parse(atob(token.split('.')[1]))
-    if (payload.exp * 1000 < Date.now()) {
+    if (payload.exp * 1000 < Date.now() - CLOCK_SKEW_MS) {
       localStorage.removeItem(STORAGE_KEYS.token)
       localStorage.removeItem(STORAGE_KEYS.role)
       localStorage.removeItem(STORAGE_KEYS.userName)
@@ -54,6 +57,49 @@ export function AuthProvider({ children }) {
   const [user, setUser]       = useState(restoreSession)
   const [loading, setLoading] = useState(false)
   const [theme, setThemeState]= useState(() => localStorage.getItem(STORAGE_KEYS.theme) || 'dark')
+
+  // ── Listen for backend-initiated token refresh (X-New-Token header) ──
+  useEffect(() => {
+    const handleTokenRefresh = (e) => {
+      const newToken = e.detail?.token
+      if (newToken) {
+        setUser(prev => prev ? { ...prev, token: newToken } : prev)
+      }
+    }
+    window.addEventListener('ns-token-refreshed', handleTokenRefresh)
+    return () => window.removeEventListener('ns-token-refreshed', handleTokenRefresh)
+  }, [])
+
+  // ── Proactive token check: verify token hasn't expired while tab was idle ──
+  useEffect(() => {
+    if (!user?.token) return
+
+    const checkToken = () => {
+      const token = localStorage.getItem(STORAGE_KEYS.token)
+      if (!token) return
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]))
+        const timeLeft = payload.exp * 1000 - Date.now()
+        if (timeLeft < 0) {
+          // Token expired while tab was open — clear session
+          Object.values(STORAGE_KEYS).forEach(k => {
+            if (k !== STORAGE_KEYS.studentId && k !== STORAGE_KEYS.userId)
+              localStorage.removeItem(k)
+          })
+          setUser(null)
+        }
+      } catch { /* malformed token — ignore, will fail on next API call */ }
+    }
+
+    // Check every 60 seconds AND when tab becomes visible again
+    const interval = setInterval(checkToken, 60_000)
+    const handleVisibility = () => { if (document.visibilityState === 'visible') checkToken() }
+    document.addEventListener('visibilitychange', handleVisibility)
+    return () => {
+      clearInterval(interval)
+      document.removeEventListener('visibilitychange', handleVisibility)
+    }
+  }, [user?.token])
 
   // Notifications state (in-app, non-persistent demo)
   const [notifications, setNotifications] = useState([

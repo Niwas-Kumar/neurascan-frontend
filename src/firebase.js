@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
-import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, signInWithPopup, browserLocalPersistence, setPersistence } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBAet4HtUYJwl5og96QvX966py4JfDaAhQ",
@@ -16,6 +16,9 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
+
+// Ensure Firebase Auth persists across browser sessions (survives tab close)
+setPersistence(auth, browserLocalPersistence).catch(() => {});
 
 // Initialize Analytics (only in browser environment)
 let analytics = null;
