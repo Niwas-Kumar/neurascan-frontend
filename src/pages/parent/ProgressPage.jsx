@@ -7,6 +7,7 @@ import { useAuth } from '../../context/AuthContext'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts'
 import toast from 'react-hot-toast'
 import { format } from 'date-fns'
+import AiCommentary from '../../components/shared/AiCommentary'
 
 // ════════════════════════════════════════════════════════════════
 // DESIGN SYSTEM - Matching reference exactly
@@ -266,7 +267,7 @@ export default function ProgressPage() {
                       <span style={{ color: COLORS.textSecondary }}>Dyslexia: <strong style={{ color: r.dyslexiaScore >= 70 ? COLORS.riskHigh : r.dyslexiaScore >= 45 ? COLORS.riskMedium : COLORS.riskLow }}>{r.dyslexiaScore?.toFixed(1)}%</strong></span>
                       <span style={{ color: COLORS.textSecondary }}>Dysgraphia: <strong style={{ color: r.dysgraphiaScore >= 70 ? COLORS.riskHigh : r.dysgraphiaScore >= 45 ? COLORS.riskMedium : COLORS.riskLow }}>{r.dysgraphiaScore?.toFixed(1)}%</strong></span>
                     </div>
-                    {r.aiComment && <p style={{ fontSize: 13, color: COLORS.textMuted, lineHeight: 1.7, background: COLORS.bgSubtle, border: `1px solid ${COLORS.border}`, borderRadius: 10, padding: '10px 14px' }}>{r.aiComment.split('\n\n')[0]}</p>}
+                    {r.aiComment && <div style={{ background: COLORS.bgSubtle, border: `1px solid ${COLORS.border}`, borderRadius: 10, padding: '10px 14px' }}><AiCommentary text={r.aiComment.split('\n\n').slice(0, 3).join('\n\n')} fontSize={13} /></div>}
                   </div>
                 </div>
               ))}

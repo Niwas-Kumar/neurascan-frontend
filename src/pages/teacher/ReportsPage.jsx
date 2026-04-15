@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext'
 import { useDebounce } from '../../hooks'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
+import AiCommentary from '../../components/shared/AiCommentary'
 
 // ════════════════════════════════════════════════════════════════
 // DESIGN SYSTEM - Matching reference exactly
@@ -847,19 +848,7 @@ export function ReportsPage() {
                 }}
               >
                 <p style={{ fontSize: 12, fontWeight: 500, color: COLORS.textMuted, marginBottom: 6 }}>AI Analysis</p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {(selectedReport.aiComment || 'No AI commentary available for this assessment.').split('\n\n').map((para, i) => (
-                    <p key={i} style={{
-                      fontSize: 13,
-                      color: i === 0 ? COLORS.textMuted : COLORS.textPrimary,
-                      lineHeight: 1.6,
-                      fontWeight: i === 0 ? 600 : 400,
-                      margin: 0,
-                    }}>
-                      {para}
-                    </p>
-                  ))}
-                </div>
+                <AiCommentary text={selectedReport.aiComment} fontSize={13} />
               </div>
 
               {/* File Name */}

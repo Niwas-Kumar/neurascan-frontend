@@ -9,6 +9,7 @@ import { optimizedStudentAPI, optimizedAnalysisAPI } from '../../services/optimi
 import toast from 'react-hot-toast'
 import { useAuth } from '../../context/AuthContext'
 import { Button, RiskBadge, Alert, ScoreBar } from '../../components/shared/UI'
+import AiCommentary from '../../components/shared/AiCommentary'
 
 // ════════════════════════════════════════════════════════════════
 // DESIGN SYSTEM - Matching reference exactly
@@ -839,19 +840,7 @@ export default function UploadPage() {
                   }}>
                     <Brain size={14} color={COLORS.primary} /> AI Assessment
                   </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                    {(result.aiComment || 'Analysis complete.').split('\n\n').map((para, i) => (
-                      <p key={i} style={{
-                        fontSize: 14,
-                        color: i === 0 ? COLORS.textMuted : COLORS.textSecondary,
-                        lineHeight: 1.7,
-                        fontWeight: i === 0 ? 600 : 400,
-                        margin: 0,
-                      }}>
-                        {para}
-                      </p>
-                    ))}
-                  </div>
+                  <AiCommentary text={result.aiComment} fontSize={14} />
                 </div>
               </div>
             </motion.div>
