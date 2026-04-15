@@ -467,6 +467,7 @@ export default function PricingPage() {
               fontSize: 'var(--text-4xl)',
               fontWeight: 'var(--font-bold)',
               marginBottom: 16,
+              color: '#fff',
             }}
           >
             Ready to get started?
@@ -479,7 +480,7 @@ export default function PricingPage() {
             style={{
               fontSize: 'var(--text-lg)',
               marginBottom: 32,
-              opacity: 0.95,
+              color: 'rgba(255,255,255,0.9)',
             }}
           >
             Start using NeuraScan today to detect learning disabilities early.
