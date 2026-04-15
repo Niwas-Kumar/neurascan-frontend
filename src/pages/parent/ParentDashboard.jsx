@@ -819,7 +819,7 @@ export default function ParentDashboard() {
     name: report.studentName || selectedStudent?.studentName || 'Your Child',
     rollNumber: report.rollNumber || selectedStudentId || 'N/A',
     className: report.className || selectedStudent?.studentClassName || 'N/A',
-    teacherName: report.teacherName || 'Teacher',
+    teacherName: report.teacherName || selectedStudent?.teacherName || 'Teacher',
     school: report.schoolName || 'School',
   } : null
 
