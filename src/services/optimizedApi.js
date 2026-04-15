@@ -357,6 +357,24 @@ export const optimizedAnalysisAPI = {
     return requestCache.setPendingRequest(cacheKey, request)
   },
 
+  getComprehensiveReport: async (studentId) => {
+    const cacheKey = `analysis/comprehensive/${studentId}`
+    
+    const cached = requestCache.get(cacheKey)
+    if (cached) return { data: { data: cached } }
+
+    const pending = requestCache.getPendingRequest(cacheKey)
+    if (pending) return pending
+
+    const request = retryWithBackoff(() => analysisAPI.getComprehensiveReport(studentId))
+      .then(res => {
+        requestCache.set(cacheKey, res.data.data, 12 * 60 * 1000)
+        return res
+      })
+
+    return requestCache.setPendingRequest(cacheKey, request)
+  },
+
   upload: (studentId, file, onProgress) => {
     const request = analysisAPI.upload(studentId, file, onProgress)
     // Clear caches after upload
@@ -365,6 +383,7 @@ export const optimizedAnalysisAPI = {
       requestCache.clear('analysis/dashboard')
       requestCache.clear(`analysis/student-report/${studentId}`)
       requestCache.clear(`analysis/progress/${studentId}`)
+      requestCache.clear(`analysis/comprehensive/${studentId}`)
       requestCache.clear('students/all')
     })
     return request

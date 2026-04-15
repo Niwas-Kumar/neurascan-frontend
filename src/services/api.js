@@ -181,6 +181,7 @@ export const analysisAPI = {
   getDashboard:     ()          => api.get('/analysis/dashboard'),
   getStudentReport: (studentId) => api.get(`/analysis/student-report/${studentId}`),
   getProgress:      (studentId) => api.get(`/analysis/progress/${studentId}`),
+  getComprehensiveReport: (studentId) => api.get(`/analysis/comprehensive/${studentId}`),
 }
 
 export const quizAPI = {

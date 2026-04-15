@@ -707,6 +707,7 @@ export default function ParentDashboard() {
   const [previousReports, setPreviousReports] = useState([])
   const [loading, setLoading] = useState(true)
   const [noData, setNoData] = useState(false)
+  const [comprehensiveData, setComprehensiveData] = useState(null)
 
   // Connection state
   const [connectedStudents, setConnectedStudents] = useState([])
@@ -750,8 +751,14 @@ export default function ParentDashboard() {
     try {
       // Use progress endpoint to get ALL reports (not just latest)
       // so we can compute the improvement trend
-      const res = await optimizedAnalysisAPI.getProgress(studentId)
-      const progressData = res.data.data
+      const [progressRes, comprehensiveRes] = await Promise.allSettled([
+        optimizedAnalysisAPI.getProgress(studentId),
+        optimizedAnalysisAPI.getComprehensiveReport(studentId),
+      ])
+
+      // Existing progress report logic — unchanged
+      const res = progressRes.status === 'fulfilled' ? progressRes.value : null
+      const progressData = res?.data?.data
       const reports = progressData?.reports
       if (Array.isArray(reports) && reports.length > 0) {
         const sorted = reports.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
@@ -762,6 +769,13 @@ export default function ParentDashboard() {
         setReport(null)
         setPreviousReports([])
         setNoData(true)
+      }
+
+      // Comprehensive data (quiz + fused) — additive, never affects existing flow
+      if (comprehensiveRes.status === 'fulfilled') {
+        setComprehensiveData(comprehensiveRes.value?.data?.data || null)
+      } else {
+        setComprehensiveData(null)
       }
     } catch (err) {
       setNoData(true)
@@ -1368,6 +1382,212 @@ export default function ParentDashboard() {
           </div>
         </div>
       </div>
+
+      {/* ═══════ Quiz Screening Section (additive — only shows when quiz data exists) ═══════ */}
+      {comprehensiveData?.quizScreening?.hasQuizData && (
+        <div style={{ marginBottom: 32 }}>
+          <h2 style={{
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            fontSize: 20,
+            fontWeight: 700,
+            color: COLORS.textPrimary,
+            marginBottom: 16,
+          }}>
+            Quiz Screening
+          </h2>
+          <div style={{
+            background: COLORS.bgCard,
+            border: `1px solid ${COLORS.border}`,
+            borderRadius: 12,
+            overflow: 'hidden',
+          }}>
+            <div style={{ padding: '20px 24px', borderBottom: `1px solid ${COLORS.border}` }}>
+              <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12,
+              }}>
+                <div>
+                  <h3 style={{
+                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    fontSize: 18, fontWeight: 600, color: COLORS.textPrimary, marginBottom: 4,
+                  }}>
+                    Quiz-Based Screening Results
+                  </h3>
+                  <p style={{ fontSize: 13, color: COLORS.textMuted }}>
+                    Based on {comprehensiveData.quizScreening.totalAttempts} quiz attempt{comprehensiveData.quizScreening.totalAttempts !== 1 ? 's' : ''}
+                  </p>
+                </div>
+                <span style={{
+                  padding: '4px 12px', borderRadius: 9999, fontSize: 12, fontWeight: 500,
+                  background: 'rgba(99, 102, 241, 0.1)', color: '#6366f1', border: '1px solid rgba(99, 102, 241, 0.2)',
+                }}>
+                  Quiz Score: {(comprehensiveData.quizScreening.latestQuizScore || 0).toFixed(0)}%
+                </span>
+              </div>
+            </div>
+            <div style={{ padding: 24 }}>
+              <div style={{
+                display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 24, marginBottom: 24,
+              }}>
+                {comprehensiveData.quizScreening.dyslexiaRiskScore != null && (
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                      <p style={{ fontSize: 14, fontWeight: 500, color: COLORS.textMuted }}>Dyslexia Risk (Quiz)</p>
+                      <span style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: 16 }}>
+                        {(comprehensiveData.quizScreening.dyslexiaRiskScore).toFixed(0)}%
+                      </span>
+                    </div>
+                    <ProgressBar value={comprehensiveData.quizScreening.dyslexiaRiskScore} />
+                    <p style={{ fontSize: 12, color: COLORS.textMuted, marginTop: 6 }}>
+                      {comprehensiveData.quizScreening.dyslexiaRisk || 'Pending'}
+                    </p>
+                  </div>
+                )}
+                {comprehensiveData.quizScreening.dysgraphiaRiskScore != null && (
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                      <p style={{ fontSize: 14, fontWeight: 500, color: COLORS.textMuted }}>Dysgraphia Risk (Quiz)</p>
+                      <span style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: 16 }}>
+                        {(comprehensiveData.quizScreening.dysgraphiaRiskScore).toFixed(0)}%
+                      </span>
+                    </div>
+                    <ProgressBar value={comprehensiveData.quizScreening.dysgraphiaRiskScore} />
+                    <p style={{ fontSize: 12, color: COLORS.textMuted, marginTop: 6 }}>
+                      {comprehensiveData.quizScreening.dysgraphiaRisk || 'Pending'}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Strong/Weak Areas */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 }}>
+                {comprehensiveData.quizScreening.strongAreas?.length > 0 && (
+                  <div style={{
+                    background: COLORS.riskLowBg, borderRadius: 8, padding: 12,
+                  }}>
+                    <p style={{ fontSize: 12, fontWeight: 600, color: COLORS.riskLow, marginBottom: 6 }}>Strong Areas</p>
+                    {comprehensiveData.quizScreening.strongAreas.map((a, i) => (
+                      <p key={i} style={{ fontSize: 12, color: COLORS.textSecondary, marginBottom: 2 }}>• {a}</p>
+                    ))}
+                  </div>
+                )}
+                {comprehensiveData.quizScreening.weakAreas?.length > 0 && (
+                  <div style={{
+                    background: COLORS.riskHighBg, borderRadius: 8, padding: 12,
+                  }}>
+                    <p style={{ fontSize: 12, fontWeight: 600, color: COLORS.riskHigh, marginBottom: 6 }}>Areas to Improve</p>
+                    {comprehensiveData.quizScreening.weakAreas.map((a, i) => (
+                      <p key={i} style={{ fontSize: 12, color: COLORS.textSecondary, marginBottom: 2 }}>• {a}</p>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ═══════ Combined Assessment Section (shows when fused data exists) ═══════ */}
+      {comprehensiveData?.fusedAssessment?.fusedDyslexiaScore != null && (
+        <div style={{ marginBottom: 32 }}>
+          <h2 style={{
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            fontSize: 20,
+            fontWeight: 700,
+            color: COLORS.textPrimary,
+            marginBottom: 16,
+          }}>
+            Combined Assessment
+          </h2>
+          <div style={{
+            background: COLORS.bgCard,
+            border: `1px solid ${COLORS.border}`,
+            borderRadius: 12,
+            overflow: 'hidden',
+          }}>
+            <div style={{
+              padding: '20px 24px',
+              borderBottom: `1px solid ${COLORS.border}`,
+              background: comprehensiveData.fusedAssessment.hasBothSignals
+                ? 'linear-gradient(135deg, rgba(20,184,166,0.05), rgba(99,102,241,0.05))'
+                : 'transparent',
+            }}>
+              <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12,
+              }}>
+                <div>
+                  <h3 style={{
+                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    fontSize: 18, fontWeight: 600, color: COLORS.textPrimary, marginBottom: 4,
+                  }}>
+                    {comprehensiveData.fusedAssessment.hasBothSignals
+                      ? 'Multi-Modal Risk Assessment'
+                      : 'Risk Assessment'}
+                  </h3>
+                  <p style={{ fontSize: 13, color: COLORS.textMuted }}>
+                    {comprehensiveData.fusedAssessment.methodology}
+                  </p>
+                </div>
+                {comprehensiveData.fusedAssessment.hasBothSignals && (
+                  <span style={{
+                    padding: '4px 12px', borderRadius: 9999, fontSize: 12, fontWeight: 500,
+                    background: COLORS.primaryBg, color: COLORS.primary, border: `1px solid rgba(20,184,166,0.2)`,
+                  }}>
+                    <Shield size={12} style={{ marginRight: 4, verticalAlign: -1 }} />
+                    Multi-Signal
+                  </span>
+                )}
+              </div>
+            </div>
+            <div style={{ padding: 24 }}>
+              <div style={{
+                display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 24, marginBottom: 24,
+              }}>
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                    <p style={{ fontSize: 14, fontWeight: 500, color: COLORS.textMuted }}>Overall Dyslexia Risk</p>
+                    <span style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: 16 }}>
+                      {(comprehensiveData.fusedAssessment.fusedDyslexiaScore).toFixed(0)}%
+                    </span>
+                  </div>
+                  <ProgressBar value={comprehensiveData.fusedAssessment.fusedDyslexiaScore} />
+                  <p style={{ fontSize: 12, color: COLORS.textMuted, marginTop: 6 }}>
+                    {comprehensiveData.fusedAssessment.fusedDyslexiaRisk || 'Pending'}
+                  </p>
+                </div>
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                    <p style={{ fontSize: 14, fontWeight: 500, color: COLORS.textMuted }}>Overall Dysgraphia Risk</p>
+                    <span style={{ fontFamily: 'monospace', fontWeight: 700, fontSize: 16 }}>
+                      {(comprehensiveData.fusedAssessment.fusedDysgraphiaScore || 0).toFixed(0)}%
+                    </span>
+                  </div>
+                  <ProgressBar value={comprehensiveData.fusedAssessment.fusedDysgraphiaScore || 0} />
+                  <p style={{ fontSize: 12, color: COLORS.textMuted, marginTop: 6 }}>
+                    {comprehensiveData.fusedAssessment.fusedDysgraphiaRisk || 'Pending'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Recommendations from fused assessment */}
+              {comprehensiveData.fusedAssessment.recommendations?.length > 0 && (
+                <div style={{
+                  background: COLORS.bgMuted, borderRadius: 12, padding: 16,
+                }}>
+                  <p style={{ fontSize: 13, fontWeight: 600, color: COLORS.textPrimary, marginBottom: 10 }}>
+                    Recommendations
+                  </p>
+                  {comprehensiveData.fusedAssessment.recommendations.map((rec, i) => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 6 }}>
+                      <CheckCircle2 size={14} color={COLORS.primary} style={{ marginTop: 2, flexShrink: 0 }} />
+                      <p style={{ fontSize: 13, color: COLORS.textSecondary, lineHeight: 1.5 }}>{rec}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Previous Reports */}
       {previousReports.length > 0 && (
