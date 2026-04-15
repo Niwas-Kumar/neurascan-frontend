@@ -7,13 +7,13 @@ const S = {
   page: { minHeight: '100vh', background: '#F8FAFC' },
   hero: { background: 'linear-gradient(135deg, #312E81 0%, #4338CA 100%)', color: 'white', padding: '100px 24px 64px', textAlign: 'center' },
   heroTitle: { fontSize: 42, fontWeight: 800, marginBottom: 16 },
-  heroSub: { fontSize: 18, opacity: 0.85, maxWidth: 600, margin: '0 auto' },
+  heroSub: { fontSize: 18, maxWidth: 600, margin: '0 auto' },
   container: { maxWidth: 960, margin: '0 auto', padding: '64px 24px' },
   grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 28 },
   card: { background: '#fff', borderRadius: 16, padding: 28, border: '1px solid #E2E8F0' },
   iconBox: { width: 48, height: 48, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
   cardTitle: { fontSize: 18, fontWeight: 700, color: '#0F172A', marginBottom: 8 },
-  cardText: { fontSize: 14, color: '#64748B', lineHeight: 1.7 },
+  cardText: { fontSize: 14, color: '#334155', lineHeight: 1.7 },
   tag: { display: 'inline-block', fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 20, marginTop: 12 },
 }
 

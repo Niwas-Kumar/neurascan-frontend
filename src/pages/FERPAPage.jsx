@@ -7,7 +7,7 @@ const S = {
   page: { minHeight: '100vh', background: '#F8FAFC' },
   hero: { background: 'linear-gradient(135deg, #312E81 0%, #4338CA 100%)', color: 'white', padding: '100px 24px 64px', textAlign: 'center' },
   heroTitle: { fontSize: 42, fontWeight: 800, marginBottom: 16 },
-  heroSub: { fontSize: 18, opacity: 0.85, maxWidth: 640, margin: '0 auto' },
+  heroSub: { fontSize: 18, maxWidth: 640, margin: '0 auto' },
   container: { maxWidth: 800, margin: '0 auto', padding: '64px 24px' },
   section: { marginBottom: 40 },
   title: { fontSize: 22, fontWeight: 700, color: '#0F172A', marginBottom: 12 },

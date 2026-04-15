@@ -7,17 +7,17 @@ const S = {
   page: { minHeight: '100vh', background: '#F8FAFC' },
   hero: { background: 'linear-gradient(135deg, #312E81 0%, #4338CA 100%)', color: 'white', padding: '100px 24px 64px', textAlign: 'center' },
   heroTitle: { fontSize: 42, fontWeight: 800, marginBottom: 16 },
-  heroSub: { fontSize: 18, opacity: 0.85, maxWidth: 640, margin: '0 auto' },
+  heroSub: { fontSize: 18, maxWidth: 640, margin: '0 auto' },
   container: { maxWidth: 960, margin: '0 auto', padding: '64px 24px' },
   section: { marginBottom: 48 },
   sectionTitle: { fontSize: 24, fontWeight: 700, color: '#0F172A', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 10 },
   card: { background: '#fff', borderRadius: 14, padding: '20px 24px', border: '1px solid #E2E8F0', marginBottom: 16 },
   cardTitle: { fontSize: 16, fontWeight: 600, color: '#0F172A', marginBottom: 6 },
-  cardText: { fontSize: 14, color: '#64748B', lineHeight: 1.7 },
+  cardText: { fontSize: 14, color: '#334155', lineHeight: 1.7 },
   code: { fontFamily: 'monospace', background: '#F1F5F9', padding: '2px 8px', borderRadius: 6, fontSize: 13, color: '#312E81' },
   table: { width: '100%', borderCollapse: 'collapse', fontSize: 14 },
   th: { textAlign: 'left', padding: '10px 14px', background: '#F1F5F9', fontWeight: 600, color: '#0F172A', borderBottom: '2px solid #E2E8F0' },
-  td: { padding: '10px 14px', borderBottom: '1px solid #E2E8F0', color: '#475569' },
+  td: { padding: '10px 14px', borderBottom: '1px solid #E2E8F0', color: '#334155' },
 }
 
 const endpoints = [

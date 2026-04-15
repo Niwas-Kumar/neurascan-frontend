@@ -7,17 +7,17 @@ const S = {
   page: { minHeight: '100vh', background: '#F8FAFC' },
   hero: { background: 'linear-gradient(135deg, #312E81 0%, #4338CA 100%)', color: 'white', padding: '100px 24px 64px', textAlign: 'center' },
   heroTitle: { fontSize: 42, fontWeight: 800, marginBottom: 16 },
-  heroSub: { fontSize: 18, opacity: 0.85, maxWidth: 640, margin: '0 auto' },
+  heroSub: { fontSize: 18, maxWidth: 640, margin: '0 auto' },
   container: { maxWidth: 960, margin: '0 auto', padding: '64px 24px' },
   card: { background: '#fff', borderRadius: 16, padding: 32, border: '1px solid #E2E8F0', marginBottom: 32 },
   schoolName: { fontSize: 22, fontWeight: 700, color: '#0F172A', marginBottom: 4 },
-  schoolMeta: { fontSize: 13, color: '#64748B', marginBottom: 20 },
+  schoolMeta: { fontSize: 13, color: '#334155', marginBottom: 20 },
   statsRow: { display: 'flex', gap: 24, marginBottom: 20, flexWrap: 'wrap' },
   stat: { textAlign: 'center', flex: 1, minWidth: 120 },
   statNum: { fontSize: 28, fontWeight: 800, color: '#14B8A6' },
-  statLabel: { fontSize: 12, color: '#64748B', marginTop: 2 },
+  statLabel: { fontSize: 12, color: '#334155', marginTop: 2 },
   quote: { fontSize: 15, color: '#334155', lineHeight: 1.8, fontStyle: 'italic', borderLeft: '4px solid #14B8A6', paddingLeft: 16, marginTop: 16 },
-  quoteName: { fontSize: 13, color: '#64748B', marginTop: 8, fontStyle: 'normal' },
+  quoteName: { fontSize: 13, color: '#334155', marginTop: 8, fontStyle: 'normal' },
 }
 
 const studies = [

@@ -6,7 +6,7 @@ const COLORS = {
   bgSurface: '#FFFFFF',
   textPrimary: '#0F172A',
   textSecondary: '#475569',
-  textMuted: '#64748B',
+  textMuted: '#334155',
   border: '#E2E8F0',
   primary: '#14B8A6',
 }

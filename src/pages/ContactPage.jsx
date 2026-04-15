@@ -33,20 +33,20 @@ export default function ContactPage() {
     {
       icon: Mail,
       title: 'Email',
-      info: 'hello@neurascan.ai',
+      info: 'hello.neurascan@gmail.com',
       desc: 'We\'ll respond within 24 hours',
     },
     {
       icon: Phone,
       title: 'Phone',
-      info: '+1 (234) 567-8900',
-      desc: 'Available Monday-Friday, 9am-6pm EST',
+      info: '+91 9599364556',
+      desc: 'Available Monday-Friday, 9am-6pm IST',
     },
     {
       icon: MapPin,
       title: 'Office',
-      info: 'San Francisco, CA',
-      desc: '123 Education Street, Suite 400',
+      info: 'Noida, Uttar Pradesh',
+      desc: 'India',
     },
   ]
 
