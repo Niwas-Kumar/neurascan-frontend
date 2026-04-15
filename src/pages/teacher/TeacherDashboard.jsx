@@ -321,12 +321,22 @@ export default function TeacherDashboard() {
     return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening'
   })()
 
+  // Safe date formatter — date-fns format() throws on invalid dates
+  const safeFormat = (dateStr, fmt) => {
+    try {
+      const d = new Date(dateStr)
+      if (isNaN(d.getTime())) return 'N/A'
+      return format(d, fmt)
+    } catch { return 'N/A' }
+  }
+
   // Chart data — last 8 reports reversed for chronological order
   const chartData = [...reports]
+    .filter((r) => r.uploadDate || r.createdAt)
     .reverse()
     .slice(-8)
     .map((r) => ({
-      date: format(new Date(r.uploadDate || r.createdAt), 'MMM d'),
+      date: safeFormat(r.uploadDate || r.createdAt, 'MMM d'),
       Dyslexia: +(r.dyslexiaScore || 0).toFixed(1),
       Dysgraphia: +(r.dysgraphiaScore || 0).toFixed(1),
     }))
@@ -774,7 +784,7 @@ export default function TeacherDashboard() {
                       }}
                     >
                       <Clock size={12} />
-                      {formatDistanceToNow(new Date(r.createdAt), { addSuffix: true })}
+                      {r.createdAt ? (() => { try { return formatDistanceToNow(new Date(r.createdAt), { addSuffix: true }) } catch { return 'recently' } })() : 'recently'}
                     </p>
                   </div>
                 </div>

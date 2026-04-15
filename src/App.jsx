@@ -48,7 +48,7 @@ import './styles/designSystem.css'
 function ProtectedRoute({ children, role }) {
   const { user, loading } = useAuth()
   if (loading) return <FullPageLoader />
-  if (!user) return <Navigate to="/login" replace />
+  if (!user?.token) return <Navigate to="/login" replace />
   if (role && user.role !== role) return <Navigate to="/unauthorized" replace />
   return children
 }
