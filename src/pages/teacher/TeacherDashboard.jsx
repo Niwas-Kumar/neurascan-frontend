@@ -242,35 +242,34 @@ export default function TeacherDashboard() {
 
   const loadDashboard = useCallback(async () => {
     setLoading(true)
+    try {
+      const [d, r] = await Promise.allSettled([
+        optimizedAnalysisAPI.getDashboard(),
+        optimizedAnalysisAPI.getReports(),
+      ])
+      const dashData = d.status === 'fulfilled' ? d.value.data.data : null
+      const reportsData = r.status === 'fulfilled' ? (r.value.data.data || []) : []
 
-    Promise.allSettled([
-      optimizedAnalysisAPI.getDashboard(),
-      optimizedAnalysisAPI.getReports(),
-    ])
-      .then(([d, r]) => {
-        const dashData = d.status === 'fulfilled' ? d.value.data.data : null
-        const reportsData = r.status === 'fulfilled' ? (r.value.data.data || []) : []
+      setDash(dashData)
+      setReports(reportsData)
 
-        setDash(dashData)
-        setReports(reportsData)
-
-        if ((dashData?.studentsAtRisk || 0) > 0) {
-          addNotification({
-            type: 'warning',
-            title: 'Attention Required',
-            body: `${dashData.studentsAtRisk} student(s) flagged for follow-up assessment.`,
-          })
-        }
-      })
-      .catch(() => {
-        toast.error('Unable to load dashboard')
-      })
-      .finally(() => setLoading(false))
+      if ((dashData?.studentsAtRisk || 0) > 0) {
+        addNotification({
+          type: 'warning',
+          title: 'Attention Required',
+          body: `${dashData.studentsAtRisk} student(s) flagged for follow-up assessment.`,
+        })
+      }
+    } catch {
+      toast.error('Unable to load dashboard')
+    } finally {
+      setLoading(false)
+    }
   }, [addNotification])
 
   useEffect(() => {
     loadDashboard()
-  }, [loadDashboard, user?.userId])
+  }, [loadDashboard])
 
   const greeting = (() => {
     const h = new Date().getHours()

@@ -178,7 +178,7 @@ export default function UploadPage() {
 
   useEffect(() => {
     loadStudents()
-  }, [loadStudents, user?.userId])
+  }, [loadStudents])
 
   const onDrop = useCallback((accepted, rejected) => {
     if (rejected.length > 0) {

@@ -504,7 +504,8 @@ export default function QuizPage() {
 
   useEffect(() => {
     load()
-  }, [user?.userId])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleCreateQuiz = async () => {
     if (!topic || !text) return toast.error('Topic and text required')

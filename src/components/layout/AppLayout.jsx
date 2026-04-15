@@ -394,20 +394,11 @@ export default function AppLayout() {
 
         {/* Content */}
         <main style={{ flex: 1, padding: isMobile ? '20px 16px' : '24px 28px', overflowX: 'hidden' }}>
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.div
-              key={location.pathname}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
-              style={{ maxWidth: 1200, margin: '0 auto' }}
-            >
-              <PageErrorBoundary>
-                <Outlet />
-              </PageErrorBoundary>
-            </motion.div>
-          </AnimatePresence>
+          <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+            <PageErrorBoundary>
+              <Outlet />
+            </PageErrorBoundary>
+          </div>
         </main>
       </div>
     </div>

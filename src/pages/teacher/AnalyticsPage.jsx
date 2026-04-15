@@ -205,28 +205,27 @@ export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true)
   const [classFilter, setClassFilter] = useState('all')
 
-  const loadAnalytics = useCallback(() => {
+  const loadAnalytics = useCallback(async () => {
     setLoading(true)
-
-    Promise.allSettled([
-      optimizedAnalysisAPI.getReports(),
-      optimizedAnalysisAPI.getDashboard(),
-      optimizedStudentAPI.getAllWithIndexRetry(4, 300),
-    ])
-      .then(([r, d, s]) => {
-        setReports(r.status === 'fulfilled' ? (r.value.data.data || []) : [])
-        setDash(d.status === 'fulfilled' ? d.value.data.data : null)
-        setStudents(s.status === 'fulfilled' ? (s.value?.data?.data || []) : [])
-      })
-      .catch(() => {
-        toast.error('Failed to load analytics')
-      })
-      .finally(() => setLoading(false))
+    try {
+      const [r, d, s] = await Promise.allSettled([
+        optimizedAnalysisAPI.getReports(),
+        optimizedAnalysisAPI.getDashboard(),
+        optimizedStudentAPI.getAllWithIndexRetry(4, 300),
+      ])
+      setReports(r.status === 'fulfilled' ? (r.value.data.data || []) : [])
+      setDash(d.status === 'fulfilled' ? d.value.data.data : null)
+      setStudents(s.status === 'fulfilled' ? (s.value?.data?.data || []) : [])
+    } catch {
+      toast.error('Failed to load analytics')
+    } finally {
+      setLoading(false)
+    }
   }, [])
 
   useEffect(() => {
     loadAnalytics()
-  }, [loadAnalytics, user?.userId])
+  }, [loadAnalytics])
 
   // Get unique classes
   const classes = useMemo(() => {

@@ -104,7 +104,7 @@ export default function ClassesView() {
 
   useEffect(() => {
     loadClasses()
-  }, [user?.userId, loadClasses])
+  }, [loadClasses])
 
   const handleCreateClass = async () => {
     const className = newClassName.trim()

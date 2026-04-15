@@ -252,7 +252,7 @@ export function ReportsPage() {
 
   useEffect(() => {
     loadReports()
-  }, [loadReports, user?.userId])
+  }, [loadReports])
 
   const classes = useMemo(() => {
     return Array.from(new Set(reports.map((r) => r.className).filter(Boolean))).sort()
