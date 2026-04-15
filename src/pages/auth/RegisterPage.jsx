@@ -4,6 +4,7 @@ import { authAPI } from '../../services/api'
 import { useAuth } from '../../context/AuthContext'
 import { NeuraScanLogo } from '../../components/shared/Logo.jsx'
 import toast from 'react-hot-toast'
+import { auth, googleProvider, signInWithPopup } from '../../firebase'
 
 // ============================================================================
 // DESIGN SYSTEM
@@ -712,12 +713,23 @@ export default function RegisterPage() {
   // Google OAuth handler
   const handleGoogleSignUp = async () => {
     setLoading(true)
+    const id = toast.loading('Signing up with Google...')
     try {
-      // Using Firebase for Google OAuth
-      await authAPI.firebaseRegister({ role })
-      toast.success('Google sign-up initiated!')
+      const result = await signInWithPopup(auth, googleProvider)
+      const idToken = await result.user.getIdToken(true)
+      if (!idToken) throw new Error('Could not retrieve ID Token from Firebase.')
+      const picture = result.user?.photoURL || null
+      const res = await authAPI.firebaseLogin(idToken, role, picture)
+      login(res.data.data)
+      toast.success(`Welcome, ${res.data.data.userName}!`, { id })
+      navigate(res.data.data.userRole === 'ROLE_TEACHER' ? '/teacher/dashboard' : '/parent/dashboard')
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Google sign-up failed')
+      let msg = 'Google sign-up failed'
+      if (err.code === 'auth/popup-closed-by-user') msg = 'Sign-in popup was closed'
+      else if (err.code === 'auth/cancelled-popup-request') msg = 'Only one sign-in popup allowed at a time'
+      else if (err.response?.data?.message) msg = err.response.data.message
+      else if (err.message) msg = err.message
+      toast.error(msg, { id })
     } finally {
       setLoading(false)
     }
