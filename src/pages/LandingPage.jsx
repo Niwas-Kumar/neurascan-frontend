@@ -496,110 +496,328 @@ export default function LandingPage() {
             </div>
           </ScrollReveal>
 
-          {/* Key features — alternating left/right layout */}
-          {features.slice(0, 3).map((feature, index) => {
-            const Icon = feature.icon
-            const isReversed = index % 2 === 1
-            return (
-              <ScrollReveal key={feature.title} delay={0.1}>
+          {/* Feature 1: AI Handwriting Analysis — mini upload + result UI */}
+          <ScrollReveal delay={0.1}>
+            <div
+              className="feature-row"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 64,
+                marginBottom: 72,
+              }}
+            >
+              {/* Mock UI: Paper analysis result card */}
+              <div style={{ flex: '1 1 340px', display: 'flex', justifyContent: 'center' }}>
                 <div
-                  className="feature-row"
                   style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 64,
-                    flexDirection: isReversed ? 'row-reverse' : 'row',
-                    marginBottom: 72,
+                    width: '100%',
+                    maxWidth: 420,
+                    borderRadius: 16,
+                    background: COLORS.bgCard,
+                    border: `1px solid ${COLORS.border}`,
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04)',
+                    overflow: 'hidden',
                   }}
                 >
-                  {/* Visual side — icon illustration panel */}
-                  <div style={{ flex: '1 1 340px', display: 'flex', justifyContent: 'center' }}>
-                    <div
-                      style={{
-                        width: '100%',
-                        maxWidth: 380,
-                        aspectRatio: '4 / 3',
-                        borderRadius: 20,
-                        background: `linear-gradient(135deg, ${feature.bg} 0%, ${COLORS.bgMuted} 100%)`,
-                        border: `1px solid ${COLORS.border}`,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        position: 'relative',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      {/* Decorative circles */}
-                      <div
-                        style={{
-                          position: 'absolute',
-                          top: -30,
-                          right: -30,
-                          width: 120,
-                          height: 120,
-                          borderRadius: '50%',
-                          background: feature.bg,
-                          opacity: 0.5,
-                        }}
-                      />
-                      <div
-                        style={{
-                          position: 'absolute',
-                          bottom: -20,
-                          left: -20,
-                          width: 80,
-                          height: 80,
-                          borderRadius: '50%',
-                          background: feature.bg,
-                          opacity: 0.3,
-                        }}
-                      />
-                      <Icon size={72} color={feature.color} strokeWidth={1.2} style={{ position: 'relative', zIndex: 1 }} />
-                    </div>
+                  {/* Title bar */}
+                  <div style={{
+                    padding: '12px 20px',
+                    borderBottom: `1px solid ${COLORS.border}`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    background: COLORS.bgMuted,
+                  }}>
+                    <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#F87171' }} />
+                    <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#FBBF24' }} />
+                    <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#34D399' }} />
+                    <span style={{ marginLeft: 12, fontSize: 12, color: COLORS.textLight, fontFamily: "'Inter', sans-serif" }}>Analysis Result</span>
                   </div>
-
-                  {/* Text side */}
-                  <div style={{ flex: '1 1 340px' }}>
-                    <div
-                      style={{
-                        width: 48,
-                        height: 48,
-                        borderRadius: 12,
-                        background: feature.bg,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        marginBottom: 16,
-                      }}
-                    >
-                      <Icon size={24} color={feature.color} />
+                  {/* Mock content */}
+                  <div style={{ padding: 20 }}>
+                    {/* Upload zone */}
+                    <div style={{
+                      border: `2px dashed ${COLORS.border}`,
+                      borderRadius: 10,
+                      padding: '16px',
+                      textAlign: 'center',
+                      marginBottom: 16,
+                      background: 'rgba(20, 184, 166, 0.03)',
+                    }}>
+                      <Upload size={20} color={COLORS.primary} style={{ marginBottom: 4 }} />
+                      <p style={{ fontSize: 12, color: COLORS.textMuted }}>student_paper.jpg uploaded</p>
+                      <div style={{
+                        marginTop: 8,
+                        height: 4,
+                        borderRadius: 2,
+                        background: COLORS.border,
+                        overflow: 'hidden',
+                      }}>
+                        <div style={{ width: '100%', height: '100%', borderRadius: 2, background: COLORS.primary }} />
+                      </div>
                     </div>
-                    <h3
-                      style={{
-                        fontFamily: "'Plus Jakarta Sans', sans-serif",
-                        fontSize: 24,
-                        fontWeight: 700,
-                        color: COLORS.textPrimary,
-                      }}
-                    >
-                      {feature.title}
-                    </h3>
-                    <p
-                      style={{
-                        marginTop: 12,
-                        fontSize: 16,
-                        color: COLORS.textMuted,
-                        lineHeight: 1.7,
-                        maxWidth: 420,
-                      }}
-                    >
-                      {feature.description}
-                    </p>
+                    {/* Results */}
+                    <div style={{ display: 'flex', gap: 10, marginBottom: 14 }}>
+                      <div style={{
+                        flex: 1,
+                        padding: '10px 12px',
+                        borderRadius: 8,
+                        background: 'rgba(20, 184, 166, 0.08)',
+                        border: '1px solid rgba(20, 184, 166, 0.15)',
+                      }}>
+                        <p style={{ fontSize: 10, color: COLORS.textLight, marginBottom: 2 }}>Dyslexia Risk</p>
+                        <p style={{ fontSize: 18, fontWeight: 700, color: COLORS.primary }}>Low</p>
+                      </div>
+                      <div style={{
+                        flex: 1,
+                        padding: '10px 12px',
+                        borderRadius: 8,
+                        background: 'rgba(217, 119, 6, 0.08)',
+                        border: '1px solid rgba(217, 119, 6, 0.15)',
+                      }}>
+                        <p style={{ fontSize: 10, color: COLORS.textLight, marginBottom: 2 }}>Dysgraphia Risk</p>
+                        <p style={{ fontSize: 18, fontWeight: 700, color: COLORS.amber }}>Medium</p>
+                      </div>
+                    </div>
+                    {/* Score bar */}
+                    <p style={{ fontSize: 11, color: COLORS.textMuted, marginBottom: 4 }}>Overall Confidence</p>
+                    <div style={{ height: 6, borderRadius: 3, background: COLORS.border }}>
+                      <div style={{ width: '92%', height: '100%', borderRadius: 3, background: `linear-gradient(90deg, ${COLORS.primary}, ${COLORS.indigo})` }} />
+                    </div>
+                    <p style={{ fontSize: 10, color: COLORS.textLight, marginTop: 4, textAlign: 'right' }}>92%</p>
                   </div>
                 </div>
-              </ScrollReveal>
-            )
-          })}
+              </div>
+
+              {/* Text side */}
+              <div style={{ flex: '1 1 340px' }}>
+                <div style={{ width: 48, height: 48, borderRadius: 12, background: COLORS.primaryBg, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+                  <Upload size={24} color={COLORS.primary} />
+                </div>
+                <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 24, fontWeight: 700, color: COLORS.textPrimary }}>
+                  {features[0].title}
+                </h3>
+                <p style={{ marginTop: 12, fontSize: 16, color: COLORS.textMuted, lineHeight: 1.7, maxWidth: 420 }}>
+                  {features[0].description}
+                </p>
+              </div>
+            </div>
+          </ScrollReveal>
+
+          {/* Feature 2: Detailed Analytics — mini chart mockup */}
+          <ScrollReveal delay={0.1}>
+            <div
+              className="feature-row"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 64,
+                flexDirection: 'row-reverse',
+                marginBottom: 72,
+              }}
+            >
+              {/* Mock UI: Analytics dashboard snippet */}
+              <div style={{ flex: '1 1 340px', display: 'flex', justifyContent: 'center' }}>
+                <div
+                  style={{
+                    width: '100%',
+                    maxWidth: 420,
+                    borderRadius: 16,
+                    background: COLORS.bgCard,
+                    border: `1px solid ${COLORS.border}`,
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04)',
+                    overflow: 'hidden',
+                  }}
+                >
+                  {/* Title bar */}
+                  <div style={{
+                    padding: '12px 20px',
+                    borderBottom: `1px solid ${COLORS.border}`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    background: COLORS.bgMuted,
+                  }}>
+                    <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#F87171' }} />
+                    <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#FBBF24' }} />
+                    <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#34D399' }} />
+                    <span style={{ marginLeft: 12, fontSize: 12, color: COLORS.textLight, fontFamily: "'Inter', sans-serif" }}>Student Analytics</span>
+                  </div>
+                  {/* Chart area */}
+                  <div style={{ padding: 20 }}>
+                    {/* Mini stat row */}
+                    <div style={{ display: 'flex', gap: 10, marginBottom: 18 }}>
+                      {[
+                        { label: 'Students', val: '126', trend: '+12%', up: true },
+                        { label: 'At Risk', val: '8', trend: '-3%', up: false },
+                        { label: 'Improved', val: '34', trend: '+28%', up: true },
+                      ].map((s) => (
+                        <div key={s.label} style={{
+                          flex: 1,
+                          padding: '8px 10px',
+                          borderRadius: 8,
+                          background: COLORS.bgMuted,
+                          border: `1px solid ${COLORS.border}`,
+                        }}>
+                          <p style={{ fontSize: 10, color: COLORS.textLight }}>{s.label}</p>
+                          <p style={{ fontSize: 16, fontWeight: 700, color: COLORS.textPrimary }}>{s.val}</p>
+                          <p style={{ fontSize: 10, color: s.up ? '#059669' : COLORS.primary, fontWeight: 600 }}>{s.trend}</p>
+                        </div>
+                      ))}
+                    </div>
+                    {/* Fake bar chart */}
+                    <p style={{ fontSize: 11, color: COLORS.textMuted, marginBottom: 10 }}>Weekly Trend</p>
+                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 80 }}>
+                      {[40, 55, 35, 70, 60, 85, 75].map((h, i) => (
+                        <div key={i} style={{
+                          flex: 1,
+                          height: `${h}%`,
+                          borderRadius: '4px 4px 0 0',
+                          background: i === 5
+                            ? `linear-gradient(180deg, ${COLORS.indigo}, ${COLORS.primary})`
+                            : COLORS.border,
+                          transition: 'height 0.3s ease',
+                        }} />
+                      ))}
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+                      {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, i) => (
+                        <span key={i} style={{ flex: 1, textAlign: 'center', fontSize: 9, color: COLORS.textLight }}>{d}</span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Text side */}
+              <div style={{ flex: '1 1 340px' }}>
+                <div style={{ width: 48, height: 48, borderRadius: 12, background: COLORS.indigoBg, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+                  <BarChart3 size={24} color={COLORS.indigo} />
+                </div>
+                <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 24, fontWeight: 700, color: COLORS.textPrimary }}>
+                  {features[1].title}
+                </h3>
+                <p style={{ marginTop: 12, fontSize: 16, color: COLORS.textMuted, lineHeight: 1.7, maxWidth: 420 }}>
+                  {features[1].description}
+                </p>
+              </div>
+            </div>
+          </ScrollReveal>
+
+          {/* Feature 3: AI-Generated Quizzes — mini quiz card mockup */}
+          <ScrollReveal delay={0.1}>
+            <div
+              className="feature-row"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 64,
+                marginBottom: 72,
+              }}
+            >
+              {/* Mock UI: Quiz card */}
+              <div style={{ flex: '1 1 340px', display: 'flex', justifyContent: 'center' }}>
+                <div
+                  style={{
+                    width: '100%',
+                    maxWidth: 420,
+                    borderRadius: 16,
+                    background: COLORS.bgCard,
+                    border: `1px solid ${COLORS.border}`,
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04)',
+                    overflow: 'hidden',
+                  }}
+                >
+                  {/* Title bar */}
+                  <div style={{
+                    padding: '12px 20px',
+                    borderBottom: `1px solid ${COLORS.border}`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    background: COLORS.bgMuted,
+                  }}>
+                    <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#F87171' }} />
+                    <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#FBBF24' }} />
+                    <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#34D399' }} />
+                    <span style={{ marginLeft: 12, fontSize: 12, color: COLORS.textLight, fontFamily: "'Inter', sans-serif" }}>Quiz Builder</span>
+                  </div>
+                  {/* Quiz content */}
+                  <div style={{ padding: 20 }}>
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: 14,
+                    }}>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: COLORS.textPrimary }}>Reading Assessment</span>
+                      <span style={{
+                        fontSize: 10,
+                        padding: '3px 8px',
+                        borderRadius: 6,
+                        background: 'rgba(124, 58, 237, 0.1)',
+                        color: COLORS.violet,
+                        fontWeight: 600,
+                      }}>AI Generated</span>
+                    </div>
+                    {/* Question */}
+                    <div style={{
+                      padding: 14,
+                      borderRadius: 10,
+                      background: COLORS.bgMuted,
+                      border: `1px solid ${COLORS.border}`,
+                      marginBottom: 12,
+                    }}>
+                      <p style={{ fontSize: 11, color: COLORS.textLight, marginBottom: 6 }}>Question 3 of 10</p>
+                      <p style={{ fontSize: 13, color: COLORS.textPrimary, lineHeight: 1.5 }}>
+                        Which word is the correct spelling?
+                      </p>
+                    </div>
+                    {/* Options */}
+                    {['becuase', 'because', 'becouse', 'becasue'].map((opt, i) => (
+                      <div key={opt} style={{
+                        padding: '10px 14px',
+                        borderRadius: 8,
+                        border: `1px solid ${i === 1 ? COLORS.primary : COLORS.border}`,
+                        background: i === 1 ? 'rgba(20, 184, 166, 0.06)' : 'transparent',
+                        marginBottom: 6,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 10,
+                      }}>
+                        <div style={{
+                          width: 16,
+                          height: 16,
+                          borderRadius: '50%',
+                          border: `2px solid ${i === 1 ? COLORS.primary : COLORS.border}`,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}>
+                          {i === 1 && <div style={{ width: 8, height: 8, borderRadius: '50%', background: COLORS.primary }} />}
+                        </div>
+                        <span style={{ fontSize: 13, color: i === 1 ? COLORS.primary : COLORS.textSecondary, fontWeight: i === 1 ? 600 : 400 }}>{opt}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Text side */}
+              <div style={{ flex: '1 1 340px' }}>
+                <div style={{ width: 48, height: 48, borderRadius: 12, background: COLORS.violetBg, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+                  <ClipboardList size={24} color={COLORS.violet} />
+                </div>
+                <h3 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 24, fontWeight: 700, color: COLORS.textPrimary }}>
+                  {features[2].title}
+                </h3>
+                <p style={{ marginTop: 12, fontSize: 16, color: COLORS.textMuted, lineHeight: 1.7, maxWidth: 420 }}>
+                  {features[2].description}
+                </p>
+              </div>
+            </div>
+          </ScrollReveal>
 
           {/* Additional features — compact card grid */}
           <div
