@@ -7,6 +7,7 @@ import { optimizedStudentAPI } from '../../services/optimizedApi'
 import { useAuth } from '../../context/AuthContext'
 import { Button, Input, Modal } from '../../components/shared/UI'
 import StudentCard from '../../components/teacher/StudentCard'
+import { useDebounce } from '../../hooks'
 
 const COLORS = {
   bgBase: '#F8FAFC',
@@ -45,6 +46,7 @@ export default function ClassStudentsView() {
   const [students, setStudents] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const debouncedSearch = useDebounce(search, 300)
   const [modalMode, setModalMode] = useState(null)
   const [activeStudent, setActiveStudent] = useState(null)
   const [form, setForm] = useState(buildForm(decodedClassId))
@@ -225,7 +227,7 @@ export default function ClassStudentsView() {
   }
 
   const filteredStudents = useMemo(() => {
-    const q = search.trim().toLowerCase()
+    const q = debouncedSearch.trim().toLowerCase()
     if (!q) return students
 
     return students.filter((student) => {
@@ -234,7 +236,7 @@ export default function ClassStudentsView() {
       const cls = String(student.className || '').toLowerCase()
       return name.includes(q) || roll.includes(q) || cls.includes(q)
     })
-  }, [students, search])
+  }, [students, debouncedSearch])
 
   return (
     <div style={{ minHeight: '100vh', background: COLORS.bgBase, padding: '32px 40px' }}>
@@ -282,6 +284,7 @@ export default function ClassStudentsView() {
       >
         <Search
           size={18}
+          aria-hidden="true"
           style={{
             position: 'absolute',
             left: 14,
@@ -295,6 +298,7 @@ export default function ClassStudentsView() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by name, class, or roll number..."
+          aria-label="Search students"
           style={{
             width: '100%',
             padding: '12px 40px 12px 44px',
@@ -311,6 +315,7 @@ export default function ClassStudentsView() {
         {search && (
           <button
             onClick={() => setSearch('')}
+            aria-label="Clear search"
             style={{
               position: 'absolute',
               right: 12,

@@ -40,8 +40,8 @@ export default function PremiumFooter() {
       { label: 'Case Studies', href: '/case-studies' },
     ],
     legal: [
-      { label: 'Privacy', href: '/privacy' },
-      { label: 'Terms', href: '/terms' },
+      { label: 'Privacy Policy', href: '/privacy-policy' },
+      { label: 'Terms of Service', href: '/terms-of-service' },
       { label: 'FERPA', href: '/ferpa' },
       { label: 'Accessibility', href: '/accessibility' },
     ],

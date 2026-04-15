@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { useState, memo } from 'react'
 import { motion } from 'framer-motion'
 import { Pencil, Trash2, GraduationCap, FileText, Copy, Check } from 'lucide-react'
 import toast from 'react-hot-toast'
 
-export default function StudentCard({ student, onEdit, onDelete, index = 0 }) {
+const StudentCard = memo(function StudentCard({ student, onEdit, onDelete, index = 0 }) {
   const [copyFeedback, setCopyFeedback] = useState(false)
 
   const avatarBg = '#EDE9FE'
@@ -277,4 +277,6 @@ export default function StudentCard({ student, onEdit, onDelete, index = 0 }) {
       </div>
     </motion.div>
   )
-}
+})
+
+export default StudentCard

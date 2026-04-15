@@ -10,6 +10,8 @@ import PricingPage from './pages/PricingPage'
 import HelpPage from './pages/HelpPage'
 import ContactPage from './pages/ContactPage'
 import AboutPage from './pages/AboutPage'
+import PrivacyPolicyPage from './pages/PrivacyPolicyPage'
+import TermsOfServicePage from './pages/TermsOfServicePage'
 
 // Auth pages
 import LoginPage         from './pages/auth/LoginPage'
@@ -84,6 +86,8 @@ function AppRoutes() {
       <Route path="/help"           element={<HelpPage />} />
       <Route path="/contact"        element={<ContactPage />} />
       <Route path="/about"          element={<AboutPage />} />
+      <Route path="/privacy-policy"  element={<PrivacyPolicyPage />} />
+      <Route path="/terms-of-service" element={<TermsOfServicePage />} />
 
       {/* ── Auth pages ── */}
       <Route path="/login"          element={<LoginPage />} />
