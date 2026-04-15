@@ -82,6 +82,21 @@ api.interceptors.response.use(
         }
       }
 
+      // ✅ CRITICAL: Only redirect if token is actually expired
+      // Don't kill the session for transient backend errors (Firestore timeout, cold start, etc.)
+      const currentToken = localStorage.getItem('ns_token')
+      if (currentToken) {
+        try {
+          const payload = JSON.parse(atob(currentToken.split('.')[1]))
+          const timeLeft = payload.exp * 1000 - Date.now()
+          if (timeLeft > 0) {
+            // Token is still valid — this 401 is a transient backend error, don't logout
+            console.warn('[Auth] Got 401 but token still valid (expires in', Math.round(timeLeft / 60000), 'min). Not logging out.')
+            return Promise.reject(err)
+          }
+        } catch { /* malformed token — proceed to logout */ }
+      }
+
       isRedirecting = true
       
       // ✅ FIX: Only clear authentication token, preserve other data (studentId, userId, etc)
