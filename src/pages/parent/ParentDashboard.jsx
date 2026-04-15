@@ -683,7 +683,7 @@ function ConnectedStudentsList({ students, onSelectStudent, selectedId, onDiscon
                 background: 'transparent',
                 border: 'none',
                 padding: 4,
-                color: COLORS.textMuted,
+                color: '#EF4444',
                 cursor: 'pointer',
               }}
               title="Disconnect"
