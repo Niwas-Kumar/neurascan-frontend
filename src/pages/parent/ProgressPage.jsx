@@ -266,7 +266,7 @@ export default function ProgressPage() {
                       <span style={{ color: COLORS.textSecondary }}>Dyslexia: <strong style={{ color: r.dyslexiaScore >= 70 ? COLORS.riskHigh : r.dyslexiaScore >= 45 ? COLORS.riskMedium : COLORS.riskLow }}>{r.dyslexiaScore?.toFixed(1)}%</strong></span>
                       <span style={{ color: COLORS.textSecondary }}>Dysgraphia: <strong style={{ color: r.dysgraphiaScore >= 70 ? COLORS.riskHigh : r.dysgraphiaScore >= 45 ? COLORS.riskMedium : COLORS.riskLow }}>{r.dysgraphiaScore?.toFixed(1)}%</strong></span>
                     </div>
-                    {r.aiComment && <p style={{ fontSize: 13, color: COLORS.textMuted, lineHeight: 1.7, background: COLORS.bgSubtle, border: `1px solid ${COLORS.border}`, borderRadius: 10, padding: '10px 14px' }}>{r.aiComment.length > 160 ? r.aiComment.substring(0, 160) + '...' : r.aiComment}</p>}
+                    {r.aiComment && <p style={{ fontSize: 13, color: COLORS.textMuted, lineHeight: 1.7, background: COLORS.bgSubtle, border: `1px solid ${COLORS.border}`, borderRadius: 10, padding: '10px 14px' }}>{r.aiComment.split('\n\n')[0]}</p>}
                   </div>
                 </div>
               ))}

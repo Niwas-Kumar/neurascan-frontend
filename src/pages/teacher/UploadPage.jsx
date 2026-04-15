@@ -839,13 +839,19 @@ export default function UploadPage() {
                   }}>
                     <Brain size={14} color={COLORS.primary} /> AI Assessment
                   </div>
-                  <p style={{
-                    fontSize: 14,
-                    color: COLORS.textSecondary,
-                    lineHeight: 1.7,
-                  }}>
-                    {result.aiComment}
-                  </p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    {(result.aiComment || 'Analysis complete.').split('\n\n').map((para, i) => (
+                      <p key={i} style={{
+                        fontSize: 14,
+                        color: i === 0 ? COLORS.textMuted : COLORS.textSecondary,
+                        lineHeight: 1.7,
+                        fontWeight: i === 0 ? 600 : 400,
+                        margin: 0,
+                      }}>
+                        {para}
+                      </p>
+                    ))}
+                  </div>
                 </div>
               </div>
             </motion.div>

@@ -1323,9 +1323,19 @@ export default function ParentDashboard() {
                 <Brain size={16} color={COLORS.primary} />
                 <p style={{ fontSize: 14, fontWeight: 600, color: COLORS.primary }}>AI Analysis</p>
               </div>
-              <p style={{ fontSize: 14, color: COLORS.textPrimary, lineHeight: 1.6 }}>
-                {report.aiComment || 'No AI commentary available for this assessment.'}
-              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {(report.aiComment || 'No AI commentary available for this assessment.').split('\n\n').map((para, i) => (
+                  <p key={i} style={{
+                    fontSize: 14,
+                    color: i === 0 ? COLORS.textMuted : COLORS.textPrimary,
+                    lineHeight: 1.6,
+                    fontWeight: i === 0 ? 600 : 400,
+                    margin: 0,
+                  }}>
+                    {para}
+                  </p>
+                ))}
+              </div>
             </div>
 
             {/* Recommendation Cards */}
