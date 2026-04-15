@@ -3,7 +3,7 @@
 // ============================================================
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { PlusCircle, Send, BookOpen, CheckCircle, XCircle, Mail, Users, Loader2, BarChart3, X } from 'lucide-react'
+import { PlusCircle, Send, BookOpen, CheckCircle, XCircle, Mail, Users, Loader2, BarChart3, X, Eye } from 'lucide-react'
 import { quizAPI } from '../../services/api'
 import { optimizedStudentAPI } from '../../services/optimizedApi'
 import toast from 'react-hot-toast'
@@ -466,6 +466,127 @@ const QuizResultsModal = ({ quiz, onClose }) => {
 }
 
 // ════════════════════════════════════════════════════════════════
+// VIEW ALL QUESTIONS MODAL
+// ════════════════════════════════════════════════════════════════
+
+const QUESTION_TYPE_LABELS = {
+  MCQ: 'Multiple Choice',
+  FILL_IN_BLANK: 'Fill in the Blank',
+  TRUE_FALSE: 'True / False',
+  SENTENCE_ORDER: 'Sentence Ordering',
+  WORD_MATCH: 'Word Match',
+  PHONEME_ID: 'Phoneme Identification',
+}
+
+const QuizQuestionsModal = ({ quiz, onClose }) => {
+  return (
+    <div style={{
+      position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+      background: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(4px)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      zIndex: 1000, padding: 20
+    }}>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        style={{
+          background: COLORS.bgSurface, borderRadius: 20, width: '100%', maxWidth: 720,
+          maxHeight: '85vh', overflow: 'hidden', display: 'flex', flexDirection: 'column',
+          border: `1px solid ${COLORS.border}`, boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+        }}
+      >
+        {/* Header */}
+        <div style={{ padding: '20px 24px', borderBottom: `1px solid ${COLORS.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <h2 style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 18, fontWeight: 700, marginBottom: 4, color: COLORS.textPrimary }}>All Questions</h2>
+            <p style={{ fontSize: 13, color: COLORS.textMuted }}>{quiz.topic} &mdash; {quiz.questions?.length || 0} questions</p>
+          </div>
+          <button onClick={onClose} aria-label="Close" style={{ background: COLORS.bgSubtle, border: 'none', cursor: 'pointer', padding: 8, borderRadius: 8 }}>
+            <X size={18} color={COLORS.textMuted} />
+          </button>
+        </div>
+
+        {/* Questions List */}
+        <div style={{ flex: 1, overflow: 'auto', padding: '20px 24px' }}>
+          {quiz.questions?.map((q, idx) => (
+            <div key={q.id || idx} style={{
+              marginBottom: 16, padding: 16, background: COLORS.bgSubtle,
+              borderRadius: 12, border: `1px solid ${COLORS.border}`
+            }}>
+              {/* Question header */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: COLORS.textPrimary, flex: 1 }}>
+                  <span style={{ color: COLORS.primary, marginRight: 8 }}>Q{idx + 1}.</span>
+                  {q.question}
+                </div>
+              </div>
+
+              {/* Tags */}
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 }}>
+                {q.questionType && (
+                  <span style={{
+                    fontSize: 11, fontWeight: 600, padding: '3px 8px', borderRadius: 6,
+                    background: COLORS.secondaryBg, color: COLORS.secondary
+                  }}>
+                    {QUESTION_TYPE_LABELS[q.questionType] || q.questionType}
+                  </span>
+                )}
+                {q.difficulty && (
+                  <span style={{
+                    fontSize: 11, fontWeight: 600, padding: '3px 8px', borderRadius: 6,
+                    background: q.difficulty === 'hard' ? COLORS.riskHighBg : q.difficulty === 'medium' ? COLORS.riskMediumBg : COLORS.riskLowBg,
+                    color: q.difficulty === 'hard' ? COLORS.riskHigh : q.difficulty === 'medium' ? COLORS.riskMedium : COLORS.riskLow
+                  }}>
+                    {q.difficulty.charAt(0).toUpperCase() + q.difficulty.slice(1)}
+                  </span>
+                )}
+                {q.category && (
+                  <span style={{
+                    fontSize: 11, fontWeight: 600, padding: '3px 8px', borderRadius: 6,
+                    background: COLORS.primaryBg, color: COLORS.primary
+                  }}>
+                    {q.category.replace(/_/g, ' ')}
+                  </span>
+                )}
+              </div>
+
+              {/* Options */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+                {q.options?.map((opt, oi) => (
+                  <div key={oi} style={{
+                    fontSize: 13, padding: '8px 12px', borderRadius: 8,
+                    background: opt === q.answer ? 'rgba(34, 197, 94, 0.12)' : COLORS.bgSurface,
+                    border: opt === q.answer ? `1px solid ${COLORS.riskLow}` : `1px solid ${COLORS.border}`,
+                    color: opt === q.answer ? COLORS.riskLow : COLORS.textSecondary,
+                    fontWeight: opt === q.answer ? 600 : 400,
+                    display: 'flex', alignItems: 'center', gap: 6
+                  }}>
+                    {opt === q.answer && <CheckCircle size={13} />}
+                    {opt}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Footer */}
+        <div style={{ padding: '16px 24px', borderTop: `1px solid ${COLORS.border}`, textAlign: 'right', background: COLORS.bgSubtle }}>
+          <button onClick={onClose} style={{
+            padding: '10px 20px', borderRadius: 10, border: `1px solid ${COLORS.border}`,
+            background: COLORS.bgSurface, color: COLORS.textPrimary, fontWeight: 600, cursor: 'pointer',
+            fontFamily: "'Inter', sans-serif", fontSize: 14
+          }}>
+            Close
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  )
+}
+
+// ════════════════════════════════════════════════════════════════
 // MAIN QUIZ PAGE
 // ════════════════════════════════════════════════════════════════
 
@@ -484,6 +605,7 @@ export default function QuizPage() {
   // Modal states
   const [distributeQuiz, setDistributeQuiz] = useState(null)
   const [viewResultsQuiz, setViewResultsQuiz] = useState(null)
+  const [viewQuestionsQuiz, setViewQuestionsQuiz] = useState(null)
 
   const load = () => {
     setLoading(true)
@@ -668,6 +790,20 @@ export default function QuizPage() {
                 <motion.button
                   whileHover={{ y: -1 }}
                   whileTap={{ scale: 0.98 }}
+                  onClick={() => setViewQuestionsQuiz(q)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 6, padding: '10px 16px',
+                    borderRadius: 10, border: `1px solid ${COLORS.primary}`,
+                    background: COLORS.primaryBg,
+                    color: COLORS.primary, fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                    fontFamily: "'Inter', sans-serif"
+                  }}
+                >
+                  <Eye size={14} /> View Questions
+                </motion.button>
+                <motion.button
+                  whileHover={{ y: -1 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={() => setDistributeQuiz(q)}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 6, padding: '10px 16px',
@@ -712,6 +848,12 @@ export default function QuizPage() {
           <QuizResultsModal
             quiz={viewResultsQuiz}
             onClose={() => setViewResultsQuiz(null)}
+          />
+        )}
+        {viewQuestionsQuiz && (
+          <QuizQuestionsModal
+            quiz={viewQuestionsQuiz}
+            onClose={() => setViewQuestionsQuiz(null)}
           />
         )}
       </AnimatePresence>
