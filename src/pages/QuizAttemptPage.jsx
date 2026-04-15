@@ -361,6 +361,7 @@ export default function QuizAttemptPage() {
   const [showResult, setShowResult] = useState(false)
   const [finalResult, setFinalResult] = useState(null)
   const [submitting, setSubmitting] = useState(false)
+  const [alreadyAttempted, setAlreadyAttempted] = useState(null) // { score }
 
   // Timer ref
   const timerRef = useRef(null)
@@ -393,6 +394,12 @@ export default function QuizAttemptPage() {
       // Step 1: Validate the link
       const validateRes = await quizAttemptAPI.validateLink(quizId, token)
       const quizData = validateRes.data?.data
+
+      // Check if already attempted
+      if (quizData?.alreadyAttempted) {
+        setAlreadyAttempted({ score: quizData.completedScore })
+        return
+      }
 
       if (!quizData?.valid) {
         setError(quizData?.message || 'Invalid or expired quiz link.')
@@ -516,6 +523,73 @@ export default function QuizAttemptPage() {
   }
 
   // â”€â”€ Render Error â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ── Render Already Attempted ──────────────────────────────────
+  if (alreadyAttempted) {
+    const score = alreadyAttempted.score ?? 0
+    const scoreColor = getScoreColor(score)
+    return (
+      <div style={styles.container}>
+        <div style={styles.card}>
+          <div style={styles.header}>
+            <div style={styles.logo}>
+              <NeuraScanLogo size={32} variant="light" />
+            </div>
+            <h1 style={styles.title}>Quiz Already Completed</h1>
+            <p style={styles.subtitle}>You have already submitted your response for this quiz</p>
+          </div>
+          <div style={{ ...styles.content, textAlign: 'center', padding: '48px 32px' }}>
+            <div style={{
+              width: 80, height: 80, borderRadius: '50%',
+              background: 'rgba(20, 184, 166, 0.15)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              margin: '0 auto 24px'
+            }}>
+              <CheckCircle size={40} color={COLORS.secondary} />
+            </div>
+
+            <h2 style={{
+              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontSize: 22, fontWeight: 800, color: 'white', marginBottom: 12
+            }}>
+              Only One Attempt Allowed
+            </h2>
+            <p style={{
+              fontSize: 15, color: 'rgba(255, 255, 255, 0.7)',
+              lineHeight: 1.7, maxWidth: 420, margin: '0 auto 28px'
+            }}>
+              To ensure fair and accurate screening results, each student can
+              attempt a quiz only once. Your response has been recorded.
+            </p>
+
+            <div style={{
+              background: 'rgba(255, 255, 255, 0.06)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              borderRadius: 16, padding: '24px 32px',
+              maxWidth: 280, margin: '0 auto 28px'
+            }}>
+              <div style={{ fontSize: 13, color: 'rgba(255, 255, 255, 0.5)', marginBottom: 8, fontWeight: 600, textTransform: 'uppercase', letterSpacing: 1 }}>
+                Your Score
+              </div>
+              <div style={{
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                fontSize: 48, fontWeight: 800, color: scoreColor
+              }}>
+                {score.toFixed(0)}%
+              </div>
+              <div style={{ fontSize: 14, color: scoreColor, fontWeight: 600, marginTop: 4 }}>
+                {getPerformanceLevel(score)}
+              </div>
+            </div>
+
+            <p style={{ fontSize: 13, color: 'rgba(255, 255, 255, 0.4)', lineHeight: 1.6 }}>
+              If you believe this is an error, please contact your teacher to get a new quiz link.
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   if (error) {
     return (
       <div style={styles.container}>

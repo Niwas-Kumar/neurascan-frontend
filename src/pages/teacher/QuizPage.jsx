@@ -3,7 +3,7 @@
 // ============================================================
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { PlusCircle, Send, BookOpen, CheckCircle, XCircle, Mail, Users, Loader2, BarChart3, X, Eye } from 'lucide-react'
+import { PlusCircle, Send, BookOpen, CheckCircle, XCircle, Mail, Users, Loader2, BarChart3, X, Eye, Clock } from 'lucide-react'
 import { quizAPI } from '../../services/api'
 import { optimizedStudentAPI } from '../../services/optimizedApi'
 import toast from 'react-hot-toast'
@@ -114,6 +114,7 @@ const DistributeModal = ({ quiz, students, onClose, onDistribute }) => {
   const [customEmails, setCustomEmails] = useState('')
   const [customMessage, setCustomMessage] = useState('')
   const [sending, setSending] = useState(false)
+  const [validityDays, setValidityDays] = useState(7)
 
   const toggleStudent = (studentId) => {
     setSelectedStudents(prev =>
@@ -145,7 +146,8 @@ const DistributeModal = ({ quiz, students, onClose, onDistribute }) => {
         quizId: quiz.id,
         studentIds: selectedStudents,
         parentEmails: emails,
-        customMessage
+        customMessage,
+        validityDays
       })
       toast.success(`Quiz sent to ${selectedStudents.length + emails.length} recipient(s)`)
       onClose()
@@ -260,7 +262,7 @@ const DistributeModal = ({ quiz, students, onClose, onDistribute }) => {
           </div>
 
           {/* Custom Message */}
-          <div>
+          <div style={{ marginBottom: 20 }}>
             <label style={{ fontSize: 14, fontWeight: 600, marginBottom: 10, display: 'block', color: COLORS.textPrimary }}>
               Custom Message (optional)
             </label>
@@ -277,6 +279,40 @@ const DistributeModal = ({ quiz, students, onClose, onDistribute }) => {
               onFocus={e => e.target.style.borderColor = COLORS.primary}
               onBlur={e => e.target.style.borderColor = COLORS.border}
             />
+          </div>
+
+          {/* Link Validity */}
+          <div>
+            <label style={{ fontSize: 14, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, color: COLORS.textPrimary }}>
+              <Clock size={16} color={COLORS.primary} /> Link Validity
+            </label>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {[
+                { value: 1, label: '1 Day' },
+                { value: 3, label: '3 Days' },
+                { value: 7, label: '7 Days' },
+                { value: 14, label: '14 Days' },
+                { value: 30, label: '30 Days' }
+              ].map(opt => (
+                <button
+                  key={opt.value}
+                  type="button"
+                  onClick={() => setValidityDays(opt.value)}
+                  style={{
+                    padding: '8px 14px', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                    fontFamily: "'Inter', sans-serif", transition: 'all 0.15s ease',
+                    background: validityDays === opt.value ? COLORS.primary : COLORS.bgSubtle,
+                    color: validityDays === opt.value ? 'white' : COLORS.textMuted,
+                    border: `1px solid ${validityDays === opt.value ? COLORS.primary : COLORS.border}`
+                  }}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+            <p style={{ fontSize: 11, color: COLORS.textMuted, marginTop: 8 }}>
+              Quiz link will expire {validityDays === 1 ? 'tomorrow' : `in ${validityDays} days`} after sending
+            </p>
           </div>
         </div>
 
