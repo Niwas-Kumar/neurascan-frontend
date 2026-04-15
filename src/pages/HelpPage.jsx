@@ -11,11 +11,11 @@ export default function HelpPage() {
   const [selectedCategory, setSelectedCategory] = useState('all')
 
   const categories = [
-    { id: 'all', label: 'All Articles', count: 24 },
-    { id: 'getting-started', label: 'Getting Started', count: 6 },
-    { id: 'analysis', label: 'Analysis & Reports', count: 8 },
-    { id: 'security', label: 'Security & Privacy', count: 5 },
-    { id: 'billing', label: 'Billing & Plans', count: 5 },
+    { id: 'all', label: 'All Articles', count: 12 },
+    { id: 'getting-started', label: 'Getting Started', count: 3 },
+    { id: 'analysis', label: 'Analysis & Reports', count: 4 },
+    { id: 'security', label: 'Security & Privacy', count: 3 },
+    { id: 'billing', label: 'Billing & Plans', count: 2 },
   ]
 
   const articles = [
@@ -84,11 +84,11 @@ export default function HelpPage() {
     },
     {
       q: 'How accurate is the detection?',
-      a: 'Our AI has a 94% detection accuracy rate, validated by educational psychologists. However, NeuroScan is a screening tool, not a diagnostic instrument.',
+      a: 'Our AI has an 89% detection accuracy rate, validated by educational psychologists. However, NeuroScan is a screening tool, not a diagnostic instrument.',
     },
     {
       q: 'How long does analysis take?',
-      a: 'Analysis typically takes 30 seconds per paper. The AI processes handwriting patterns in real-time and generates insights immediately.',
+      a: 'Analysis typically takes 5–10 seconds per paper. The AI processes handwriting patterns in real-time and generates insights immediately.',
     },
     {
       q: 'What image quality is needed for accurate analysis?',

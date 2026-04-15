@@ -1,8 +1,9 @@
-import { Routes, Route, Navigate, useParams } from 'react-router-dom'
+import { Routes, Route, Navigate, useParams, useLocation } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
 import { AnimatePresence } from 'framer-motion'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { useBackendKeepAlive } from './hooks/useBackendKeepAlive'
+import { useEffect } from 'react'
 
 // Landing & Public pages
 import LandingPage from './pages/LandingPage'
@@ -84,10 +85,18 @@ function TeacherClassesRedirect() {
   return <Navigate to={`/teacher/classes/${encodeURIComponent(classId)}/students`} replace />
 }
 
+function ScrollToTop() {
+  const { pathname } = useLocation()
+  useEffect(() => { window.scrollTo(0, 0) }, [pathname])
+  return null
+}
+
 function AppRoutes() {
   useBackendKeepAlive(14 * 60 * 1000) // Ping every 14 minutes
 
   return (
+    <>
+    <ScrollToTop />
     <Routes>
       {/* ── Public landing & info pages ── */}
       <Route path="/"               element={<LandingPage />} />
@@ -156,6 +165,7 @@ function AppRoutes() {
       {/* ── Fallback ── */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    </>
   )
 }
 
