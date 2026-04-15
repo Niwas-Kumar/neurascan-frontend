@@ -10,6 +10,13 @@
 
 @import './tokens.css';
 
+/* Hide browser-native password reveal button (Edge / Chrome) */
+input::-ms-reveal,
+input::-ms-clear,
+input::-webkit-credentials-auto-fill-button {
+  display: none !important;
+}
+
 /* ══════════════════════════════════════════════════════════════
    FONTS - Plus Jakarta Sans + Inter
    ══════════════════════════════════════════════════════════════ */
