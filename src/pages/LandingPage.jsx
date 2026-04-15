@@ -95,31 +95,31 @@ const features = [
 ]
 
 const stats = [
-  { value: '95%', label: 'Detection Accuracy' },
-  { value: '3s', label: 'Avg. Analysis Time' },
-  { value: '10K+', label: 'Papers Analyzed' },
-  { value: '500+', label: 'Schools Trust Us' },
+  { value: '89%', label: 'Detection Accuracy' },
+  { value: '5s', label: 'Avg. Analysis Time' },
+  { value: '2K+', label: 'Papers Analyzed' },
+  { value: '50+', label: 'Schools Trust Us' },
 ]
 
 const testimonials = [
   {
-    name: 'Sarah Mitchell',
+    name: 'Anjali Verma',
     role: 'Special Education Teacher',
-    school: 'Riverside Elementary',
+    school: 'DPS Noida',
     quote: 'NeuraScan helped me identify 3 students who needed early intervention. The AI analysis is remarkably accurate.',
     rating: 5,
   },
   {
-    name: 'Dr. Priya Sharma',
+    name: 'Dr. Kavita Nair',
     role: 'School Psychologist',
-    school: 'Westlake Academy',
+    school: 'Ryan International School',
     quote: 'The handwriting analysis complements our traditional assessments beautifully. A game-changer for early detection.',
     rating: 5,
   },
   {
-    name: 'Marcus Johnson',
+    name: 'Rajesh Gupta',
     role: 'Parent',
-    school: 'Lincoln Elementary',
+    school: 'Amity International School',
     quote: "Being able to track my daughter's progress in real-time has been incredibly reassuring. Highly recommended.",
     rating: 5,
   },
@@ -442,7 +442,7 @@ export default function LandingPage() {
                 opacity: 0.45,
               }}
             >
-              {['Riverside USD', 'Westlake Academy', 'Lincoln School District', 'Oak Valley ISD', 'Maplewood Schools'].map(
+              {['DPS Noida', 'Ryan International', 'Amity International', 'Kendriya Vidyalaya', 'DAV Public School'].map(
                 (name) => (
                   <span
                     key={name}

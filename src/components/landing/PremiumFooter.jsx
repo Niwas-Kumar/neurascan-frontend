@@ -161,7 +161,7 @@ export default function PremiumFooter() {
           flexWrap: 'wrap',
         }}>
           <a
-            href="mailto:support@neurascan.ai"
+            href="mailto:hello.neurascan@gmail.com"
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -175,10 +175,10 @@ export default function PremiumFooter() {
             onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.6)'}
           >
             <Mail size={16} />
-            support@neurascan.ai
+            hello.neurascan@gmail.com
           </a>
           <a
-            href="tel:+18001234567"
+            href="tel:+919599364556"
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -192,7 +192,7 @@ export default function PremiumFooter() {
             onMouseLeave={(e) => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.6)'}
           >
             <Phone size={16} />
-            1-800-123-4567
+            +91 9599364556
           </a>
           <div style={{
             display: 'flex',
@@ -202,7 +202,7 @@ export default function PremiumFooter() {
             color: 'rgba(255, 255, 255, 0.6)',
           }}>
             <MapPin size={16} />
-            San Francisco, CA
+            Noida, Uttar Pradesh
           </div>
         </div>
 
