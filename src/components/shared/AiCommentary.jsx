@@ -2,11 +2,15 @@ import React from 'react';
 import { BookOpen, PenTool, ClipboardList, CheckCircle, AlertTriangle, XCircle } from 'lucide-react';
 
 /* ── Section colour mapping ─────────────────────────────────── */
-const SECTION_META = {
-  '📖': { icon: BookOpen,      color: '#3b82f6', bg: 'rgba(59,130,246,0.08)', border: 'rgba(59,130,246,0.25)', label: 'Reading & Letter Recognition' },
-  '✍️':  { icon: PenTool,       color: '#8b5cf6', bg: 'rgba(139,92,246,0.08)', border: 'rgba(139,92,246,0.25)', label: 'Handwriting & Motor Skills' },
-  '📋': { icon: ClipboardList, color: '#14b8a6', bg: 'rgba(20,184,166,0.08)',  border: 'rgba(20,184,166,0.25)', label: 'What This Means' },
-};
+const SECTION_RULES = [
+  { match: /reading|letter recognition/i, icon: BookOpen,      color: '#3b82f6', bg: 'rgba(59,130,246,0.08)', border: 'rgba(59,130,246,0.25)', label: 'Reading & Letter Recognition' },
+  { match: /handwriting|motor skills/i,   icon: PenTool,       color: '#8b5cf6', bg: 'rgba(139,92,246,0.08)', border: 'rgba(139,92,246,0.25)', label: 'Handwriting & Motor Skills' },
+  { match: /what this means/i,            icon: ClipboardList, color: '#14b8a6', bg: 'rgba(20,184,166,0.08)',  border: 'rgba(20,184,166,0.25)', label: 'What This Means' },
+];
+
+function matchSection(text) {
+  return SECTION_RULES.find(rule => rule.match.test(text)) || null;
+}
 
 /* ── Decide which status icon to show for score mentions ──── */
 function scoreIcon(text) {
@@ -72,10 +76,12 @@ export default function AiCommentary({ text, fontSize = 14 }) {
 
   paragraphs.forEach(p => {
     const trimmed = p.trim();
-    // Check if this paragraph is a section header (starts with known emoji)
-    const matchedKey = Object.keys(SECTION_META).find(emoji => trimmed.startsWith(emoji));
-    if (matchedKey) {
-      current = { meta: SECTION_META[matchedKey], content: [] };
+    // Check if this paragraph is a section header (contains known keywords)
+    // Headers are short lines like "📖 Reading & Letter Recognition"
+    const isShortLine = trimmed.length < 60;
+    const matched = isShortLine ? matchSection(trimmed) : null;
+    if (matched) {
+      current = { meta: matched, content: [] };
       sections.push(current);
     } else if (current) {
       current.content.push(trimmed);
