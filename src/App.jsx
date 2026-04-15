@@ -12,6 +12,15 @@ import ContactPage from './pages/ContactPage'
 import AboutPage from './pages/AboutPage'
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage'
 import TermsOfServicePage from './pages/TermsOfServicePage'
+import SecurityPage from './pages/SecurityPage'
+import IntegrationsPage from './pages/IntegrationsPage'
+import BlogPage from './pages/BlogPage'
+import CareersPage from './pages/CareersPage'
+import DocsPage from './pages/DocsPage'
+import ResearchPage from './pages/ResearchPage'
+import CaseStudiesPage from './pages/CaseStudiesPage'
+import FERPAPage from './pages/FERPAPage'
+import AccessibilityPage from './pages/AccessibilityPage'
 
 // Auth pages
 import LoginPage         from './pages/auth/LoginPage'
@@ -88,6 +97,15 @@ function AppRoutes() {
       <Route path="/about"          element={<AboutPage />} />
       <Route path="/privacy-policy"  element={<PrivacyPolicyPage />} />
       <Route path="/terms-of-service" element={<TermsOfServicePage />} />
+      <Route path="/security"         element={<SecurityPage />} />
+      <Route path="/integrations"     element={<IntegrationsPage />} />
+      <Route path="/blog"             element={<BlogPage />} />
+      <Route path="/careers"          element={<CareersPage />} />
+      <Route path="/docs"             element={<DocsPage />} />
+      <Route path="/research"         element={<ResearchPage />} />
+      <Route path="/case-studies"     element={<CaseStudiesPage />} />
+      <Route path="/ferpa"            element={<FERPAPage />} />
+      <Route path="/accessibility"    element={<AccessibilityPage />} />
 
       {/* ── Auth pages ── */}
       <Route path="/login"          element={<LoginPage />} />

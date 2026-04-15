@@ -217,7 +217,7 @@ export default function PremiumFooter() {
           gap: 16,
         }}>
           <div style={{ fontFamily: "'Inter', sans-serif" }}>
-            {currentYear} NeuraScan. All rights reserved.
+            © {currentYear} NeuraScan. Released under the <a href="https://opensource.org/licenses/MIT" target="_blank" rel="noopener noreferrer" style={{ color: 'rgba(255,255,255,0.65)', textDecoration: 'underline' }}>MIT License</a>. All rights reserved.
           </div>
           <div style={{ display: 'flex', gap: 28 }}>
             <Link
