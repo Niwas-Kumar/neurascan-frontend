@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import {
   Upload,
   BarChart3,
@@ -12,7 +13,8 @@ import {
   GraduationCap,
   Award,
 } from 'lucide-react'
-import { NeuraScanLogo } from '../components/shared/Logo'
+import PremiumNavbar from '../components/landing/PremiumNavbar'
+import PremiumFooter from '../components/landing/PremiumFooter'
 
 // ════════════════════════════════════════════════════════════════
 // DESIGN SYSTEM - Matching reference exactly
@@ -241,47 +243,31 @@ function Badge({ children }) {
 }
 
 // ════════════════════════════════════════════════════════════════
+// SCROLL REVEAL COMPONENT
+// ════════════════════════════════════════════════════════════════
+function ScrollReveal({ children, delay = 0 }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 40 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-80px' }}
+      transition={{ duration: 0.6, delay, ease: 'easeOut' }}
+    >
+      {children}
+    </motion.div>
+  )
+}
+
+// ════════════════════════════════════════════════════════════════
 // MAIN LANDING PAGE
 // ════════════════════════════════════════════════════════════════
 export default function LandingPage() {
   return (
     <div style={{ minHeight: '100vh', background: COLORS.bgBase }}>
       {/* ══════════════════════════════════════════════════════════
-          NAVBAR
+          NAVBAR (shared across all public pages)
           ══════════════════════════════════════════════════════════ */}
-      <header
-        style={{
-          position: 'sticky',
-          top: 0,
-          zIndex: 50,
-          borderBottom: `1px solid ${COLORS.border}`,
-          background: 'rgba(248, 250, 252, 0.8)',
-          backdropFilter: 'blur(12px)',
-        }}
-      >
-        <div
-          style={{
-            maxWidth: 1280,
-            margin: '0 auto',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '16px 24px',
-          }}
-        >
-          <Link to="/" style={{ textDecoration: 'none' }}>
-            <NeuraScanLogo size={36} />
-          </Link>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <Link to="/login" style={{ textDecoration: 'none' }}>
-              <Button variant="ghost">Sign In</Button>
-            </Link>
-            <Link to="/register" style={{ textDecoration: 'none' }}>
-              <Button>Get Started</Button>
-            </Link>
-          </div>
-        </div>
-      </header>
+      <PremiumNavbar />
 
       {/* ══════════════════════════════════════════════════════════
           HERO SECTION
@@ -323,7 +309,12 @@ export default function LandingPage() {
           />
         </div>
 
-        <div style={{ position: 'relative', maxWidth: 900, margin: '0 auto', textAlign: 'center' }}>
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: 'easeOut' }}
+          style={{ position: 'relative', maxWidth: 900, margin: '0 auto', textAlign: 'center' }}
+        >
           <Badge>
             <Zap size={12} />
             AI-Powered Learning Disability Detection
@@ -381,7 +372,7 @@ export default function LandingPage() {
               </Link>
             </div>
           </div>
-        </div>
+        </motion.div>
       </section>
 
       {/* ══════════════════════════════════════════════════════════
@@ -424,81 +415,242 @@ export default function LandingPage() {
       </section>
 
       {/* ══════════════════════════════════════════════════════════
-          FEATURES SECTION
+          TRUSTED BY SECTION
           ══════════════════════════════════════════════════════════ */}
-      <section style={{ padding: '80px 24px' }}>
-        <div style={{ maxWidth: 1280, margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: 48 }}>
-            <h2
-              style={{
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
-                fontSize: 'clamp(24px, 4vw, 36px)',
-                fontWeight: 700,
-                color: COLORS.textPrimary,
-              }}
-            >
-              Everything you need for early intervention
-            </h2>
+      <section style={{ background: COLORS.bgCard, padding: '32px 24px 48px' }}>
+        <ScrollReveal>
+          <div style={{ maxWidth: 1280, margin: '0 auto', textAlign: 'center' }}>
             <p
               style={{
-                marginTop: 16,
-                fontSize: 16,
-                color: COLORS.textMuted,
-                maxWidth: 640,
-                margin: '16px auto 0',
+                fontSize: 13,
+                fontWeight: 600,
+                textTransform: 'uppercase',
+                letterSpacing: '0.08em',
+                color: COLORS.textLight,
+                marginBottom: 28,
               }}
             >
-              Powerful tools designed for teachers and parents working together to support students
-              with learning differences.
+              Trusted by leading educational institutions
             </p>
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                gap: 48,
+                flexWrap: 'wrap',
+                opacity: 0.45,
+              }}
+            >
+              {['Riverside USD', 'Westlake Academy', 'Lincoln School District', 'Oak Valley ISD', 'Maplewood Schools'].map(
+                (name) => (
+                  <span
+                    key={name}
+                    style={{
+                      fontFamily: "'Plus Jakarta Sans', sans-serif",
+                      fontSize: 17,
+                      fontWeight: 700,
+                      color: COLORS.textSecondary,
+                      letterSpacing: '-0.02em',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {name}
+                  </span>
+                )
+              )}
+            </div>
           </div>
+        </ScrollReveal>
+      </section>
 
+      {/* ══════════════════════════════════════════════════════════
+          FEATURES SECTION
+          ══════════════════════════════════════════════════════════ */}
+      <section id="features" style={{ padding: '80px 24px' }}>
+        <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+          <ScrollReveal>
+            <div style={{ textAlign: 'center', marginBottom: 64 }}>
+              <h2
+                style={{
+                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontSize: 'clamp(24px, 4vw, 36px)',
+                  fontWeight: 700,
+                  color: COLORS.textPrimary,
+                }}
+              >
+                Everything you need for early intervention
+              </h2>
+              <p
+                style={{
+                  marginTop: 16,
+                  fontSize: 16,
+                  color: COLORS.textMuted,
+                  maxWidth: 640,
+                  margin: '16px auto 0',
+                }}
+              >
+                Powerful tools designed for teachers and parents working together to support students
+                with learning differences.
+              </p>
+            </div>
+          </ScrollReveal>
+
+          {/* Key features — alternating left/right layout */}
+          {features.slice(0, 3).map((feature, index) => {
+            const Icon = feature.icon
+            const isReversed = index % 2 === 1
+            return (
+              <ScrollReveal key={feature.title} delay={0.1}>
+                <div
+                  className="feature-row"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 64,
+                    flexDirection: isReversed ? 'row-reverse' : 'row',
+                    marginBottom: 72,
+                  }}
+                >
+                  {/* Visual side — icon illustration panel */}
+                  <div style={{ flex: '1 1 340px', display: 'flex', justifyContent: 'center' }}>
+                    <div
+                      style={{
+                        width: '100%',
+                        maxWidth: 380,
+                        aspectRatio: '4 / 3',
+                        borderRadius: 20,
+                        background: `linear-gradient(135deg, ${feature.bg} 0%, ${COLORS.bgMuted} 100%)`,
+                        border: `1px solid ${COLORS.border}`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        position: 'relative',
+                        overflow: 'hidden',
+                      }}
+                    >
+                      {/* Decorative circles */}
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: -30,
+                          right: -30,
+                          width: 120,
+                          height: 120,
+                          borderRadius: '50%',
+                          background: feature.bg,
+                          opacity: 0.5,
+                        }}
+                      />
+                      <div
+                        style={{
+                          position: 'absolute',
+                          bottom: -20,
+                          left: -20,
+                          width: 80,
+                          height: 80,
+                          borderRadius: '50%',
+                          background: feature.bg,
+                          opacity: 0.3,
+                        }}
+                      />
+                      <Icon size={72} color={feature.color} strokeWidth={1.2} style={{ position: 'relative', zIndex: 1 }} />
+                    </div>
+                  </div>
+
+                  {/* Text side */}
+                  <div style={{ flex: '1 1 340px' }}>
+                    <div
+                      style={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: 12,
+                        background: feature.bg,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        marginBottom: 16,
+                      }}
+                    >
+                      <Icon size={24} color={feature.color} />
+                    </div>
+                    <h3
+                      style={{
+                        fontFamily: "'Plus Jakarta Sans', sans-serif",
+                        fontSize: 24,
+                        fontWeight: 700,
+                        color: COLORS.textPrimary,
+                      }}
+                    >
+                      {feature.title}
+                    </h3>
+                    <p
+                      style={{
+                        marginTop: 12,
+                        fontSize: 16,
+                        color: COLORS.textMuted,
+                        lineHeight: 1.7,
+                        maxWidth: 420,
+                      }}
+                    >
+                      {feature.description}
+                    </p>
+                  </div>
+                </div>
+              </ScrollReveal>
+            )
+          })}
+
+          {/* Additional features — compact card grid */}
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
               gap: 24,
+              marginTop: 16,
             }}
           >
-            {features.map((feature) => {
+            {features.slice(3).map((feature, i) => {
               const Icon = feature.icon
               return (
-                <Card key={feature.title} hover style={{ padding: 24 }}>
-                  <div
-                    style={{
-                      width: 48,
-                      height: 48,
-                      borderRadius: 12,
-                      background: feature.bg,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      marginBottom: 16,
-                    }}
-                  >
-                    <Icon size={24} color={feature.color} />
-                  </div>
-                  <h3
-                    style={{
-                      fontFamily: "'Plus Jakarta Sans', sans-serif",
-                      fontSize: 18,
-                      fontWeight: 600,
-                      color: COLORS.textPrimary,
-                    }}
-                  >
-                    {feature.title}
-                  </h3>
-                  <p
-                    style={{
-                      marginTop: 8,
-                      fontSize: 14,
-                      color: COLORS.textMuted,
-                      lineHeight: 1.6,
-                    }}
-                  >
-                    {feature.description}
-                  </p>
-                </Card>
+                <ScrollReveal key={feature.title} delay={i * 0.1}>
+                  <Card hover style={{ padding: 24 }}>
+                    <div
+                      style={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: 12,
+                        background: feature.bg,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        marginBottom: 16,
+                      }}
+                    >
+                      <Icon size={24} color={feature.color} />
+                    </div>
+                    <h3
+                      style={{
+                        fontFamily: "'Plus Jakarta Sans', sans-serif",
+                        fontSize: 18,
+                        fontWeight: 600,
+                        color: COLORS.textPrimary,
+                      }}
+                    >
+                      {feature.title}
+                    </h3>
+                    <p
+                      style={{
+                        marginTop: 8,
+                        fontSize: 14,
+                        color: COLORS.textMuted,
+                        lineHeight: 1.6,
+                      }}
+                    >
+                      {feature.description}
+                    </p>
+                  </Card>
+                </ScrollReveal>
               )
             })}
           </div>
@@ -509,6 +661,7 @@ export default function LandingPage() {
           HOW IT WORKS SECTION
           ══════════════════════════════════════════════════════════ */}
       <section style={{ background: COLORS.bgMuted, padding: '80px 24px' }}>
+        <ScrollReveal>
         <div style={{ maxWidth: 1280, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: 48 }}>
             <h2
@@ -574,12 +727,14 @@ export default function LandingPage() {
             ))}
           </div>
         </div>
+        </ScrollReveal>
       </section>
 
       {/* ══════════════════════════════════════════════════════════
           TESTIMONIALS SECTION
           ══════════════════════════════════════════════════════════ */}
       <section style={{ padding: '80px 24px' }}>
+        <ScrollReveal>
         <div style={{ maxWidth: 1280, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: 48 }}>
             <h2
@@ -636,12 +791,14 @@ export default function LandingPage() {
             ))}
           </div>
         </div>
+        </ScrollReveal>
       </section>
 
       {/* ══════════════════════════════════════════════════════════
           TRUST & SECURITY SECTION
           ══════════════════════════════════════════════════════════ */}
       <section style={{ background: COLORS.bgMuted, padding: '64px 24px' }}>
+        <ScrollReveal>
         <div style={{ maxWidth: 1280, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: 40 }}>
             <h2
@@ -740,12 +897,14 @@ export default function LandingPage() {
             })}
           </div>
         </div>
+        </ScrollReveal>
       </section>
 
       {/* ══════════════════════════════════════════════════════════
           CTA SECTION
           ══════════════════════════════════════════════════════════ */}
       <section style={{ background: COLORS.sidebar, padding: '64px 24px' }}>
+        <ScrollReveal>
         <div style={{ maxWidth: 800, margin: '0 auto', textAlign: 'center' }}>
           <h2
             style={{
@@ -776,41 +935,25 @@ export default function LandingPage() {
             </Link>
           </div>
         </div>
+        </ScrollReveal>
       </section>
 
       {/* ══════════════════════════════════════════════════════════
-          FOOTER
+          FOOTER (shared across all public pages)
           ══════════════════════════════════════════════════════════ */}
-      <footer
-        style={{
-          borderTop: `1px solid ${COLORS.border}`,
-          background: COLORS.bgCard,
-          padding: '32px 24px',
-        }}
-      >
-        <div
-          style={{
-            maxWidth: 1280,
-            margin: '0 auto',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: 16,
-          }}
-        >
-          <NeuraScanLogo size={28} />
-          <p style={{ fontSize: 14, color: COLORS.textMuted }}>
-            © {new Date().getFullYear()} NeuraScan. All rights reserved.
-          </p>
-        </div>
-      </footer>
+      <PremiumFooter />
 
-      {/* Hover styles */}
+      {/* Hover + responsive styles */}
       <style>{`
         .card-hover:hover {
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
           transform: translateY(-2px);
+        }
+        @media (max-width: 768px) {
+          .feature-row {
+            flex-direction: column !important;
+            gap: 32px !important;
+          }
         }
       `}</style>
     </div>
