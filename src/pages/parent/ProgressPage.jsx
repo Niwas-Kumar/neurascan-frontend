@@ -125,12 +125,16 @@ export default function ProgressPage() {
   const [loading, setLoading] = useState(true)
   const [noData, setNoData] = useState(false)
 
+  // Track selected student so effect re-runs when parent switches students
+  const selectedStudentId = localStorage.getItem('ns_studentId') || user?.studentId || null
+
   useEffect(() => {
     const resolveStudentId = async () => {
-      const fromUser = user?.studentId
+      // Check localStorage FIRST — parent dashboard writes selected student here
       const fromLocal = localStorage.getItem('ns_studentId')
       const fromSession = sessionStorage.getItem('ns_studentId')
-      const existing = fromUser || fromLocal || fromSession
+      const fromUser = user?.studentId
+      const existing = fromLocal || fromSession || fromUser
 
       if (existing) return String(existing)
 
@@ -168,7 +172,7 @@ export default function ProgressPage() {
     }
 
     loadProgress()
-  }, [user?.userId, user?.studentId])
+  }, [selectedStudentId])
 
   if (loading) return (
     <div><PageHeader title="Progress Tracker" subtitle="Loading progress data..." />
