@@ -1,6 +1,6 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import { BrandLogo } from '../shared/PremiumUI.jsx'
+import { NeuraScanLogo } from '../shared/Logo'
 
 /**
  * Premium Authentication Layout
@@ -57,7 +57,7 @@ export default function PremiumAuthLayout({ children, title, subtitle, side = 'l
 
           {/* Logo */}
           <div style={{ position: 'relative', zIndex: 1 }}>
-            <BrandLogo size={48} variant="full" />
+            <NeuraScanLogo size={48} variant="light" />
           </div>
 
           {/* Content */}

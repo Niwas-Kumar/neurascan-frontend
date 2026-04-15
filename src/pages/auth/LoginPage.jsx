@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { Eye, EyeOff, Brain, Loader2, GraduationCap, Users } from 'lucide-react'
+import { Eye, EyeOff, Loader2, GraduationCap, Users } from 'lucide-react'
 import { authAPI } from '../../services/api'
 import { useAuth } from '../../context/AuthContext'
 import toast from 'react-hot-toast'
 import { auth, googleProvider, signInWithPopup } from '../../firebase'
+import { NeuraScanLogo } from '../../components/shared/Logo'
 
 // ════════════════════════════════════════════════════════════════
 // DESIGN SYSTEM - Matching reference exactly
@@ -341,29 +342,7 @@ export default function LoginPage() {
         }}
       >
         <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none' }}>
-          <div
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: 10,
-              background: COLORS.sidebar,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Brain size={24} color={COLORS.primary} />
-          </div>
-          <span
-            style={{
-              fontFamily: "'Plus Jakarta Sans', sans-serif",
-              fontSize: 20,
-              fontWeight: 700,
-              color: COLORS.textPrimary,
-            }}
-          >
-            NeuraScan
-          </span>
+          <NeuraScanLogo size={36} />
         </Link>
       </header>
 

@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { Link, useSearchParams, useNavigate } from 'react-router-dom'
-import { Brain, Eye, EyeOff, Loader2, CheckCircle2, XCircle } from 'lucide-react'
+import { Eye, EyeOff, Loader2, CheckCircle2, XCircle } from 'lucide-react'
 import { authAPI } from '../../services/api'
 import toast from 'react-hot-toast'
+import { NeuraScanLogo } from '../../components/shared/Logo'
 
 // ════════════════════════════════════════════════════════════════
 // DESIGN SYSTEM - Matching reference exactly
@@ -110,30 +111,8 @@ export default function ResetPasswordPage() {
         }}
       >
         <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-          <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none' }}>
-            <div
-              style={{
-                width: 40,
-                height: 40,
-                borderRadius: 10,
-                background: COLORS.sidebar,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Brain size={24} color={COLORS.primary} />
-            </div>
-            <span
-              style={{
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
-                fontSize: 20,
-                fontWeight: 700,
-                color: COLORS.textPrimary,
-              }}
-            >
-              NeuraScan
-            </span>
+          <Link to="/" style={{ textDecoration: 'none' }}>
+            <NeuraScanLogo size={36} />
           </Link>
         </header>
 
@@ -213,30 +192,8 @@ export default function ResetPasswordPage() {
     >
       {/* Header */}
       <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-        <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none' }}>
-          <div
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: 10,
-              background: COLORS.sidebar,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Brain size={24} color={COLORS.primary} />
-          </div>
-          <span
-            style={{
-              fontFamily: "'Plus Jakarta Sans', sans-serif",
-              fontSize: 20,
-              fontWeight: 700,
-              color: COLORS.textPrimary,
-            }}
-          >
-            NeuraScan
-          </span>
+        <Link to="/" style={{ textDecoration: 'none' }}>
+          <NeuraScanLogo size={36} />
         </Link>
       </header>
 

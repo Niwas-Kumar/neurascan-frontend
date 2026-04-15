@@ -1,4 +1,4 @@
-// ============================================================
+﻿// ============================================================
 // QUIZ ATTEMPT PAGE - NeuraScan Design System v3.0
 // Public-facing page for students/parents to take quizzes
 // ============================================================
@@ -6,15 +6,16 @@ import { useEffect, useState, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
-  Brain, CheckCircle, XCircle, Clock, ArrowRight,
+  CheckCircle, XCircle, Clock, ArrowRight,
   AlertCircle, Trophy, Target, Loader2, RefreshCw
 } from 'lucide-react'
 import { quizAttemptAPI } from '../services/api'
 import toast from 'react-hot-toast'
+import { NeuraScanLogo } from '../components/shared/Logo'
 
-// ════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // DESIGN SYSTEM COLORS
-// ════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 const COLORS = {
   primary: '#312E81',
   primaryLight: '#4338CA',
@@ -39,9 +40,9 @@ const COLORS = {
   border: '#E2E8F0',
 }
 
-// ════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // STYLES
-// ════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 const styles = {
   container: {
     minHeight: '100vh',
@@ -327,9 +328,9 @@ const styles = {
   },
 }
 
-// ════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // HELPER FUNCTIONS
-// ════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 const formatTime = (ms) => {
   const seconds = Math.floor(ms / 1000)
   const minutes = Math.floor(seconds / 60)
@@ -337,9 +338,9 @@ const formatTime = (ms) => {
   return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
 }
 
-// ════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // MAIN COMPONENT
-// ════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 export default function QuizAttemptPage() {
   const [searchParams] = useSearchParams()
 
@@ -494,15 +495,14 @@ export default function QuizAttemptPage() {
     return 'Needs Improvement'
   }
 
-  // ── Render Loading ──────────────────────────────────────────
+  // â”€â”€ Render Loading â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   if (loading) {
     return (
       <div style={styles.container}>
         <div style={styles.card}>
           <div style={styles.header}>
             <div style={styles.logo}>
-              <Brain size={32} color="white" />
-              <span style={styles.logoText}>NeuraScan</span>
+              <NeuraScanLogo size={32} variant="light" />
             </div>
           </div>
           <div style={styles.loadingContainer}>
@@ -515,15 +515,14 @@ export default function QuizAttemptPage() {
     )
   }
 
-  // ── Render Error ────────────────────────────────────────────
+  // â”€â”€ Render Error â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   if (error) {
     return (
       <div style={styles.container}>
         <div style={styles.card}>
           <div style={styles.header}>
             <div style={styles.logo}>
-              <Brain size={32} color="white" />
-              <span style={styles.logoText}>NeuraScan</span>
+              <NeuraScanLogo size={32} variant="light" />
             </div>
           </div>
           <div style={styles.errorContainer}>
@@ -546,7 +545,7 @@ export default function QuizAttemptPage() {
     )
   }
 
-  // ── Render Final Results ────────────────────────────────────
+  // â”€â”€ Render Final Results â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   if (finalResult) {
     const score = finalResult.score || 0
     const scoreColor = getScoreColor(score)
@@ -556,8 +555,7 @@ export default function QuizAttemptPage() {
         <div style={styles.card}>
           <div style={styles.header}>
             <div style={styles.logo}>
-              <Brain size={32} color="white" />
-              <span style={styles.logoText}>NeuraScan</span>
+              <NeuraScanLogo size={32} variant="light" />
             </div>
             <h1 style={styles.title}>Quiz Complete!</h1>
           </div>
@@ -637,7 +635,7 @@ export default function QuizAttemptPage() {
     )
   }
 
-  // ── Render Quiz ─────────────────────────────────────────────
+  // â”€â”€ Render Quiz â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const currentQuestion = quiz?.questions?.[currentQuestionIndex]
   const progress = ((currentQuestionIndex + 1) / quiz.questions.length) * 100
   const currentAnswer = answers[currentQuestion?.id]
@@ -647,8 +645,7 @@ export default function QuizAttemptPage() {
       <div style={styles.card}>
         <div style={styles.header}>
           <div style={styles.logo}>
-            <Brain size={32} color="white" />
-            <span style={styles.logoText}>NeuraScan</span>
+            <NeuraScanLogo size={32} variant="light" />
           </div>
           <h1 style={styles.title}>{quiz.topic}</h1>
           <p style={styles.subtitle}>Answer each question carefully</p>

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { authAPI } from '../../services/api'
 import toast from 'react-hot-toast'
+import { NeuraScanLogo } from '../../components/shared/Logo'
 
 // Color constants
 const COLORS = {
@@ -296,35 +297,11 @@ export default function ForgotPasswordPage() {
             to="/"
             style={{
               textDecoration: 'none',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 10,
+              display: 'block',
               marginBottom: 40,
             }}
           >
-            <div
-              style={{
-                width: 36,
-                height: 36,
-                borderRadius: 9,
-                backgroundColor: COLORS.sidebar,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <BrainIcon size={18} color="#FFFFFF" />
-            </div>
-            <span
-              style={{
-                fontFamily: FONTS.display,
-                fontWeight: 700,
-                fontSize: 17,
-                color: COLORS.textPrimary,
-              }}
-            >
-              NeuraScan
-            </span>
+            <NeuraScanLogo size={34} />
           </Link>
 
           {!sent ? (

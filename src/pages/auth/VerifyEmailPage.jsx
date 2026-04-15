@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Brain, ArrowLeft, CheckCircle, AlertTriangle, Mail } from 'lucide-react'
+import { ArrowLeft, CheckCircle, AlertTriangle, Mail } from 'lucide-react'
 import { authAPI } from '../../services/api'
+import { NeuraScanLogo } from '../../components/shared/Logo'
 
 // ── Inline Button Component ────────────────────────────
 const Button = ({ children, type = 'button', fullWidth = false, size = 'md', loading = false, style = {}, ...props }) => {
@@ -136,11 +137,8 @@ export default function VerifyEmailPage() {
         <div style={{ height: 4, background: 'var(--primary)' }} />
         <div style={{ padding: '36px 40px' }}>
           {/* Logo */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 40 }}>
-            <div style={{ width: 36, height: 36, borderRadius: 9, background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Brain size={18} color="#fff" strokeWidth={2.5} />
-            </div>
-            <span style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: 17, color: 'var(--text-primary)' }}>NeuraScan</span>
+          <div style={{ marginBottom: 40 }}>
+            <NeuraScanLogo size={34} />
           </div>
 
           {renderContent()}

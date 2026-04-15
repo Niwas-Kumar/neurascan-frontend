@@ -28,7 +28,7 @@ export default function PricingPage() {
         'Email support',
         'Community access',
       ],
-      cta: 'Start Free Trial',
+      cta: 'Get Started',
       popular: false,
     },
     {
@@ -108,8 +108,8 @@ export default function PricingPage() {
 
   const faqs = [
     {
-      q: 'Can I try NeuroScan for free?',
-      a: 'Yes! All plans include a 14-day free trial. No credit card required.',
+      q: 'How do I get started with NeuraScan?',
+      a: 'Simply create an account on the Starter plan and begin analyzing student handwriting right away.',
     },
     {
       q: 'How does the monthly limit work?',
@@ -482,7 +482,7 @@ export default function PricingPage() {
               opacity: 0.95,
             }}
           >
-            Start your free 14-day trial today. No credit card required.
+            Start using NeuraScan today to detect learning disabilities early.
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -492,7 +492,7 @@ export default function PricingPage() {
           >
             <Link to="/register">
               <PremiumButton size="lg" variant="secondary">
-                Start Free Trial <ArrowRight size={18} />
+                Get Started <ArrowRight size={18} />
               </PremiumButton>
             </Link>
           </motion.div>

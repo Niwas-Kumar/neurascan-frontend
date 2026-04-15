@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom'
 import {
-  Brain,
   Upload,
   BarChart3,
   ClipboardList,
@@ -8,9 +7,12 @@ import {
   Zap,
   Users,
   ArrowRight,
-  CheckCircle2,
   Star,
+  Lock,
+  GraduationCap,
+  Award,
 } from 'lucide-react'
+import { NeuraScanLogo } from '../components/shared/Logo'
 
 // ════════════════════════════════════════════════════════════════
 // DESIGN SYSTEM - Matching reference exactly
@@ -267,31 +269,9 @@ export default function LandingPage() {
             padding: '16px 24px',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div
-              style={{
-                width: 36,
-                height: 36,
-                borderRadius: 10,
-                background: COLORS.sidebar,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Brain size={20} color={COLORS.primary} />
-            </div>
-            <span
-              style={{
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
-                fontSize: 20,
-                fontWeight: 700,
-                color: COLORS.textPrimary,
-              }}
-            >
-              NeuraScan
-            </span>
-          </div>
+          <Link to="/" style={{ textDecoration: 'none' }}>
+            <NeuraScanLogo size={36} />
+          </Link>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <Link to="/login" style={{ textDecoration: 'none' }}>
               <Button variant="ghost">Sign In</Button>
@@ -390,7 +370,7 @@ export default function LandingPage() {
             <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
               <Link to="/register" style={{ textDecoration: 'none' }}>
                 <Button size="lg">
-                  Start Free Trial
+                  Get Started
                   <ArrowRight size={16} />
                 </Button>
               </Link>
@@ -400,9 +380,6 @@ export default function LandingPage() {
                 </Button>
               </Link>
             </div>
-            <p style={{ fontSize: 14, color: '#818CF8' }}>
-              No credit card required · Free for up to 10 students
-            </p>
           </div>
         </div>
       </section>
@@ -662,6 +639,110 @@ export default function LandingPage() {
       </section>
 
       {/* ══════════════════════════════════════════════════════════
+          TRUST & SECURITY SECTION
+          ══════════════════════════════════════════════════════════ */}
+      <section style={{ background: COLORS.bgMuted, padding: '64px 24px' }}>
+        <div style={{ maxWidth: 1280, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 40 }}>
+            <h2
+              style={{
+                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                fontSize: 'clamp(24px, 4vw, 36px)',
+                fontWeight: 700,
+                color: COLORS.textPrimary,
+              }}
+            >
+              Built for Trust & Compliance
+            </h2>
+            <p
+              style={{
+                marginTop: 12,
+                fontSize: 16,
+                color: COLORS.textMuted,
+                maxWidth: 600,
+                margin: '12px auto 0',
+              }}
+            >
+              NeuraScan is designed with education-grade security and privacy standards from the ground up.
+            </p>
+          </div>
+
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+              gap: 24,
+            }}
+          >
+            {[
+              {
+                icon: Lock,
+                title: 'Data Encryption',
+                desc: 'All student data is encrypted at rest and in transit using industry-standard AES-256 encryption.',
+                color: COLORS.indigo,
+                bg: COLORS.indigoBg,
+              },
+              {
+                icon: Shield,
+                title: 'Role-Based Access',
+                desc: 'Strict role-based access control ensures teachers and parents only see authorized data.',
+                color: COLORS.emerald,
+                bg: COLORS.emeraldBg,
+              },
+              {
+                icon: GraduationCap,
+                title: 'Research-Backed AI',
+                desc: 'Our detection models are trained on peer-reviewed research in dyslexia and dysgraphia screening.',
+                color: COLORS.primary,
+                bg: COLORS.primaryBg,
+              },
+              {
+                icon: Award,
+                title: 'FERPA Compliant',
+                desc: 'Built to meet FERPA requirements for protecting student education records and privacy.',
+                color: COLORS.violet,
+                bg: COLORS.violetBg,
+              },
+            ].map((item) => {
+              const Icon = item.icon
+              return (
+                <Card key={item.title} style={{ padding: 24 }}>
+                  <div
+                    style={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: 10,
+                      background: item.bg,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginBottom: 14,
+                    }}
+                  >
+                    <Icon size={22} color={item.color} />
+                  </div>
+                  <h3
+                    style={{
+                      fontFamily: "'Plus Jakarta Sans', sans-serif",
+                      fontSize: 16,
+                      fontWeight: 600,
+                      color: COLORS.textPrimary,
+                      marginBottom: 6,
+                    }}
+                  >
+                    {item.title}
+                  </h3>
+                  <p style={{ fontSize: 14, color: COLORS.textMuted, lineHeight: 1.6 }}>
+                    {item.desc}
+                  </p>
+                </Card>
+              )
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════════════
           CTA SECTION
           ══════════════════════════════════════════════════════════ */}
       <section style={{ background: COLORS.sidebar, padding: '64px 24px' }}>
@@ -689,28 +770,10 @@ export default function LandingPage() {
           >
             <Link to="/register" style={{ textDecoration: 'none' }}>
               <Button size="lg">
-                Create Free Account
+                Get Started
                 <ArrowRight size={16} />
               </Button>
             </Link>
-          </div>
-          <div
-            style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              justifyContent: 'center',
-              gap: 24,
-              marginTop: 24,
-              fontSize: 14,
-              color: '#818CF8',
-            }}
-          >
-            {['Free for 10 students', 'No credit card', 'Cancel anytime'].map((item) => (
-              <span key={item} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <CheckCircle2 size={16} color={COLORS.primary} />
-                {item}
-              </span>
-            ))}
           </div>
         </div>
       </section>
@@ -736,32 +799,9 @@ export default function LandingPage() {
             gap: 16,
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <div
-              style={{
-                width: 28,
-                height: 28,
-                borderRadius: 6,
-                background: COLORS.sidebar,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <Brain size={16} color={COLORS.primary} />
-            </div>
-            <span
-              style={{
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
-                fontWeight: 700,
-                color: COLORS.textPrimary,
-              }}
-            >
-              NeuraScan
-            </span>
-          </div>
+          <NeuraScanLogo size={28} />
           <p style={{ fontSize: 14, color: COLORS.textMuted }}>
-            © 2024 NeuraScan. All rights reserved.
+            © {new Date().getFullYear()} NeuraScan. All rights reserved.
           </p>
         </div>
       </footer>
