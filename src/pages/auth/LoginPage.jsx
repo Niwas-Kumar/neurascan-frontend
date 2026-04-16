@@ -502,7 +502,7 @@ export default function LoginPage() {
                   onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
                   onMouseLeave={e => e.currentTarget.style.opacity = '1'}
                 >
-                  🔐 Admin Sign In
+                  Admin Sign In
                 </Link>
               </div>
             </div>
