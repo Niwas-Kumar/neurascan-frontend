@@ -223,11 +223,12 @@ export function AuthProvider({ children }) {
   const unreadCount = notifications.filter(n => !n.read).length
   const isTeacher   = user?.role === 'ROLE_TEACHER'
   const isParent    = user?.role === 'ROLE_PARENT'
+  const isAdmin     = user?.role === 'ROLE_ADMIN'
 
   return (
     <AuthContext.Provider value={{
       user, login, logout, loading, handleOAuthLogin, updateUser,
-      isTeacher, isParent,
+      isTeacher, isParent, isAdmin,
       notifications, unreadCount, markAllRead, addNotification,
       theme, toggleTheme,
     }}>

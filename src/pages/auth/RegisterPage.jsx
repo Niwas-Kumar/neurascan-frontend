@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { authAPI } from '../../services/api'
+import { authAPI, adminAPI } from '../../services/api'
 import { useAuth } from '../../context/AuthContext'
 import { NeuraScanLogo } from '../../components/shared/Logo.jsx'
 import toast from 'react-hot-toast'
@@ -582,8 +582,10 @@ export default function RegisterPage() {
     password: '',
     confirmPw: '',
     school: '',
+    schoolCode: '',
     studentId: '',
   })
+  const [schoolCodeStatus, setSchoolCodeStatus] = useState(null) // null | 'valid' | 'invalid' | 'checking'
 
   const otpInputRef = useRef(null)
 
@@ -680,7 +682,8 @@ export default function RegisterPage() {
             email: form.email,
             password: form.password,
             otp: form.otp,
-            school: form.school || 'My School'
+            school: form.school || 'My School',
+            schoolCode: form.schoolCode || undefined
           }
         : {
             name: form.name,
@@ -692,6 +695,13 @@ export default function RegisterPage() {
 
       const registerFn = role === 'teacher' ? authAPI.teacherRegister : authAPI.parentRegister
       const response = await registerFn(payload)
+
+      const msg = response.data?.data?.message || response.data?.message
+      if (msg === 'ACCOUNT_PENDING_APPROVAL') {
+        toast.success('Account created! Your account is pending admin approval.')
+        navigate('/pending-approval')
+        return
+      }
 
       toast.success('Account created successfully!')
 
@@ -921,13 +931,41 @@ export default function RegisterPage() {
             </div>
 
             {role === 'teacher' && (
-              <Input
-                label="School / Institution"
-                value={form.school}
-                onChange={handleChange('school')}
-                placeholder="Springfield Elementary"
-                hint="Optional"
-              />
+              <>
+                <Input
+                  label="School Code"
+                  value={form.schoolCode}
+                  onChange={(e) => {
+                    handleChange('schoolCode')(e)
+                    const code = e.target.value.trim()
+                    if (code.length >= 9) {
+                      setSchoolCodeStatus('checking')
+                      adminAPI.validateSchoolCode(code)
+                        .then(res => {
+                          if (res.data?.data) {
+                            setSchoolCodeStatus('valid')
+                            setForm(f => ({ ...f, school: res.data.data.name || '' }))
+                          } else {
+                            setSchoolCodeStatus('invalid')
+                          }
+                        })
+                        .catch(() => setSchoolCodeStatus('invalid'))
+                    } else {
+                      setSchoolCodeStatus(null)
+                    }
+                  }}
+                  placeholder="SCH-XXXXXX"
+                  hint={schoolCodeStatus === 'valid' ? '✓ School verified' : schoolCodeStatus === 'invalid' ? '✗ Invalid code' : schoolCodeStatus === 'checking' ? 'Verifying...' : 'Optional — get instant approval with a valid code'}
+                />
+                <Input
+                  label="School / Institution"
+                  value={form.school}
+                  onChange={handleChange('school')}
+                  placeholder="Springfield Elementary"
+                  hint={schoolCodeStatus === 'valid' ? 'Auto-filled from school code' : 'Optional'}
+                  disabled={schoolCodeStatus === 'valid'}
+                />
+              </>
             )}
 
             {role === 'parent' && (

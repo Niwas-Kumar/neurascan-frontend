@@ -267,4 +267,24 @@ export const parentStudentAPI = {
   setPrimaryStudent: (studentId) => api.put(`/parent/students/${studentId}/primary`),
 }
 
+// ── Admin API ─────────────────────────────────────────────────
+export const adminAPI = {
+  login: (email, password) => api.post('/admin/login', { email, password }),
+
+  // Schools
+  getSchools: () => api.get('/admin/schools'),
+  createSchool: (name, address) => api.post('/admin/schools', { name, address }),
+  toggleSchool: (id, active) => api.put(`/admin/schools/${id}/toggle`, { active }),
+  regenerateCode: (id) => api.post(`/admin/schools/${id}/regenerate-code`),
+  validateSchoolCode: (code) => api.get(`/admin/schools/validate-code?code=${encodeURIComponent(code)}`),
+
+  // Teachers
+  getTeachers: (status) => api.get('/admin/teachers', { params: status ? { status } : {} }),
+  approveTeacher: (id) => api.put(`/admin/teachers/${id}/approve`),
+  rejectTeacher: (id, reason) => api.put(`/admin/teachers/${id}/reject`, { reason }),
+
+  // Stats
+  getStats: () => api.get('/admin/stats'),
+}
+
 export default api

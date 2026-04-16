@@ -52,7 +52,15 @@ import QuizAttemptPage from './pages/QuizAttemptPage'
 
 // Layout
 import AppLayout from './components/layout/AppLayout'
+import AdminLayout from './components/layout/AdminLayout'
 import { FullPageLoader } from './components/shared/UI'
+
+// Admin pages
+import AdminLoginPage from './pages/admin/AdminLoginPage'
+import AdminDashboard from './pages/admin/AdminDashboard'
+import SchoolManagement from './pages/admin/SchoolManagement'
+import TeacherApproval from './pages/admin/TeacherApproval'
+import PendingApprovalPage from './pages/auth/PendingApprovalPage'
 
 // Import design system
 import './styles/designSystem.css'
@@ -134,6 +142,20 @@ function AppRoutes() {
       <Route path="/reset-password"  element={<ResetPasswordPage />} />
       <Route path="/verify-email"    element={<VerifyEmailPage />} />
       <Route path="/oauth2/redirect" element={<OAuth2RedirectHandler />} />
+      <Route path="/pending-approval" element={<PendingApprovalPage />} />
+
+      {/* ── Admin routes ── */}
+      <Route path="/admin/login" element={<AdminLoginPage />} />
+      <Route path="/admin" element={
+        <ProtectedRoute role="ROLE_ADMIN">
+          <AdminLayout />
+        </ProtectedRoute>
+      }>
+        <Route index element={<Navigate to="dashboard" replace />} />
+        <Route path="dashboard" element={<AdminDashboard />} />
+        <Route path="schools" element={<SchoolManagement />} />
+        <Route path="teachers" element={<TeacherApproval />} />
+      </Route>
 
       {/* ── Public Quiz Attempt (accessed via email link with token) ── */}
       <Route path="/quiz-attempt" element={<QuizAttemptPage />} />

@@ -81,6 +81,11 @@ function LoginForm({ role, login, navigate }) {
     try {
       const fn = role === 'teacher' ? authAPI.teacherLogin : authAPI.parentLogin
       const res = await fn(form)
+      if (res.data?.data?.message === 'ACCOUNT_PENDING_APPROVAL') {
+        toast('Your account is pending admin approval.', { icon: '⏳' })
+        navigate('/pending-approval')
+        return
+      }
       login(res.data.data)
       toast.success(`Welcome back, ${res.data.data.userName}!`)
       navigate(role === 'teacher' ? '/teacher/dashboard' : '/parent/dashboard')
@@ -102,6 +107,11 @@ function LoginForm({ role, login, navigate }) {
       if (!idToken) throw new Error('Could not retrieve ID Token from Firebase.')
       const picture = result.user?.photoURL || null
       const res = await authAPI.firebaseLogin(idToken, role, picture)
+      if (res.data?.data?.message === 'ACCOUNT_PENDING_APPROVAL') {
+        toast('Your account is pending admin approval.', { id, icon: '⏳' })
+        navigate('/pending-approval')
+        return
+      }
       login(res.data.data)
       toast.success(`Welcome back, ${res.data.data.userName}!`, { id })
       navigate(res.data.data.userRole === 'ROLE_TEACHER' ? '/teacher/dashboard' : '/parent/dashboard')
