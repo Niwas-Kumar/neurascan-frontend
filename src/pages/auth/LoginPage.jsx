@@ -479,25 +479,32 @@ export default function LoginPage() {
                   Create one
                 </Link>
               </p>
-              <p
+              <div
                 style={{
                   textAlign: 'center',
-                  fontSize: 13,
-                  color: COLORS.textMuted,
-                  marginTop: 12,
+                  marginTop: 16,
                 }}
               >
                 <Link
                   to="/admin/login"
                   style={{
-                    color: COLORS.primary,
+                    display: 'inline-block',
+                    padding: '10px 28px',
+                    background: COLORS.sidebar,
+                    color: '#FFFFFF',
                     textDecoration: 'none',
-                    fontWeight: 600,
+                    fontWeight: 700,
+                    fontSize: 14,
+                    borderRadius: 8,
+                    letterSpacing: '0.02em',
+                    transition: 'opacity 0.2s',
                   }}
+                  onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
+                  onMouseLeave={e => e.currentTarget.style.opacity = '1'}
                 >
-                  Admin Sign In →
+                  🔐 Admin Sign In
                 </Link>
-              </p>
+              </div>
             </div>
           </div>
         </div>
