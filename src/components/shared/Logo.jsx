@@ -127,7 +127,7 @@ export function NeuraScanLogo({
 
         {/* Brain outline - left hemisphere */}
         <path
-          d="M24 9 C20 9 15 9.5 12 14 C9 19 10 24 13 28 C15.5 31.5 19 34 22 35 Q23 35.5 24 35"
+          d="M24 8C18 8 13 12 12 18C11 22 12 26 14 29C15 31 15 33 15 35C15 37 16 39 18 39C19 39 20 38 20 37L20 35C20 33 21 31 23 30"
           stroke="url(#brainGradient)"
           strokeWidth="2.5"
           strokeLinecap="round"
@@ -137,7 +137,7 @@ export function NeuraScanLogo({
 
         {/* Brain outline - right hemisphere */}
         <path
-          d="M24 9 C28 9 33 9.5 36 14 C39 19 38 24 35 28 C32.5 31.5 29 34 26 35 Q25 35.5 24 35"
+          d="M24 8C30 8 35 12 36 18C37 22 36 26 34 29C33 31 33 33 33 35C33 37 32 39 30 39C29 39 28 38 28 37L28 35C28 33 27 31 25 30"
           stroke="url(#brainGradient)"
           strokeWidth="2.5"
           strokeLinecap="round"
@@ -145,86 +145,80 @@ export function NeuraScanLogo({
           fill="none"
         />
 
-        {/* Central fissure */}
-        <line
-          x1="24" y1="9" x2="24" y2="35"
-          stroke="url(#brainGradient)"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          opacity="0.4"
-        />
-
         {/* Brain stem */}
         <path
-          d="M22 35 Q23 38 24 41 M26 35 Q25 38 24 41"
+          d="M24 30V40"
           stroke="url(#brainGradient)"
           strokeWidth="2"
           strokeLinecap="round"
-          fill="none"
         />
 
-        {/* Left brain folds (sulci) */}
-        <path d="M14 16 Q18 18.5 22 16" stroke="url(#brainGradient)" strokeWidth="1.5" strokeLinecap="round" fill="none" opacity="0.45" />
-        <path d="M12 22 Q17 25 23 22" stroke="url(#brainGradient)" strokeWidth="1.5" strokeLinecap="round" fill="none" opacity="0.45" />
-        <path d="M15 28 Q19 30.5 23 28" stroke="url(#brainGradient)" strokeWidth="1.5" strokeLinecap="round" fill="none" opacity="0.45" />
-
-        {/* Right brain folds (sulci) */}
-        <path d="M34 16 Q30 18.5 26 16" stroke="url(#brainGradient)" strokeWidth="1.5" strokeLinecap="round" fill="none" opacity="0.45" />
-        <path d="M36 22 Q31 25 25 22" stroke="url(#brainGradient)" strokeWidth="1.5" strokeLinecap="round" fill="none" opacity="0.45" />
-        <path d="M33 28 Q29 30.5 25 28" stroke="url(#brainGradient)" strokeWidth="1.5" strokeLinecap="round" fill="none" opacity="0.45" />
-
-        {/* Neural network connections */}
+        {/* Neural connection lines */}
         <path
-          d="M16 16L20 20M20 20L24 12M20 20L13 23"
+          d="M17 17L22 20M22 20L17 24M22 20L24 16"
           stroke={c.secondary}
-          strokeWidth="1.2"
+          strokeWidth="1.5"
           strokeLinecap="round"
-          strokeOpacity="0.6"
+          strokeOpacity="0.7"
         />
         <path
-          d="M32 16L28 20M28 20L24 12M28 20L35 23"
+          d="M31 17L26 20M26 20L31 24M26 20L24 16"
           stroke={c.secondary}
-          strokeWidth="1.2"
+          strokeWidth="1.5"
           strokeLinecap="round"
-          strokeOpacity="0.6"
+          strokeOpacity="0.7"
         />
 
         {/* Neural nodes - digital scan points */}
         <NodeWrapper
-          cx="24" cy="12" r="2.5"
+          cx="17"
+          cy="17"
+          r="2.5"
           fill="url(#nodeGradient)"
           filter="url(#glow)"
           {...(animated && { custom: 0, ...nodeVariants })}
         />
         <NodeWrapper
-          cx="16" cy="16" r="2"
+          cx="31"
+          cy="17"
+          r="2.5"
           fill="url(#nodeGradient)"
           filter="url(#glow)"
           {...(animated && { custom: 1, ...nodeVariants })}
         />
         <NodeWrapper
-          cx="32" cy="16" r="2"
-          fill="url(#nodeGradient)"
-          filter="url(#glow)"
+          cx="22"
+          cy="20"
+          r="2"
+          fill={c.secondary}
           {...(animated && { custom: 2, ...nodeVariants })}
         />
         <NodeWrapper
-          cx="20" cy="20" r="2"
+          cx="26"
+          cy="20"
+          r="2"
           fill={c.secondary}
           {...(animated && { custom: 3, ...nodeVariants })}
         />
         <NodeWrapper
-          cx="28" cy="20" r="2"
-          fill={c.secondary}
+          cx="24"
+          cy="16"
+          r="2.5"
+          fill="url(#nodeGradient)"
+          filter="url(#glow)"
           {...(animated && { custom: 4, ...nodeVariants })}
         />
         <NodeWrapper
-          cx="13" cy="23" r="1.8"
+          cx="17"
+          cy="24"
+          r="2"
           fill={c.secondary}
           {...(animated && { custom: 5, ...nodeVariants })}
         />
         <NodeWrapper
-          cx="35" cy="23" r="1.8"
+          cx="31"
+          cy="24"
+          r="2"
           fill={c.secondary}
           {...(animated && { custom: 6, ...nodeVariants })}
         />
