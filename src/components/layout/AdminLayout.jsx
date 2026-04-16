@@ -27,7 +27,7 @@ export default function AdminLayout() {
         display: 'flex', flexDirection: 'column', flexShrink: 0,
       }}>
         <div style={{ padding: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-          <NeuraScanLogo size="sm" />
+          <NeuraScanLogo size={28} showText={false} />
           <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.6)', marginTop: '0.25rem' }}>Admin Panel</div>
         </div>
 

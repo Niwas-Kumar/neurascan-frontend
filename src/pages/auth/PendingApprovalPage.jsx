@@ -26,8 +26,8 @@ export default function PendingApprovalPage() {
         textAlign: 'center',
         boxShadow: '0 25px 60px rgba(0,0,0,0.3)',
       }}>
-        <div style={{ marginBottom: '1.5rem' }}>
-          <NeuraScanLogo size="md" />
+        <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'center' }}>
+          <NeuraScanLogo size={36} />
         </div>
 
         <div style={{

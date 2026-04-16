@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Eye, EyeOff } from 'lucide-react'
 import { adminAPI } from '../../services/api'
 import { useAuth } from '../../context/AuthContext'
 import { NeuraScanLogo } from '../../components/shared/Logo.jsx'
@@ -14,6 +15,7 @@ const COLORS = {
 export default function AdminLoginPage() {
   const [form, setForm] = useState({ email: '', password: '' })
   const [loading, setLoading] = useState(false)
+  const [showPw, setShowPw] = useState(false)
   const navigate = useNavigate()
   const { login } = useAuth()
 
@@ -42,8 +44,8 @@ export default function AdminLoginPage() {
         background: 'white', borderRadius: '1.5rem', padding: '2.5rem',
         maxWidth: '420px', width: '100%', boxShadow: '0 25px 60px rgba(0,0,0,0.3)',
       }}>
-        <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-          <NeuraScanLogo size="md" />
+        <div style={{ textAlign: 'center', marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <NeuraScanLogo size={36} />
           <h2 style={{ color: COLORS.sidebar, marginTop: '0.5rem', fontSize: '1.25rem' }}>Admin Panel</h2>
         </div>
 
@@ -58,11 +60,20 @@ export default function AdminLoginPage() {
 
         <div style={{ marginBottom: '1.5rem' }}>
           <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 600, color: '#374151', marginBottom: '0.25rem' }}>Password</label>
-          <input
-            type="password" required value={form.password}
-            onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-            style={{ width: '100%', padding: '0.75rem', border: '1px solid #D1D5DB', borderRadius: '0.5rem', fontSize: '0.95rem', boxSizing: 'border-box' }}
-          />
+          <div style={{ position: 'relative' }}>
+            <input
+              type={showPw ? 'text' : 'password'} required value={form.password}
+              onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
+              style={{ width: '100%', padding: '0.75rem', paddingRight: '2.75rem', border: '1px solid #D1D5DB', borderRadius: '0.5rem', fontSize: '0.95rem', boxSizing: 'border-box' }}
+            />
+            <button type="button" onClick={() => setShowPw(v => !v)} style={{
+              position: 'absolute', right: '0.6rem', top: '50%', transform: 'translateY(-50%)',
+              background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem',
+              color: '#9CA3AF', display: 'flex', alignItems: 'center',
+            }}>
+              {showPw ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
         </div>
 
         <button type="submit" disabled={loading} style={{
