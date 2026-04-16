@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { Eye, EyeOff } from 'lucide-react'
 import { adminAPI } from '../../services/api'
 import { useAuth } from '../../context/AuthContext'
@@ -83,6 +83,12 @@ export default function AdminLoginPage() {
         }}>
           {loading ? 'Signing in...' : 'Sign In'}
         </button>
+
+        <p style={{ textAlign: 'center', marginTop: '1rem', fontSize: '0.875rem' }}>
+          <Link to="/login" style={{ color: '#64748B', textDecoration: 'none' }}>
+            ← Back to Login
+          </Link>
+        </p>
       </form>
     </div>
   )
