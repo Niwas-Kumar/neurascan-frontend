@@ -493,7 +493,7 @@ export default function LoginPage() {
                     background: COLORS.sidebar,
                     color: '#FFFFFF',
                     textDecoration: 'none',
-                    fontWeight: 700,
+                    fontWeight: 500,
                     fontSize: 14,
                     borderRadius: 8,
                     letterSpacing: '0.02em',
