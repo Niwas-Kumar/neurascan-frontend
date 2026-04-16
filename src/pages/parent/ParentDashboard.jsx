@@ -11,6 +11,7 @@ import { parentStudentAPI } from '../../services/api'
 import { useAuth } from '../../context/AuthContext'
 import toast from 'react-hot-toast'
 import AiCommentary from '../../components/shared/AiCommentary'
+import StudentNotesPanel from '../../components/teacher/StudentNotesPanel'
 
 // ════════════════════════════════════════════════════════════════
 // DESIGN SYSTEM
@@ -1652,6 +1653,16 @@ export default function ParentDashboard() {
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Teacher Notes */}
+      {selectedStudentId && (
+        <div style={{
+          background: '#FFFFFF', borderRadius: 16, padding: 24,
+          border: '1px solid #E2E8F0', marginTop: 24,
+        }}>
+          <StudentNotesPanel studentId={selectedStudentId} role="ROLE_PARENT" />
         </div>
       )}
 

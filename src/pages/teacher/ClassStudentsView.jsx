@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { AlertCircle, ArrowLeft, Search, UserPlus, X } from 'lucide-react'
+import { AlertCircle, ArrowLeft, Search, UserPlus, X, Download } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { optimizedStudentAPI } from '../../services/optimizedApi'
+import { pdfAPI, exportAPI, analyticsAPI } from '../../services/api'
 import { useAuth } from '../../context/AuthContext'
 import { Button, Input, Modal } from '../../components/shared/UI'
 import StudentCard from '../../components/teacher/StudentCard'
+import StudentNotesPanel from '../../components/teacher/StudentNotesPanel'
 import { useDebounce } from '../../hooks'
 
 const COLORS = {
@@ -52,6 +54,8 @@ export default function ClassStudentsView() {
   const [form, setForm] = useState(buildForm(decodedClassId))
   const [errors, setErrors] = useState({})
   const [saving, setSaving] = useState(false)
+  const [progressData, setProgressData] = useState(null)
+  const [progressStudent, setProgressStudent] = useState(null)
 
   const normalizeClass = (value) => String(value || '').trim().toLowerCase()
 
@@ -128,6 +132,34 @@ export default function ClassStudentsView() {
     setForm(buildForm(decodedClassId))
     setErrors({})
     setModalMode('add')
+  }
+
+  const handleDownloadPdf = async (student) => {
+    try {
+      toast.loading('Generating PDF...', { id: 'pdf' })
+      const res = await pdfAPI.downloadStudentReport(student.id)
+      const url = URL.createObjectURL(new Blob([res.data], { type: 'application/pdf' }))
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${student.name}_report.pdf`
+      a.click()
+      URL.revokeObjectURL(url)
+      toast.success('Report downloaded', { id: 'pdf' })
+    } catch {
+      toast.error('Failed to generate report', { id: 'pdf' })
+    }
+  }
+
+  const handleViewProgress = async (student) => {
+    setProgressStudent(student)
+    setProgressData(null)
+    try {
+      const res = await analyticsAPI.getStudentProgress(student.id)
+      setProgressData(res.data?.data || { reports: [] })
+    } catch {
+      toast.error('Failed to load progress')
+      setProgressStudent(null)
+    }
   }
 
   const openEditModal = (student) => {
@@ -271,9 +303,30 @@ export default function ClassStudentsView() {
           </p>
         </div>
 
-        <Button icon={<UserPlus size={16} />} onClick={openAddModal}>
-          Add Student
-        </Button>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <Button
+            variant="outline"
+            icon={<Download size={16} />}
+            onClick={async () => {
+              const tid = toast.loading('Exporting...')
+              try {
+                const res = await exportAPI.students()
+                const url = window.URL.createObjectURL(new Blob([res.data]))
+                const a = document.createElement('a')
+                a.href = url
+                a.download = 'students_export.csv'
+                a.click()
+                window.URL.revokeObjectURL(url)
+                toast.success('Exported', { id: tid })
+              } catch { toast.error('Export failed', { id: tid }) }
+            }}
+          >
+            Export CSV
+          </Button>
+          <Button icon={<UserPlus size={16} />} onClick={openAddModal}>
+            Add Student
+          </Button>
+        </div>
       </motion.div>
 
       <motion.div
@@ -383,6 +436,8 @@ export default function ClassStudentsView() {
                 index={index}
                 onEdit={openEditModal}
                 onDelete={openDeleteModal}
+                onDownloadPdf={handleDownloadPdf}
+                onViewProgress={handleViewProgress}
               />
             ))}
           </AnimatePresence>
@@ -474,6 +529,69 @@ export default function ClassStudentsView() {
               Delete Student
             </Button>
           </div>
+        </div>
+      </Modal>
+
+      {/* Student Progress Timeline Modal */}
+      <Modal
+        open={!!progressStudent}
+        onClose={() => setProgressStudent(null)}
+        title={`Progress: ${progressStudent?.name || ''}`}
+      >
+        <div style={{ maxHeight: 400, overflowY: 'auto' }}>
+          {!progressData ? (
+            <div style={{ textAlign: 'center', padding: 32, color: COLORS.textMuted }}>Loading...</div>
+          ) : !progressData.reports?.length ? (
+            <div style={{ textAlign: 'center', padding: 32, color: COLORS.textMuted }}>No analyses yet</div>
+          ) : (
+            <>
+              {progressData.trend && (
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16,
+                  padding: '10px 14px', borderRadius: 10,
+                  background: progressData.trend === 'IMPROVING' ? '#ECFDF5' : progressData.trend === 'WORSENING' ? '#FEF2F2' : '#F1F5F9',
+                  color: progressData.trend === 'IMPROVING' ? '#059669' : progressData.trend === 'WORSENING' ? '#DC2626' : COLORS.textMuted,
+                  fontSize: 13, fontWeight: 600,
+                }}>
+                  Trend: {progressData.trend.replace('_', ' ')}
+                </div>
+              )}
+              {progressData.reports.map((r, i) => (
+                <div key={r.reportId || i} style={{
+                  padding: '12px 14px', borderRadius: 10,
+                  border: `1px solid ${COLORS.border}`, marginBottom: 8,
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                    <span style={{ fontSize: 12, color: COLORS.textMuted }}>
+                      {r.createdAt ? new Date(r.createdAt).toLocaleDateString() : '—'}
+                    </span>
+                    <span style={{
+                      fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 99,
+                      background: r.riskLevel === 'HIGH' ? '#FEE2E2' : r.riskLevel === 'MEDIUM' ? '#FEF3C7' : '#D1FAE5',
+                      color: r.riskLevel === 'HIGH' ? '#DC2626' : r.riskLevel === 'MEDIUM' ? '#D97706' : '#059669',
+                    }}>
+                      {r.riskLevel}
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', gap: 16, fontSize: 13 }}>
+                    <span>Dyslexia: <strong>{r.dyslexiaScore?.toFixed(1) ?? '—'}%</strong></span>
+                    <span>Dysgraphia: <strong>{r.dysgraphiaScore?.toFixed(1) ?? '—'}%</strong></span>
+                  </div>
+                  {r.aiComment && (
+                    <div style={{ fontSize: 12, color: COLORS.textMuted, marginTop: 6, lineHeight: 1.5 }}>
+                      {r.aiComment.substring(0, 120)}{r.aiComment.length > 120 ? '...' : ''}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </>
+          )}
+          {/* Notes section */}
+          {progressData && (
+            <div style={{ marginTop: 16, borderTop: `1px solid ${COLORS.border}`, paddingTop: 16 }}>
+              <StudentNotesPanel studentId={progressStudent?.id} role="ROLE_TEACHER" />
+            </div>
+          )}
         </div>
       </Modal>
     </div>

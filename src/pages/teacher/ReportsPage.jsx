@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo, useCallback } from 'react'
 import { Search, Filter, FileText, Download, Eye, ChevronUp, ChevronDown, X } from 'lucide-react'
 import { optimizedAnalysisAPI } from '../../services/optimizedApi'
+import { exportAPI } from '../../services/api'
 import { useAuth } from '../../context/AuthContext'
 import { useDebounce } from '../../hooks'
 import { format } from 'date-fns'
@@ -298,21 +299,20 @@ export function ReportsPage() {
       )
     ) : null
 
-  const handleExport = () => {
-    if (filtered.length === 0) return toast.error('No reports to export')
-    const headers = ['Report ID', 'Student Name', 'Class Name', 'Dyslexia Score', 'Dysgraphia Score', 'Risk Level', 'Date', 'AI Comment']
-    const data = filtered.map((r) => [
-      r.reportId,
-      r.studentName,
-      r.className,
-      (r.dyslexiaScore || 0).toFixed(1) + '%',
-      (r.dysgraphiaScore || 0).toFixed(1) + '%',
-      r.riskLevel,
-      r.createdAt ? format(new Date(r.createdAt), 'yyyy-MM-dd') : 'N/A',
-      r.aiComment || '',
-    ])
-    downloadCSV([headers, ...data], `NeuraScan_Reports_${format(new Date(), 'yyyy-MM-dd')}.csv`)
-    toast.success('Export completed')
+  const handleExport = async () => {
+    const tid = toast.loading('Generating CSV...')
+    try {
+      const res = await exportAPI.reports()
+      const url = window.URL.createObjectURL(new Blob([res.data]))
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `NeuraScan_Reports_${format(new Date(), 'yyyy-MM-dd')}.csv`
+      a.click()
+      window.URL.revokeObjectURL(url)
+      toast.success('Export completed', { id: tid })
+    } catch (e) {
+      toast.error('Export failed', { id: tid })
+    }
   }
 
   return (

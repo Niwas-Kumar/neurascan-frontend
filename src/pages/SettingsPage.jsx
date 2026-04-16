@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { User, Lock, Save, Check, Eye, EyeOff } from 'lucide-react'
+import { User, Lock, Save, Check, Eye, EyeOff, CreditCard } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
-import { authAPI } from '../services/api'
+import { authAPI, billingAPI } from '../services/api'
 import toast from 'react-hot-toast'
 
 // ════════════════════════════════════════════════════════════════
@@ -539,9 +539,100 @@ function PasswordTab() {
 // MAIN SETTINGS PAGE
 // ════════════════════════════════════════════════════════════════
 
+// ════════════════════════════════════════════════════════════════
+// BILLING TAB
+// ════════════════════════════════════════════════════════════════
+const PLAN_COLORS = { FREE: '#64748B', BASIC: '#3B82F6', PRO: '#8B5CF6', ENTERPRISE: '#F59E0B' }
+
+function BillingTab() {
+  const [subscription, setSubscription] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [upgrading, setUpgrading] = useState(null)
+
+  useEffect(() => {
+    billingAPI.getSubscription()
+      .then(r => setSubscription(r.data.data))
+      .catch(() => toast.error('Failed to load subscription'))
+      .finally(() => setLoading(false))
+  }, [])
+
+  const handleUpgrade = async (plan) => {
+    setUpgrading(plan)
+    try {
+      const res = await billingAPI.createCheckout(plan)
+      window.location.href = res.data.data.checkoutUrl
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to start checkout')
+      setUpgrading(null)
+    }
+  }
+
+  if (loading) return <div style={{ padding: '2rem', textAlign: 'center', color: COLORS.textMuted }}>Loading...</div>
+
+  const currentPlan = subscription?.plan || 'FREE'
+  const plans = [
+    { id: 'FREE', name: 'Free', price: '$0/mo', features: ['2 teachers', '25 students', '50 analyses/mo'] },
+    { id: 'BASIC', name: 'Basic', price: '$29/mo', features: ['10 teachers', '200 students', '500 analyses/mo', 'CSV Import', 'PDF Reports'] },
+    { id: 'PRO', name: 'Pro', price: '$79/mo', features: ['50 teachers', '1,000 students', '5,000 analyses/mo', 'All features', 'Advanced Analytics'] },
+    { id: 'ENTERPRISE', name: 'Enterprise', price: 'Custom', features: ['Unlimited', 'All features', 'Priority support', 'Custom integrations'] },
+  ]
+
+  return (
+    <div>
+      <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: COLORS.textPrimary, marginBottom: 8 }}>
+        Subscription & Billing
+      </h2>
+      <p style={{ color: COLORS.textMuted, fontSize: '0.85rem', marginBottom: 24 }}>
+        Current plan: <span style={{ fontWeight: 700, color: PLAN_COLORS[currentPlan] }}>{currentPlan}</span>
+        {subscription?.status && ` (${subscription.status})`}
+      </p>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 16 }}>
+        {plans.map(plan => {
+          const isCurrent = plan.id === currentPlan
+          const planOrder = ['FREE', 'BASIC', 'PRO', 'ENTERPRISE']
+          const isDowngrade = planOrder.indexOf(plan.id) < planOrder.indexOf(currentPlan)
+          return (
+            <div key={plan.id} style={{
+              border: `2px solid ${isCurrent ? PLAN_COLORS[plan.id] : COLORS.border}`,
+              borderRadius: 12, padding: 20,
+              background: isCurrent ? `${PLAN_COLORS[plan.id]}08` : 'white',
+            }}>
+              <div style={{ fontWeight: 700, color: PLAN_COLORS[plan.id], marginBottom: 4 }}>{plan.name}</div>
+              <div style={{ fontSize: '1.25rem', fontWeight: 800, color: COLORS.textPrimary, marginBottom: 12 }}>{plan.price}</div>
+              <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 16px', fontSize: '0.8rem', color: COLORS.textSecondary }}>
+                {plan.features.map(f => <li key={f} style={{ marginBottom: 4 }}>&#10003; {f}</li>)}
+              </ul>
+              {isCurrent ? (
+                <div style={{ textAlign: 'center', color: PLAN_COLORS[plan.id], fontWeight: 600, fontSize: '0.85rem' }}>Current Plan</div>
+              ) : plan.id === 'FREE' || isDowngrade ? null : (
+                <button
+                  onClick={() => handleUpgrade(plan.id)}
+                  disabled={upgrading !== null}
+                  style={{
+                    width: '100%', padding: '8px', borderRadius: 8, border: 'none',
+                    background: PLAN_COLORS[plan.id], color: 'white', fontWeight: 600,
+                    cursor: upgrading ? 'not-allowed' : 'pointer', fontSize: '0.85rem',
+                  }}
+                >
+                  {upgrading === plan.id ? 'Redirecting...' : 'Upgrade'}
+                </button>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 export default function SettingsPage() {
   const { user, isTeacher } = useAuth()
   const [activeTab, setActiveTab] = useState('profile')
+
+  const tabs = isTeacher
+    ? [...TABS, { id: 'billing', label: 'Billing', icon: CreditCard }]
+    : TABS
 
   return (
     <div style={{ minHeight: '100%' }}>
@@ -575,7 +666,7 @@ export default function SettingsPage() {
           position: 'sticky',
           top: 24,
         }}>
-          {TABS.map(({ id, label, icon: Icon }) => {
+          {tabs.map(({ id, label, icon: Icon }) => {
             const isActive = activeTab === id
             return (
               <motion.button
@@ -644,6 +735,7 @@ export default function SettingsPage() {
         >
           {activeTab === 'profile' && <ProfileTab user={user} isTeacher={isTeacher} />}
           {activeTab === 'password' && <PasswordTab />}
+          {activeTab === 'billing' && <BillingTab />}
         </motion.div>
       </div>
     </div>

@@ -1,9 +1,9 @@
 import { useState, memo } from 'react'
 import { motion } from 'framer-motion'
-import { Pencil, Trash2, GraduationCap, FileText, Copy, Check } from 'lucide-react'
+import { Pencil, Trash2, GraduationCap, FileText, Copy, Check, Download, TrendingUp } from 'lucide-react'
 import toast from 'react-hot-toast'
 
-const StudentCard = memo(function StudentCard({ student, onEdit, onDelete, index = 0 }) {
+const StudentCard = memo(function StudentCard({ student, onEdit, onDelete, onDownloadPdf, onViewProgress, index = 0 }) {
   const [copyFeedback, setCopyFeedback] = useState(false)
 
   const avatarBg = '#EDE9FE'
@@ -66,9 +66,54 @@ const StudentCard = memo(function StudentCard({ student, onEdit, onDelete, index
           {student.name?.charAt(0).toUpperCase()}
         </div>
 
-        {(onEdit || onDelete) && (
+        {(onEdit || onDelete || onDownloadPdf || onViewProgress) && (
           <div style={{ display: 'flex', gap: 8 }}>
-            {onEdit && (
+            {onViewProgress && (
+              <motion.button
+                whileHover={{ scale: 1.08 }}
+                whileTap={{ scale: 0.92 }}
+                onClick={() => onViewProgress(student)}
+                title="View Progress Timeline"
+                style={{
+                  width: 34,
+                  height: 34,
+                  borderRadius: 10,
+                  border: '1px solid #D1FAE5',
+                  background: '#ECFDF5',
+                  color: '#059669',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                <TrendingUp size={14} />
+              </motion.button>
+            )}
+            {onDownloadPdf && (
+              <motion.button
+                whileHover={{ scale: 1.08 }}
+                whileTap={{ scale: 0.92 }}
+                onClick={() => onDownloadPdf(student)}
+                title="Download PDF Report"
+                style={{
+                  width: 34,
+                  height: 34,
+                  borderRadius: 10,
+                  border: '1px solid #DBEAFE',
+                  background: '#EFF6FF',
+                  color: '#3B82F6',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                <Download size={14} />
+              </motion.button>
+            )}
               <motion.button
                 whileHover={{ scale: 1.08 }}
                 whileTap={{ scale: 0.92 }}

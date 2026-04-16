@@ -31,6 +31,8 @@ export default function AdminDashboard() {
       <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: COLORS.sidebar, marginBottom: '1.5rem' }}>Admin Dashboard</h1>
       <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
         <Card title="Pending Teachers" value={stats.pendingTeachers} color="#F59E0B" />
+        <Card title="Total Teachers" value={stats.totalTeachers} color="#6366F1" />
+        <Card title="Total Students" value={stats.totalStudents} color="#8B5CF6" />
         <Card title="Total Schools" value={stats.totalSchools} color={COLORS.primary} />
         <Card title="Active Schools" value={stats.activeSchools} color="#10B981" />
       </div>

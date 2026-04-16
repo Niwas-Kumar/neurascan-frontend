@@ -3,8 +3,9 @@ import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   LayoutDashboard, Users, Upload, FileText, TrendingUp,
-  LogOut, Bell, Settings, Menu, X, ChevronLeft,
-  ChevronRight, BookOpen, AlertTriangle, Info, CheckCircle
+  Settings, LogOut, Menu, X, Bell, ChevronDown, Sun, Moon, UserPlus,
+  ChevronLeft,
+  ChevronRight, BookOpen, AlertTriangle, Info, CheckCircle, Trash2, FileBarChart
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { useIsMobile, useClickOutside } from '../../hooks'
@@ -55,6 +56,7 @@ const teacherNav = [
   { to: '/teacher/analytics', icon: TrendingUp,      label: 'Analytics',    badge: null },
   { to: '/teacher/reports',   icon: FileText,        label: 'Reports',      badge: null },
   { to: '/teacher/quizzes',   icon: FileText,        label: 'Quizzes',      badge: null },
+  { to: '/teacher/import',    icon: UserPlus,        label: 'Bulk Import',  badge: null },
   { to: '/teacher/settings',  icon: Settings,        label: 'Settings',     badge: null },
 ]
 
@@ -65,10 +67,33 @@ const parentNav = [
   { to: '/parent/settings',  icon: Settings,        label: 'Settings',    badge: null },
 ]
 
-function NotificationPanel({ notifications, markAllRead, onClose }) {
+function NotificationPanel({ notifications, markAllRead, markOneRead, deleteNotification, onClose, navigate }) {
   const ref = useClickOutside(onClose)
-  const icons = { info: Info, success: CheckCircle, warning: AlertTriangle, danger: AlertTriangle }
-  const colors = { info: '#1a73e8', success: '#1e8e3e', warning: '#e37400', danger: '#d93025' }
+  const typeIcons = {
+    ANALYSIS_COMPLETE: FileBarChart,
+    TEACHER_APPROVED: CheckCircle,
+    QUIZ_SUBMITTED: BookOpen,
+    STUDENT_LINKED: Users,
+    GENERAL: Info,
+  }
+  const typeColors = {
+    ANALYSIS_COMPLETE: '#1a73e8',
+    TEACHER_APPROVED: '#1e8e3e',
+    QUIZ_SUBMITTED: '#8B5CF6',
+    STUDENT_LINKED: '#e37400',
+    GENERAL: '#5f6368',
+  }
+
+  const formatTime = (iso) => {
+    if (!iso) return ''
+    const d = new Date(iso)
+    const now = new Date()
+    const diff = now - d
+    if (diff < 60000) return 'Just now'
+    if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`
+    if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`
+    return d.toLocaleDateString()
+  }
 
   return (
     <motion.div
@@ -79,7 +104,7 @@ function NotificationPanel({ notifications, markAllRead, onClose }) {
       transition={{ type: 'spring', damping: 25, stiffness: 350 }}
       style={{
         position: 'absolute', right: 0, top: 'calc(100% + 10px)',
-        width: 340, zIndex: 200,
+        width: 360, zIndex: 200,
         background: '#fff', border: '1px solid #e0e0e0',
         borderRadius: 16, overflow: 'hidden',
         boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
@@ -91,29 +116,47 @@ function NotificationPanel({ notifications, markAllRead, onClose }) {
           Mark all read
         </button>
       </div>
-      <div style={{ maxHeight: 340, overflowY: 'auto' }}>
+      <div style={{ maxHeight: 380, overflowY: 'auto' }}>
         {notifications.length === 0 ? (
           <div style={{ padding: '32px 18px', textAlign: 'center', color: '#80868b', fontSize: 13 }}>
             All caught up! No notifications.
           </div>
         ) : notifications.map(n => {
-          const Icon = icons[n.type] || Info
+          const Icon = typeIcons[n.type] || Info
+          const color = typeColors[n.type] || '#5f6368'
           return (
-            <div key={n.id} style={{
-              padding: '12px 18px', borderBottom: '1px solid #f1f3f4',
-              background: n.read ? 'transparent' : '#e8f0fe',
-              display: 'flex', gap: 12, alignItems: 'flex-start',
-            }}>
-              <div style={{ width: 30, height: 30, borderRadius: 8, background: '#f1f3f4', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <Icon size={14} color={colors[n.type]} />
+            <div
+              key={n.id}
+              onClick={() => {
+                if (!n.read) markOneRead(n.id)
+                if (n.link) { navigate(n.link); onClose() }
+              }}
+              style={{
+                padding: '12px 18px', borderBottom: '1px solid #f1f3f4',
+                background: n.read ? 'transparent' : '#e8f0fe',
+                display: 'flex', gap: 12, alignItems: 'flex-start',
+                cursor: n.link ? 'pointer' : 'default',
+              }}
+            >
+              <div style={{ width: 30, height: 30, borderRadius: 8, background: `${color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Icon size={14} color={color} />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 2, color: '#202124' }}>{n.title}</div>
-                <div style={{ fontSize: 12, color: '#5f6368', lineHeight: 1.5 }}>{n.body}</div>
+                <div style={{ fontSize: 12, color: '#5f6368', lineHeight: 1.5 }}>{n.message}</div>
+                <div style={{ fontSize: 11, color: '#9aa0a6', marginTop: 4 }}>{formatTime(n.createdAt)}</div>
               </div>
-              {!n.read && (
-                <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#1a73e8', flexShrink: 0, marginTop: 4 }} />
-              )}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                {!n.read && (
+                  <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#1a73e8', flexShrink: 0 }} />
+                )}
+                <button
+                  onClick={(e) => { e.stopPropagation(); deleteNotification(n.id) }}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 2, color: '#9aa0a6' }}
+                >
+                  <Trash2 size={12} />
+                </button>
+              </div>
             </div>
           )
         })}
@@ -231,7 +274,7 @@ function Sidebar({ collapsed, isTeacher, navItems, location, setCollapsed, setMo
   )
 }
 export default function AppLayout() {
-  const { user, logout, isTeacher, notifications, unreadCount, markAllRead } = useAuth()
+  const { user, logout, isTeacher, notifications, unreadCount, markAllRead, markOneRead, deleteNotification } = useAuth()
   const navigate   = useNavigate()
   const location   = useLocation()
   const isMobile   = useIsMobile()
@@ -379,7 +422,10 @@ export default function AppLayout() {
                   <NotificationPanel
                     notifications={notifications}
                     markAllRead={() => { markAllRead(); setShowNotifs(false) }}
+                    markOneRead={markOneRead}
+                    deleteNotification={deleteNotification}
                     onClose={() => setShowNotifs(false)}
+                    navigate={navigate}
                   />
                 )}
               </AnimatePresence>

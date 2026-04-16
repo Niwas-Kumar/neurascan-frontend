@@ -1,5 +1,6 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react'
 import { clearAllCaches } from '../services/optimizedApi'
+import { notificationAPI } from '../services/api'
 
 const AuthContext = createContext(null)
 
@@ -11,6 +12,7 @@ const STORAGE_KEYS = {
   userEmail: 'ns_userEmail',
   studentId: 'ns_studentId',
   school:    'ns_school',
+  schoolId:  'ns_schoolId',
   picture:   'ns_picture',
   theme:     'ns_theme',
 }
@@ -48,9 +50,10 @@ function restoreSession() {
   const email     = localStorage.getItem(STORAGE_KEYS.userEmail)
   const studentId = localStorage.getItem(STORAGE_KEYS.studentId)
   const school    = localStorage.getItem(STORAGE_KEYS.school)
+  const schoolId  = localStorage.getItem(STORAGE_KEYS.schoolId)
   const rawPicture = localStorage.getItem(STORAGE_KEYS.picture)
   const picture = (rawPicture === 'null' || rawPicture === 'undefined' || !rawPicture) ? null : rawPicture
-  return { token, role, userId, name, email, studentId, school, picture }
+  return { token, role, userId, name, email, studentId, school, schoolId, picture }
 }
 
 export function AuthProvider({ children }) {
@@ -101,16 +104,38 @@ export function AuthProvider({ children }) {
     }
   }, [user?.token])
 
-  // Notifications state (in-app, non-persistent demo)
-  const [notifications, setNotifications] = useState([
-    { id: 1, type: 'info',    title: 'Welcome to NeuraScan v2', body: 'Explore the new dashboard features.', read: false, time: new Date() },
-    { id: 2, type: 'success', title: 'System ready',            body: 'All AI services are operational.',   read: false, time: new Date() },
-  ])
+  // Notifications state (backed by Firestore API)
+  const [notifications, setNotifications] = useState([])
+  const [unreadCount, setUnreadCount] = useState(0)
+  const pollRef = useRef(null)
+
+  const fetchNotifications = useCallback(async () => {
+    try {
+      const res = await notificationAPI.getAll(20)
+      const data = res.data?.data
+      if (data) {
+        setNotifications(data.notifications || [])
+        setUnreadCount(data.unreadCount || 0)
+      }
+    } catch (e) {
+      // silently ignore — user may not be logged in yet
+    }
+  }, [])
+
+  // Poll for notifications when logged in
+  useEffect(() => {
+    if (!user?.token) return
+    fetchNotifications()
+    pollRef.current = setInterval(fetchNotifications, 30000)
+    return () => clearInterval(pollRef.current)
+  }, [user?.token, fetchNotifications])
 
   const login = useCallback((data) => {
-    const { jwtToken, userRole, userId, userName, studentId, school, picture } = data
+    const { jwtToken, userRole, userId, userName, studentId, school, schoolId, schoolName, picture } = data
     const finalRole = userRole.startsWith('ROLE_') ? userRole : `ROLE_${userRole.toUpperCase()}`
     const finalEmail = data.userEmail || data.email || ''
+    const finalSchoolId = schoolId || null
+    const finalSchool = schoolName || school || null
     
     localStorage.setItem(STORAGE_KEYS.token,     jwtToken)
     localStorage.setItem(STORAGE_KEYS.role,      finalRole)
@@ -118,7 +143,8 @@ export function AuthProvider({ children }) {
     localStorage.setItem(STORAGE_KEYS.userName,  userName)
     localStorage.setItem(STORAGE_KEYS.userEmail, finalEmail)
     if (studentId) localStorage.setItem(STORAGE_KEYS.studentId, String(studentId))
-    if (school)    localStorage.setItem(STORAGE_KEYS.school,    school)
+    if (finalSchool) localStorage.setItem(STORAGE_KEYS.school, finalSchool)
+    if (finalSchoolId) localStorage.setItem(STORAGE_KEYS.schoolId, finalSchoolId)
     
     // Properly clear or set picture
     if (picture && picture !== 'null') {
@@ -134,17 +160,13 @@ export function AuthProvider({ children }) {
       name: userName, 
       email: finalEmail, 
       studentId: studentId || null, 
-      school, 
+      school: finalSchool, 
+      schoolId: finalSchoolId,
       picture: (picture && picture !== 'null') ? picture : null 
     })
 
     // Welcome notification
-    setNotifications(n => [{
-      id: Date.now(), type: 'success',
-      title: `Welcome back, ${userName.split(' ')[0]}!`,
-      body: 'You have been signed in successfully.',
-      read: false, time: new Date(),
-    }, ...n])
+    // (now handled by backend NotificationService)
   }, [])
 
   const handleOAuthLogin = useCallback((jwtToken) => {
@@ -159,6 +181,7 @@ export function AuthProvider({ children }) {
         const userName = payload.name || 'Google User'
         const userId = payload.userId || ''
         const picture = payload.picture || null
+        const schoolId = payload.schoolId || null
         
         localStorage.setItem(STORAGE_KEYS.token, jwtToken)
         localStorage.setItem(STORAGE_KEYS.role, userRole)
@@ -166,8 +189,9 @@ export function AuthProvider({ children }) {
         localStorage.setItem(STORAGE_KEYS.userName, userName)
         localStorage.setItem(STORAGE_KEYS.userId, String(userId))
         if(picture) localStorage.setItem(STORAGE_KEYS.picture, picture)
+        if(schoolId) localStorage.setItem(STORAGE_KEYS.schoolId, schoolId)
         
-        setUser({ token: jwtToken, role: userRole, userId: userId, email: userEmail, name: userName, picture: picture })
+        setUser({ token: jwtToken, role: userRole, userId: userId, email: userEmail, name: userName, picture: picture, schoolId: schoolId })
     } catch(e) {
         throw e
     }
@@ -202,14 +226,31 @@ export function AuthProvider({ children }) {
     clearAllCaches() // Clear all cached API responses
     setUser(null)
     setNotifications([])
+    setUnreadCount(0)
+    clearInterval(pollRef.current)
   }, [])
 
-  const markAllRead = useCallback(() => {
-    setNotifications(n => n.map(x => ({ ...x, read: true })))
+  const markAllRead = useCallback(async () => {
+    try {
+      await notificationAPI.markAllAsRead()
+      setNotifications(n => n.map(x => ({ ...x, read: true })))
+      setUnreadCount(0)
+    } catch (e) { /* ignore */ }
   }, [])
 
-  const addNotification = useCallback((notif) => {
-    setNotifications(n => [{ id: Date.now(), read: false, time: new Date(), ...notif }, ...n])
+  const markOneRead = useCallback(async (id) => {
+    try {
+      await notificationAPI.markAsRead(id)
+      setNotifications(n => n.map(x => x.id === id ? { ...x, read: true } : x))
+      setUnreadCount(c => Math.max(0, c - 1))
+    } catch (e) { /* ignore */ }
+  }, [])
+
+  const deleteNotification = useCallback(async (id) => {
+    try {
+      await notificationAPI.delete(id)
+      setNotifications(n => n.filter(x => x.id !== id))
+    } catch (e) { /* ignore */ }
   }, [])
 
   const toggleTheme = useCallback(() => {
@@ -220,7 +261,6 @@ export function AuthProvider({ children }) {
     })
   }, [])
 
-  const unreadCount = notifications.filter(n => !n.read).length
   const isTeacher   = user?.role === 'ROLE_TEACHER'
   const isParent    = user?.role === 'ROLE_PARENT'
   const isAdmin     = user?.role === 'ROLE_ADMIN'
@@ -229,7 +269,7 @@ export function AuthProvider({ children }) {
     <AuthContext.Provider value={{
       user, login, logout, loading, handleOAuthLogin, updateUser,
       isTeacher, isParent, isAdmin,
-      notifications, unreadCount, markAllRead, addNotification,
+      notifications, unreadCount, markAllRead, markOneRead, deleteNotification, fetchNotifications,
       theme, toggleTheme,
     }}>
       {children}

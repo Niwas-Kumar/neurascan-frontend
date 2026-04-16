@@ -40,6 +40,7 @@ import UploadPage       from './pages/teacher/UploadPage'
 import { ReportsPage }  from './pages/teacher/ReportsPage'
 import AnalyticsPage    from './pages/teacher/AnalyticsPage'
 import QuizPage         from './pages/teacher/QuizPage'
+import BulkImportPage   from './pages/teacher/BulkImportPage'
 
 // Parent pages
 import ParentDashboard  from './pages/parent/ParentDashboard'
@@ -179,6 +180,7 @@ function AppRoutes() {
         <Route path="reports"   element={<ReportsPage />} />
         <Route path="analytics" element={<AnalyticsPage />} />
         <Route path="quizzes"   element={<QuizPage />} />
+        <Route path="import"    element={<BulkImportPage />} />
         <Route path="settings"  element={<SettingsPage />} />
       </Route>
 

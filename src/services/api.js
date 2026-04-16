@@ -158,6 +158,15 @@ export const studentAPI = {
   create:    (data)     => api.post('/students', data),
   update:    (id, data) => api.put(`/students/${id}`, data),
   remove:    (id)       => api.delete(`/students/${id}`),
+  getBySchool: (params) => api.get('/students/school', { params }),
+  importCsv: (file) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    return api.post('/import/students', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      timeout: 120000,
+    })
+  },
 }
 
 // ── CLASSES ──────────────────────────────────────────────────
@@ -268,6 +277,46 @@ export const parentStudentAPI = {
 }
 
 // ── Admin API ─────────────────────────────────────────────────
+// ── PDF REPORTS ──────────────────────────────────────────────
+export const pdfAPI = {
+  downloadStudentReport: (studentId) => api.get(`/reports/student/${studentId}/pdf`, { responseType: 'blob' }),
+}
+
+// ── BILLING ──────────────────────────────────────────────────
+export const billingAPI = {
+  getSubscription: () => api.get('/billing/subscription'),
+  getPlans: () => api.get('/billing/plans'),
+  createCheckout: (plan) => api.post('/billing/checkout', { plan }),
+}
+
+// ── NOTIFICATIONS ────────────────────────────────────────────
+export const notificationAPI = {
+  getAll: (limit = 20) => api.get('/notifications', { params: { limit } }),
+  getUnreadCount: () => api.get('/notifications/unread-count'),
+  markAsRead: (id) => api.put(`/notifications/${id}/read`),
+  markAllAsRead: () => api.put('/notifications/read-all'),
+  delete: (id) => api.delete(`/notifications/${id}`),
+}
+
+// ── DATA EXPORT ──────────────────────────────────────────────
+export const exportAPI = {
+  students: () => api.get('/export/students', { responseType: 'blob' }),
+  reports: () => api.get('/export/reports', { responseType: 'blob' }),
+}
+
+// ── ANALYTICS ────────────────────────────────────────────────
+export const analyticsAPI = {
+  getStudentProgress: (studentId) => api.get(`/analysis/student-progress/${studentId}`),
+}
+
+export const notesAPI = {
+  create: (studentId, content, visibleToParent) => api.post(`/notes/student/${studentId}`, { content, visibleToParent }),
+  getForTeacher: (studentId) => api.get(`/notes/teacher/student/${studentId}`),
+  getForParent: (studentId) => api.get(`/notes/parent/student/${studentId}`),
+  update: (noteId, data) => api.put(`/notes/${noteId}`, data),
+  remove: (noteId) => api.delete(`/notes/${noteId}`),
+}
+
 export const adminAPI = {
   login: (email, password) => api.post('/admin/login', { email, password }),
 
