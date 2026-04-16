@@ -479,6 +479,25 @@ export default function LoginPage() {
                   Create one
                 </Link>
               </p>
+              <p
+                style={{
+                  textAlign: 'center',
+                  fontSize: 13,
+                  color: COLORS.textMuted,
+                  marginTop: 8,
+                }}
+              >
+                <Link
+                  to="/admin/login"
+                  style={{
+                    color: COLORS.textMuted,
+                    textDecoration: 'none',
+                    opacity: 0.7,
+                  }}
+                >
+                  Admin Sign In
+                </Link>
+              </p>
             </div>
           </div>
         </div>
